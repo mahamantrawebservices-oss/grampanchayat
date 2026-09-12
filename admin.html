@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>પંચાયત એડમિન કંટ્રોલ પેનલ</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Quill Editor CSS -->
-<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
-<script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    <!-- Quill Editor CSS & JS -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
 </head>
 <body class="bg-slate-100 font-sans">
 
@@ -16,79 +17,99 @@
         <div class="bg-white p-8 rounded-xl shadow-2xl w-96">
             <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">એડમિન લોગિન</h2>
             <form id="admin-login-form" class="space-y-4">
-                <input type="email" id="login-email" placeholder="ઇમેઇલ" required class="w-full border p-2 rounded">
-                <input type="password" id="login-password" placeholder="પાસવર્ડ" required class="w-full border p-2 rounded">
-                <button type="submit" class="w-full bg-emerald-600 text-white font-bold py-2 rounded hover:bg-emerald-700">લોગિન કરો</button>
+                <input type="email" id="login-email" placeholder="ઇમેઇલ" required class="w-full border p-2 rounded text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                <input type="password" id="login-password" placeholder="પાસવર્ડ" required class="w-full border p-2 rounded text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                <button type="submit" class="w-full bg-emerald-600 text-white font-bold py-2 rounded hover:bg-emerald-700 transition">લોગિન કરો</button>
             </form>
         </div>
     </div>
 
-    <!-- Main Admin Dashboard Dashboard -->
+    <!-- Main Admin Dashboard -->
     <div id="admin-dashboard" class="hidden min-h-screen flex flex-col">
-        <!-- Top Nav -->
-        <header class="bg-emerald-900 text-white px-6 py-4 flex justify-between items-center shadow">
+        
+        <!-- Top Navigation Header -->
+        <header class="bg-emerald-900 text-white px-6 py-4 flex justify-between items-center shadow-md">
             <h1 class="text-xl font-bold">ગ્રામ પંચાયત એડમિન પેનલ</h1>
-            <button id="logout-btn" class="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1.5 rounded">લોગઆઉટ</button>
+            <button id="logout-btn" class="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1.5 rounded transition font-bold">લોગઆઉટ</button>
         </header>
 
-<!-- Panel 1: Site Customization (માત્ર સેટિંગ્સ) -->
-<!-- Panel 1: Site Customization (માત્ર સેટિંગ્સ) -->
-<div class="bg-white p-5 rounded-lg shadow space-y-4">
-    <h3 class="font-bold border-b pb-2 text-emerald-800">૧. વેબસાઇટ સેટિંગ્સ</h3>
-    <form id="settings-form" class="space-y-3">
-        <div>
-            <label class="text-xs font-semibold">પંચાયત નામ:</label>
-            <input type="text" id="set-gp-name" class="w-full border p-1.5 rounded text-sm" placeholder="દા.ત. ગ્રામ પંચાયત">
-        </div>
-        <div>
-            <label class="text-xs font-semibold">ટેગ લાઇન:</label>
-            <input type="text" id="set-gp-tagline" class="w-full border p-1.5 rounded text-sm" placeholder="દા.ત. ડિજિટલ પંચાયત">
-        </div>
-        <button type="submit" class="bg-emerald-600 text-white text-xs px-4 py-2 rounded font-bold hover:bg-emerald-700">સેવ કરો</button>
-    </form>
-</div>
+        <!-- Main Grid Container (3-Column Grid with Light Backgrounds) -->
+        <main class="flex-1 container mx-auto px-4 py-6 grid grid-cols-1 md:grid-cols-3 gap-6">
 
-            <!-- Panel 2: Notice & Post Upload -->
-            <div class="bg-white p-5 rounded-lg shadow space-y-4">
-                <h3 class="font-bold border-b pb-2 text-emerald-800">૨. નવી પોસ્ટ / નોટિસ મૂકો</h3>
-                <form id="post-form" class="space-y-3">
-                    <select id="post-type" class="w-full border p-1.5 rounded text-sm">
-                        <option value="post">સામાન્ય પોસ્ટ (સ્ક્રોલિંગ)</option>
-                        <option value="notice">અગત્યની નોટિસ</option>
-                    </select>
-                    <input type="text" id="post-title" placeholder="ટાઇટલ / વિષય" required class="w-full border p-1.5 rounded text-sm">
-                    <textarea id="post-desc" placeholder="વિગત..." rows="3" required class="w-full border p-1.5 rounded text-sm"></textarea>
-                    <button type="submit" class="bg-blue-600 text-white text-xs px-4 py-2 rounded">પોસ્ટ કરો</button>
+            <!-- સેક્શન ૧: વેબસાઇટ સેટિંગ્સ (આછો લીલો કલર) -->
+            <div class="bg-emerald-50/70 border border-emerald-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[500px] overflow-y-auto">
+                <h3 class="font-bold border-b border-emerald-300 pb-2 text-emerald-900">૧. વેબસાઇટ સેટિંગ્સ</h3>
+                <form id="settings-form" class="space-y-3">
+                    <div>
+                        <label class="text-xs font-semibold text-emerald-950">પંચાયત નામ:</label>
+                        <input type="text" id="set-gp-name" class="w-full border border-emerald-300 p-2 rounded text-sm bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500" placeholder="દા.ત. ગ્રામ પંચાયત">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-emerald-950">ટેગ લાઇન:</label>
+                        <input type="text" id="set-gp-tagline" class="w-full border border-emerald-300 p-2 rounded text-sm bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500" placeholder="દા.ત. ડિજિટલ પંચાયત">
+                    </div>
+                    <button type="submit" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white text-xs px-4 py-2 rounded font-bold shadow transition">સેટિંગ્સ સેવ કરો</button>
                 </form>
             </div>
 
-            <!-- Panel 3: Complaints Manager & Reports -->
-            <div class="bg-white p-5 rounded-lg shadow space-y-4 md:col-span-1">
-                <h3 class="font-bold border-b pb-2 text-emerald-800">૩. આવેલી ફરિયાદો & રિપોર્ટ</h3>
-                <div id="complaints-list" class="space-y-3 max-h-96 overflow-y-auto text-xs">
-                    <!-- Dynamic Complaints -->
+            <!-- સેક્શન ૨: નવી પોસ્ટ / નોટિસ મૂકો (આછો વાદળી કલર) -->
+            <div class="bg-blue-50/70 border border-blue-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[500px] overflow-y-auto">
+                <h3 class="font-bold border-b border-blue-300 pb-2 text-blue-900">૨. નવી પોસ્ટ / નોટિસ મૂકો</h3>
+                <form id="post-form" class="space-y-3">
+                    <div>
+                        <label class="text-xs font-semibold text-blue-950">ટાઇપ પસંદ કરો:</label>
+                        <select id="post-type" class="w-full border border-blue-300 p-2 rounded text-sm bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                            <option value="post">સામાન્ય પોસ્ટ (સ્ક્રોલિંગ)</option>
+                            <option value="notice">અગત્યની નોટિસ</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-blue-950">ટાઇટલ / વિષય:</label>
+                        <input type="text" id="post-title" required class="w-full border border-blue-300 p-2 rounded text-sm bg-white focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="ટાઇટલ લખો...">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-blue-950">વિગત:</label>
+                        <textarea id="post-desc" rows="3" required class="w-full border border-blue-300 p-2 rounded text-sm bg-white focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="વિગતવાર લખો..."></textarea>
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs px-4 py-2 rounded font-bold shadow transition">પોસ્ટ કરો</button>
+                </form>
+            </div>
+
+            <!-- સેક્શન ૩: આવેલી ફરિયાદો & રિપોર્ટ (આછો પીળો કલર) -->
+            <div class="bg-amber-50/70 border border-amber-200 p-5 rounded-xl shadow-sm space-y-4 flex flex-col max-h-[500px]">
+                <h3 class="font-bold border-b border-amber-300 pb-2 text-amber-900">૩. આવેલી ફરિયાદો & રિપોર્ટ</h3>
+                <div id="complaints-list" class="flex-1 overflow-y-auto pr-1 space-y-2 text-xs">
+                    <p class="text-gray-500 text-center py-4">ફરિયાદો લોડ થઈ રહી છે...</p>
                 </div>
             </div>
-         <!-- ૧. ગામનો ઇતિહાસ (Word જેવું એડિટર) -->
-<div class="bg-white p-5 rounded-lg shadow space-y-4 md:col-span-2">
-    <h3 class="font-bold border-b pb-2 text-emerald-800">ગામનો ઇતિહાસ ઉમેરો / એડિટ કરો</h3>
-    <!-- Microsoft Word જેવા ટૂલ્સ સાથેનું એડિટર -->
-    <div id="editor-container" class="h-48 bg-white"></div>
-    <button id="save-history-btn" class="bg-emerald-600 text-white px-4 py-2 rounded text-sm font-bold">ઇતિહાસ સેવ કરો</button>
-</div>
 
-<!-- ૨. Blogger ગેલેરી મેનેજર (ફ્રી ઈમેજ લિંક) -->
-<div class="bg-white p-5 rounded-lg shadow space-y-4">
-    <h3 class="font-bold border-b pb-2 text-emerald-800">Blogger ફોટો ગેલેરી મેનેજર</h3>
-    <form id="gallery-form" class="space-y-3">
-        <input type="text" id="img-title" placeholder="ફોટાનું ટાઇટલ" required class="w-full border p-2 rounded text-sm">
-        <input type="url" id="img-url" placeholder="Blogger ઈમેજ લિંક (Paste Image Address)" required class="w-full border p-2 rounded text-sm">
-        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded text-sm font-bold">ગેલેરીમાં ફોટો ઉમેરો</button>
-    </form>
-</div>
-        </div>
+            <!-- સેક્શન ૪: ગામનો ઇતિહાસ (Word Editor) (આછો પર્પલ કલર - 2 કોલમ રોકશે) -->
+            <div class="bg-purple-50/70 border border-purple-200 p-5 rounded-xl shadow-sm space-y-4 md:col-span-2">
+                <h3 class="font-bold border-b border-purple-300 pb-2 text-purple-900">૪. ગામનો ઇતિહાસ ઉમેરો / એડિટ કરો (MS Word એડિટર)</h3>
+                <div id="editor-container" class="h-48 bg-white border border-purple-200 rounded-b-lg"></div>
+                <button id="save-history-btn" class="bg-purple-700 hover:bg-purple-800 text-white px-4 py-2 rounded text-xs font-bold shadow transition">ઇતિહાસ સેવ કરો</button>
+            </div>
+
+            <!-- સેક્શન ૫: Blogger ફોટો ગેલેરી મેનેજર (આછો ઓરેન્જ કલર) -->
+            <div class="bg-orange-50/70 border border-orange-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[500px] overflow-y-auto">
+                <h3 class="font-bold border-b border-orange-300 pb-2 text-orange-900">૫. Blogger ફોટો ગેલેરી મેનેજર</h3>
+                <form id="gallery-form" class="space-y-3">
+                    <div>
+                        <label class="text-xs font-semibold text-orange-950">ફોટાનું શીર્ષક:</label>
+                        <input type="text" id="img-title" placeholder="દા.ત. ગ્રામ સભા" required class="w-full border border-orange-300 p-2 rounded text-sm bg-white focus:outline-none focus:ring-1 focus:ring-orange-500">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-orange-950">Blogger Image URL:</label>
+                        <input type="url" id="img-url" placeholder="https://..." required class="w-full border border-orange-300 p-2 rounded text-sm bg-white focus:outline-none focus:ring-1 focus:ring-orange-500">
+                    </div>
+                    <button type="submit" class="w-full bg-orange-600 hover:bg-orange-700 text-white text-xs px-4 py-2 rounded font-bold shadow transition">ગેલેરીમાં ફોટો ઉમેરો</button>
+                </form>
+            </div>
+
+        </main>
     </div>
 
-    <script type="module" src="js/admin.js"></script>
+    <!-- JavaScript Reference -->
+    <script type="module" src="./js/admin.js"></script>
 </body>
 </html>
