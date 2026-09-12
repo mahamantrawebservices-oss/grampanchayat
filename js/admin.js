@@ -152,6 +152,32 @@ async function loadAdminGallery() {
         `;
     });
 
+<!-- સેક્શન ૫: Blogger ફોટો ગેલેરી મેનેજર (ડિલીટ લિસ્ટ સાથે) -->
+<div class="bg-orange-50/70 border border-orange-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[500px] overflow-y-auto">
+    <h3 class="font-bold border-b border-orange-300 pb-2 text-orange-900">૫. Blogger ફોટો ગેલેરી</h3>
+    
+    <!-- ફોટો ઉમેરવાનું ફોર્મ -->
+    <form id="gallery-form" class="space-y-3">
+        <div>
+            <label class="text-xs font-semibold text-orange-950">ફોટાનું શીર્ષક:</label>
+            <input type="text" id="img-title" placeholder="દા.ત. ગ્રામ સભા" required class="w-full border border-orange-300 p-2 rounded text-sm bg-white">
+        </div>
+        <div>
+            <label class="text-xs font-semibold text-orange-950">Blogger Image URL:</label>
+            <input type="url" id="img-url" placeholder="https://..." required class="w-full border border-orange-300 p-2 rounded text-sm bg-white">
+        </div>
+        <button type="submit" class="w-full bg-orange-600 hover:bg-orange-700 text-white text-xs px-4 py-2 rounded font-bold shadow transition">ગેલેરીમાં ફોટો ઉમેરો</button>
+    </form>
+
+    <!-- ⚠️ આ બોક્સ ગાયબ હતું: ઉમેરેલા ફોટાનું લિસ્ટ અને ડિલીટ બટન -->
+    <div class="mt-4 border-t border-orange-200 pt-3">
+        <h4 class="text-xs font-bold text-orange-950 mb-2">📸 ઉમેરેલા ફોટા (ડિલીટ કરવા માટે):</h4>
+        <div id="admin-gallery-list" class="space-y-2 max-h-48 overflow-y-auto pr-1">
+            <p class="text-xs text-gray-500">ફોટા લોડ થઈ રહ્યા છે...</p>
+        </div>
+    </div>
+</div>
+    
     // ડિલીટ બટન માટે ઈવેન્ટ લિસનર્સ
     document.querySelectorAll(".delete-gallery-btn").forEach(btn => {
         btn.addEventListener("click", async (e) => {
