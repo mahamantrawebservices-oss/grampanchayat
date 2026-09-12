@@ -1,8 +1,7 @@
 import { db } from "./firebase-config.js";
 import { collection, addDoc, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// ૧. વેબસાઇટ સેટિંગ્સ લોડ કરવા
-// ૧. ફક્ત ગામનું નામ અને ટેગલાઈન ફાયરબેઝમાંથી લોડ થશે (લોગો પરમેનન્ટ રહેશે)
+// ૧. વેબસાઇટ સેટિંગ્સ લોડ કરવા (ગામનું નામ અને ટેગલાઈન)
 async function loadSettings() {
     const docRef = doc(db, "settings", "general");
     const docSnap = await getDoc(docRef);
@@ -12,6 +11,7 @@ async function loadSettings() {
         if(data.tagline) document.getElementById("gp-tagline").innerText = data.tagline;
     }
 }
+
 // ૨. સ્ક્રોલ થતી પોસ્ટ લોડ કરવી
 async function loadPosts() {
     const querySnapshot = await getDocs(collection(db, "posts"));
@@ -67,23 +67,86 @@ async function displayHistory() {
     }
 }
 
-// ૫. Blogger ફોટો ગેલેરી ફ્રન્ટએન્ડ પર બતાવવી
+// ૫. Blogger ફોટો ગેલેરી (Auto Scroll + Fullscreen Lightbox)
 async function displayGallery() {
     const querySnapshot = await getDocs(collection(db, "gallery"));
     const container = document.getElementById("gallery-container");
     if(!container) return;
     container.innerHTML = "";
     
+    if (querySnapshot.empty) {
+        container.innerHTML = "<p class='text-xs text-gray-500'>હાલ કોઈ ફોટા ઉમેરેલા નથી.</p>";
+        return;
+    }
+
+    // ઇમેજ કાર્ડ્સ ઉમેરવા (flex-none અને ચોક્કસ પહોળાઈ સાથે હોરિઝોન્ટલ લેઆઉટ માટે)
     querySnapshot.forEach((docSnap) => {
         const item = docSnap.data();
         container.innerHTML += `
-            <div class="bg-white p-2 rounded-lg shadow border">
-                <img src="${item.imageUrl}" alt="${item.title}" class="h-40 w-full object-cover rounded">
-                <p class="text-xs font-bold text-center mt-2 text-gray-700">${item.title}</p>
+            <div class="flex-none w-64 bg-slate-50 p-2 rounded-lg border shadow-sm cursor-pointer hover:shadow-md transition gallery-card" data-url="${item.imageUrl}">
+                <img src="${item.imageUrl}" alt="${item.title}" class="h-40 w-full object-cover rounded pointer-events-none">
+                <p class="text-xs font-bold text-center mt-2 text-gray-700 truncate">${item.title}</p>
             </div>
         `;
     });
+
+    // ઑટો-સ્ક્રોલ ચાલુ કરવું (Horizontal Smooth Auto-Scroll)
+    let scrollAmount = 0;
+    let autoScrollInterval = setInterval(() => {
+        if (container) {
+            scrollAmount += 1.5;
+            if (scrollAmount >= container.scrollWidth - container.clientWidth) {
+                scrollAmount = 0; // છેલ્લે પહોંચે એટલે શરૂઆતથી ચાલુ થશે
+            }
+            container.scrollLeft = scrollAmount;
+        }
+    }, 30);
+
+    // માઉસ ગેલેરી પર લાવવાથી ઑટો-સ્ક્રોલ અટકી જશે
+    container.addEventListener("mouseenter", () => clearInterval(autoScrollInterval));
+    container.addEventListener("mouseleave", () => {
+        autoScrollInterval = setInterval(() => {
+            if (container) {
+                scrollAmount += 1.5;
+                if (scrollAmount >= container.scrollWidth - container.clientWidth) {
+                    scrollAmount = 0;
+                }
+                container.scrollLeft = scrollAmount;
+            }
+        }, 30);
+    });
+
+    // ઈમેજ પર ક્લિક કરવાથી ફુલસ્ક્રીન મોડલમાં ઓપન થશે
+    document.querySelectorAll(".gallery-card").forEach(card => {
+        card.addEventListener("click", () => {
+            const url = card.getAttribute("data-url");
+            const modal = document.getElementById("image-modal");
+            const modalImg = document.getElementById("modal-img");
+            if (modal && modalImg) {
+                modalImg.src = url;
+                modal.classList.remove("hidden");
+                modal.classList.add("flex");
+            }
+        });
+    });
 }
+
+// ફુલસ્ક્રીન મોડલ બંધ કરવાનો કોડ
+document.getElementById("close-modal-btn")?.addEventListener("click", () => {
+    const modal = document.getElementById("image-modal");
+    if (modal) {
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+    }
+});
+
+// મોડલની બહાર ક્લિક કરવાથી પણ બંધ થશે
+document.getElementById("image-modal")?.addEventListener("click", (e) => {
+    if (e.target.id === "image-modal") {
+        e.target.classList.add("hidden");
+        e.target.classList.remove("flex");
+    }
+});
 
 // ૬. ફરિયાદ સબમિટ કરવી
 document.getElementById("complaint-form")?.addEventListener("submit", async (e) => {
