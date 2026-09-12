@@ -49,17 +49,22 @@ document.getElementById("settings-form").addEventListener("submit", async (e) =>
     alert("સેટિંગ્સ સફળતાપૂર્વક સેવ થઈ ગયા!");
 });
 
-// Add Post/Notice
+// Add Post/Notice (admin.js માં આ મુજબ કોડ રાખો)
 document.getElementById("post-form").addEventListener("submit", async (e) => {
     e.preventDefault();
-    await addDoc(collection(db, "posts"), {
-        type: document.getElementById("post-type").value,
-        title: document.getElementById("post-title").value,
-        desc: document.getElementById("post-desc").value,
-        createdAt: new Date()
-    });
-    alert("પોસ્ટ ઉમેરાઈ ગઈ!");
-    e.target.reset();
+    try {
+        await addDoc(collection(db, "posts"), {
+            type: document.getElementById("post-type").value, // 'notice' અથવા 'post'
+            title: document.getElementById("post-title").value,
+            desc: document.getElementById("post-desc").value,
+            createdAt: new Date()
+        });
+        alert("નોટિસ/પોસ્ટ સફળતાપૂર્વક મૂકાઈ ગઈ છે!");
+        e.target.reset();
+        location.reload(); // પેજ રીફ્રેશ થશે
+    } catch (err) {
+        alert("ભૂલ આવી: " + err.message);
+    }
 });
 
 // Fetch Complaints with Report Feature
