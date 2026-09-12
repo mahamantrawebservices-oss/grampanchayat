@@ -27,23 +27,15 @@ document.getElementById("admin-login-form")?.addEventListener("submit", (e) => {
 document.getElementById("logout-btn")?.addEventListener("click", () => signOut(auth));
 
 // Save Customization & Upload Logo
+// Save Customization (માત્ર નામ અને ટેગલાઇન માટે)
 document.getElementById("settings-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const name = document.getElementById("set-gp-name").value;
     const tagline = document.getElementById("set-gp-tagline").value;
-    const logoFile = document.getElementById("set-gp-logo").files[0];
-
-    let logoUrl = "";
-    if (logoFile) {
-        const storageRef = ref(storage, 'logo/gp-logo.png');
-        await uploadBytes(storageRef, logoFile);
-        logoUrl = await getDownloadURL(storageRef);
-    }
 
     await setDoc(doc(db, "settings", "general"), {
         ...(name && { name }),
-        ...(tagline && { tagline }),
-        ...(logoUrl && { logoUrl })
+        ...(tagline && { tagline })
     }, { merge: true });
 
     alert("સેટિંગ્સ સફળતાપૂર્વક સેવ થઈ ગયા!");
