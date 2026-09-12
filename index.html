@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="site-title">ગ્રામ પંચાયત ડિજિટલ પોર્ટલ</title>
+    <!-- Tailwind CSS for Fast Loading & Responsive Design -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .scroll-text { animation: scroll 15s linear infinite; }
+        @keyframes scroll { 0% { transform: translateY(100%); } 100% { transform: translateY(-100%); } }
+        .hero-bg { background-size: cover; background-position: center; transition: background 0.5s; }
+    </style>
+</head>
+<body class="bg-slate-50 text-gray-800 font-sans">
+
+    <!-- Header Section -->
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3 space-x-reverse">
+                <img id="gp-logo" src="https://via.placeholder.com/60" alt="Logo" class="h-14 w-14 object-contain rounded-full border">
+                <div>
+                    <h1 id="gp-name" class="text-xl font-bold text-emerald-800">ગ્રામ પંચાયત</h1>
+                    <p id="gp-tagline" class="text-xs text-gray-600">ડિજિટલ સેવાઓ તરફ એક પગલું</p>
+                </div>
+            </div>
+            <!-- Navigation Menu -->
+            <nav class="hidden md:flex space-x-6 space-x-reverse text-sm font-semibold text-gray-700">
+                <a href="#home" class="hover:text-emerald-600">મુખ્ય પૃષ્ઠ</a>
+                <a href="#about" class="hover:text-emerald-600">માહિતી</a>
+                <a href="#notices" class="hover:text-emerald-600">નોટિસ</a>
+                <a href="#complaint" class="hover:text-emerald-600">ફરિયાદ નોંધાવો</a>
+                <a href="#gallery" class="hover:text-emerald-600">ગેલેરી</a>
+            </nav>
+            <a href="https://cybergarvi.gujarat.gov.in/" target="_blank" class="bg-amber-500 hover:bg-amber-600 text-white font-bold px-4 py-2 rounded-lg shadow text-xs md:text-sm">
+                <i class="fa-solid font-icon fa-indian-rupee-sign"></i> મિલકત વેરો ભરો
+            </a>
+        </div>
+    </header>
+
+    <!-- Animated Banner Section -->
+    <section id="hero-banner" class="hero-bg h-64 md:h-96 flex items-center justify-center text-white relative shadow-inner" style="background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1542601906990-b4d3fb778b09');">
+        <div class="text-center px-4">
+            <h2 id="banner-title" class="text-3xl md:text-5xl font-extrabold mb-2 animate-bounce">આપનું હાર્દિક સ્વાગત છે</h2>
+            <p id="banner-subtitle" class="text-lg md:text-xl font-light">ગામના વિકાસ અને સુવિધા માટે તત્પર</p>
+        </div>
+    </section>
+
+    <!-- Main Content Area -->
+    <div class="container mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Left 2 Columns: Main Feed -->
+        <div class="lg:col-span-2 space-cols-6 space-y-6">
+            
+            <!-- Auto-Scrolling Posts Section -->
+            <div class="bg-white p-5 rounded-xl shadow-md border border-gray-100">
+                <h3 class="text-lg font-bold text-emerald-800 border-b pb-2 mb-4 flex items-center">
+                    <i class="fa-solid fa-bullhorn mr-2"></i> તાજી પોસ્ટ્સ અને ન્યૂઝ
+                </h3>
+                <div class="h-64 overflow-hidden relative border rounded-lg bg-gray-50 p-3">
+                    <div id="posts-container" class="scroll-text space-y-4">
+                        <!-- Dynamic Posts Auto-Inserted Here -->
+                        <p class="text-gray-500 text-center">પોસ્ટ લોડ થઈ રહી છે...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Action Buttons -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <a href="#complaint" class="bg-emerald-600 text-white p-4 rounded-xl text-center shadow hover:bg-emerald-700 transition">
+                    <i class="fa-solid fa-file-circle-exclamation text-2xl mb-1"></i>
+                    <span class="block text-xs font-bold">ફરિયાદ નોંધાવો</span>
+                </a>
+                <a href="#about" class="bg-blue-600 text-white p-4 rounded-xl text-center shadow hover:bg-blue-700 transition">
+                    <i class="fa-solid fa-users text-2xl mb-1"></i>
+                    <span class="block text-xs font-bold">પંચાયત બોડી</span>
+                </a>
+                <a href="#notices" class="bg-amber-600 text-white p-4 rounded-xl text-center shadow hover:bg-amber-700 transition">
+                    <i class="fa-solid fa-clipboard-list text-2xl mb-1"></i>
+                    <span class="block text-xs font-bold">અગત્યની નોટિસ</span>
+                </a>
+                <a href="#gallery" class="bg-purple-600 text-white p-4 rounded-xl text-center shadow hover:bg-purple-700 transition">
+                    <i class="fa-solid fa-images text-2xl mb-1"></i>
+                    <span class="block text-xs font-bold">ફોટો ગેલેરી</span>
+                </a>
+            </div>
+
+            <!-- Complaint Form -->
+            <div id="complaint" class="bg-white p-6 rounded-xl shadow-md border border-gray-100">
+                <h3 class="text-xl font-bold text-red-600 border-b pb-2 mb-4">
+                    <i class="fa-solid fa-pen-to-square"></i> પંચાયતમાં સમસ્યા/ફરિયાદ નોંધાવો
+                </h3>
+                <form id="complaint-form" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="text" id="c-name" placeholder="તમારું નામ" required class="w-full border p-2.5 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
+                        <input type="tel" id="c-mobile" placeholder="મોબાઈલ નંબર" required class="w-full border p-2.5 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="text" id="c-faliya" placeholder="ફળિયું / વિસ્તાર" required class="w-full border p-2.5 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
+                        <input type="text" id="c-house" placeholder="મકાન નંબર" class="w-full border p-2.5 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
+                    </div>
+                    <div>
+                        <select id="c-type" required class="w-full border p-2.5 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
+                            <option value="">સમસ્યાનો પ્રકાર પસંદ કરો</option>
+                            <option value="પાણી">પીવાના પાણીની સમસ્યા</option>
+                            <option value="ગટર/સફાઈ">ગટર / રસ્તાની સફાઈ</option>
+                            <option value="સ્ટ્રીટ લાઈટ">સ્ટ્રીટ લાઈટ બંધ છે</option>
+                            <option value="અન્ય">અન્ય રજૂઆત</option>
+                        </select>
+                    </div>
+                    <textarea id="c-msg" placeholder="સમસ્યાની વિગતવાર માહિતી લખો..." rows="3" required class="w-full border p-2.5 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"></textarea>
+                    <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg shadow transition">
+                        ફરિયાદ સબમિટ કરો
+                    </button>
+                </form>
+            </div>
+
+        </div>
+
+        <!-- Right Column: Sidebar Info -->
+        <div class="space-y-6">
+            
+            <!-- Notice Window -->
+            <div id="notices" class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-xl shadow-sm">
+                <h4 class="font-bold text-amber-900 text-lg mb-2"><i class="fa-solid fa-bell"></i> અગત્યની નોટિસ</h4>
+                <div id="notice-list" class="text-sm text-amber-800 space-y-2">
+                    <!-- Dynamic Notices -->
+                </div>
+            </div>
+
+            <!-- Village Info Sections -->
+            <div id="about" class="bg-white p-5 rounded-xl shadow-md space-y-4">
+                <h4 class="font-bold text-gray-800 border-b pb-2 text-lg">ગામ અને પંચાયત વિગત</h4>
+                
+                <details class="group border rounded-lg p-3">
+                    <summary class="font-semibold cursor-pointer text-emerald-800 flex justify-between">
+                        <span><i class="fa-solid fa-landmark mr-2"></i> ગામનો ઇતિહાસ</span>
+                    </summary>
+                    <p id="info-history" class="text-xs text-gray-600 mt-2">માહિતી લોડ થઈ રહી છે...</p>
+                </details>
+
+                <details class="group border rounded-lg p-3">
+                    <summary class="font-semibold cursor-pointer text-emerald-800 flex justify-between">
+                        <span><i class="fa-solid fa-users-gear mr-2"></i> ગ્રામ પંચાયત કમિટી & સ્ટાફ</span>
+                    </summary>
+                    <div id="info-staff" class="text-xs text-gray-600 mt-2 space-y-1"></div>
+                </details>
+
+                <details class="group border rounded-lg p-3">
+                    <summary class="font-semibold cursor-pointer text-emerald-800 flex justify-between">
+                        <span><i class="fa-solid fa-clock mr-2"></i> અધિકારી મુલાકાત સમય</span>
+                    </summary>
+                    <div id="info-timing" class="text-xs text-gray-600 mt-2 space-y-2">
+                        <!-- Talati & Gram Sevak Timings -->
+                    </div>
+                </details>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Photo Gallery Section -->
+    <section id="gallery" class="bg-white py-8 border-t">
+        <div class="container mx-auto px-4">
+            <h3 class="text-2xl font-bold text-gray-800 mb-6 text-center">ફોટો ગેલેરી</h3>
+            <div id="gallery-container" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <!-- Dynamic Images -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-white text-center py-6 text-sm">
+        <p>© <span id="year"></span> ગ્રામ પંચાયત. તમામ હકો અનામત છે.</p>
+    </footer>
+
+    <!-- Main JS logic -->
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
