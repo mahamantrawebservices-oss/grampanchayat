@@ -9,7 +9,7 @@ onAuthStateChanged(auth, (user) => {
         document.getElementById("login-modal")?.classList.add("hidden");
         document.getElementById("admin-dashboard")?.classList.remove("hidden");
         loadAdminComplaints();
-        loadAdminGallery(); // લોગિન થાય એટલે ગેલેરીનું લિસ્ટ લોડ થશે
+        loadAdminGallery();
     } else {
         document.getElementById("login-modal")?.classList.remove("hidden");
         document.getElementById("admin-dashboard")?.classList.add("hidden");
@@ -27,7 +27,7 @@ document.getElementById("admin-login-form")?.addEventListener("submit", (e) => {
 // Logout
 document.getElementById("logout-btn")?.addEventListener("click", () => signOut(auth));
 
-// Save Customization (માત્ર નામ અને ટેગલાઇન માટે)
+// Save Customization
 document.getElementById("settings-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const name = document.getElementById("set-gp-name").value;
@@ -73,7 +73,7 @@ async function loadAdminComplaints() {
     });
 }
 
-// ૧. Quill Word Editor ચાલુ કરવું
+// Quill Word Editor setup
 var quill = new Quill('#editor-container', {
     theme: 'snow',
     modules: {
@@ -87,7 +87,6 @@ var quill = new Quill('#editor-container', {
     }
 });
 
-// જૂનો ઇતિહાસ ડેટાબેઝમાંથી લોડ કરવો
 async function loadHistory() {
     const docRef = doc(db, "settings", "village_history");
     const docSnap = await getDoc(docRef);
@@ -97,7 +96,6 @@ async function loadHistory() {
 }
 loadHistory();
 
-// ૨. ઇતિહાસ સેવ કરવો
 document.getElementById("save-history-btn")?.addEventListener("click", async () => {
     const historyHTML = quill.root.innerHTML;
     await setDoc(doc(db, "settings", "village_history"), {
@@ -107,7 +105,7 @@ document.getElementById("save-history-btn")?.addEventListener("click", async () 
     alert("ગામનો ઇતિહાસ સફળતાપૂર્વક સેવ થઈ ગયો!");
 });
 
-// ૩. Blogger ફોટો ગેલેરી સેવ કરવી
+// Blogger ફોટો ગેલેરી સેવ કરવી
 document.getElementById("gallery-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const title = document.getElementById("img-title").value;
@@ -121,10 +119,10 @@ document.getElementById("gallery-form")?.addEventListener("submit", async (e) =>
 
     alert("ફોટો ગેલેરીમાં ઉમેરાઈ ગયો!");
     e.target.reset();
-    loadAdminGallery(); // નવો ફોટો ઉમેરાય એટલે લિસ્ટ તરત જ અપડેટ થશે
+    loadAdminGallery();
 });
 
-// ૪. ગેલેરી લિસ્ટ લોડ કરવું અને ડિલીટ કરવાનો કોડ
+// ગેલેરી લિસ્ટ લોડ કરવું અને ડિલીટ કરવું
 async function loadAdminGallery() {
     const snap = await getDocs(collection(db, "gallery"));
     const container = document.getElementById("admin-gallery-list");
@@ -152,40 +150,13 @@ async function loadAdminGallery() {
         `;
     });
 
-<!-- સેક્શન ૫: Blogger ફોટો ગેલેરી મેનેજર (ડિલીટ લિસ્ટ સાથે) -->
-<div class="bg-orange-50/70 border border-orange-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[500px] overflow-y-auto">
-    <h3 class="font-bold border-b border-orange-300 pb-2 text-orange-900">૫. Blogger ફોટો ગેલેરી</h3>
-    
-    <!-- ફોટો ઉમેરવાનું ફોર્મ -->
-    <form id="gallery-form" class="space-y-3">
-        <div>
-            <label class="text-xs font-semibold text-orange-950">ફોટાનું શીર્ષક:</label>
-            <input type="text" id="img-title" placeholder="દા.ત. ગ્રામ સભા" required class="w-full border border-orange-300 p-2 rounded text-sm bg-white">
-        </div>
-        <div>
-            <label class="text-xs font-semibold text-orange-950">Blogger Image URL:</label>
-            <input type="url" id="img-url" placeholder="https://..." required class="w-full border border-orange-300 p-2 rounded text-sm bg-white">
-        </div>
-        <button type="submit" class="w-full bg-orange-600 hover:bg-orange-700 text-white text-xs px-4 py-2 rounded font-bold shadow transition">ગેલેરીમાં ફોટો ઉમેરો</button>
-    </form>
-
-    <!-- ⚠️ આ બોક્સ ગાયબ હતું: ઉમેરેલા ફોટાનું લિસ્ટ અને ડિલીટ બટન -->
-    <div class="mt-4 border-t border-orange-200 pt-3">
-        <h4 class="text-xs font-bold text-orange-950 mb-2">📸 ઉમેરેલા ફોટા (ડિલીટ કરવા માટે):</h4>
-        <div id="admin-gallery-list" class="space-y-2 max-h-48 overflow-y-auto pr-1">
-            <p class="text-xs text-gray-500">ફોટા લોડ થઈ રહ્યા છે...</p>
-        </div>
-    </div>
-</div>
-    
-    // ડિલીટ બટન માટે ઈવેન્ટ લિસનર્સ
     document.querySelectorAll(".delete-gallery-btn").forEach(btn => {
         btn.addEventListener("click", async (e) => {
             const docId = e.target.getAttribute("data-id");
             if (confirm("શું તમે આ ફોટો ગેલેરીમાંથી કાઢી નાખવા માંગો છો?")) {
                 await deleteDoc(doc(db, "gallery", docId));
                 alert("ફોટો ડિલીટ થઈ ગયો છે.");
-                loadAdminGallery(); // રિફ્રેશ લિસ્ટ
+                loadAdminGallery();
             }
         });
     });
