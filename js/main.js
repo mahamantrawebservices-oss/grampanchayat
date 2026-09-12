@@ -84,3 +84,34 @@ document.getElementById("complaint-form").addEventListener("submit", async (e) =
 
 loadSettings();
 loadPosts();
+import { db } from "./firebase-config.js";
+import { doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+// ઇતિહાસ ડિસ્પ્લે કરવો
+async function displayHistory() {
+    const docSnap = await getDoc(doc(db, "settings", "village_history"));
+    if (docSnap.exists()) {
+        document.getElementById("info-history").innerHTML = docSnap.data().content;
+    }
+}
+
+// Blogger ફોટો ગેલેરી ડિસ્પ્લે કરવી
+async function displayGallery() {
+    const querySnapshot = await getDocs(collection(db, "gallery"));
+    const container = document.getElementById("gallery-container");
+    if(!container) return;
+    container.innerHTML = "";
+    
+    querySnapshot.forEach((doc) => {
+        const item = doc.data();
+        container.innerHTML += `
+            <div class="bg-white p-2 rounded-lg shadow border">
+                <img src="${item.imageUrl}" alt="${item.title}" class="h-40 w-full object-cover rounded">
+                <p class="text-xs font-bold text-center mt-2 text-gray-700">${item.title}</p>
+            </div>
+        `;
+    });
+}
+
+displayHistory();
+displayGallery();
