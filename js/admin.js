@@ -84,3 +84,55 @@ async function loadAdminComplaints() {
         `;
     });
 }
+import { db } from "./firebase-config.js";
+import { doc, getDoc, setDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+// ૧. Word જેવું Quill Editor ચાલુ કરવું
+var quill = new Quill('#editor-container', {
+    theme: 'snow',
+    modules: {
+        toolbar: [
+            [{ 'header': [1, 2, 3, false] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            [{ 'color': [] }, { 'background': [] }],
+            ['clean']
+        ]
+    }
+});
+
+// જૂનો ઇતિહાસ ડેટાબેઝમાંથી લોડ કરવો
+async function loadHistory() {
+    const docRef = doc(db, "settings", "village_history");
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+        quill.root.innerHTML = docSnap.data().content;
+    }
+}
+loadHistory();
+
+// ૨. ઇતિહાસ સેવ કરવો
+document.getElementById("save-history-btn").addEventListener("click", async () => {
+    const historyHTML = quill.root.innerHTML; // Formatting સાથેનો કોડ
+    await setDoc(doc(db, "settings", "village_history"), {
+        content: historyHTML,
+        updatedAt: new Date()
+    });
+    alert("ગામનો ઇતિહાસ સફળતાપૂર્વક સેવ થઈ ગયો!");
+});
+
+// ૩. Blogger ફોટો લિંક Firestore (ડેટાબેઝ) માં સેવ કરવી (Storage બિલ 0 રહેશે)
+document.getElementById("gallery-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const title = document.getElementById("img-title").value;
+    const url = document.getElementById("img-url").value;
+
+    await addDoc(collection(db, "gallery"), {
+        title: title,
+        imageUrl: url, // Blogger ની ડાયરેક્ટ લિંક
+        createdAt: new Date()
+    });
+
+    alert("ફોટો ગેલેરીમાં ઉમેરાઈ ગયો!");
+    e.target.reset();
+});
