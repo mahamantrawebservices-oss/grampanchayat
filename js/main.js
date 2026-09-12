@@ -31,6 +31,36 @@ async function loadPosts() {
     });
 }
 
+// અગત્યની નોટિસ લોડ કરવાનું ફંક્શન
+async function loadNotices() {
+    const querySnapshot = await getDocs(collection(db, "posts"));
+    const noticeList = document.getElementById("notice-list");
+    if (!noticeList) return;
+    
+    noticeList.innerHTML = "";
+    let hasNotice = false;
+
+    querySnapshot.forEach((doc) => {
+        const item = doc.data();
+        if (item.type === 'notice') {
+            hasNotice = true;
+            noticeList.innerHTML += `
+                <div class="border-b border-amber-200 pb-2 mb-2 last:border-b-0">
+                    <h5 class="font-bold text-amber-900">• ${item.title}</h5>
+                    <p class="text-xs text-amber-800 mt-1">${item.desc}</p>
+                </div>
+            `;
+        }
+    });
+
+    if (!hasNotice) {
+        noticeList.innerHTML = "<p class='text-xs text-gray-500'>હાલ કોઈ નવી નોટિસ નથી.</p>";
+    }
+}
+
+// ફાઇલની છેલ્લે આ ફંક્શનને કોલ કરો
+loadNotices();
+
 // Submit Complaint
 document.getElementById("complaint-form").addEventListener("submit", async (e) => {
     e.preventDefault();
