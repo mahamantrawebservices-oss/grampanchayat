@@ -65,7 +65,7 @@ document.getElementById("post-form").addEventListener("submit", async (e) => {
 // Fetch Complaints with Report Feature
 async function loadAdminComplaints() {
     const snap = await getDocs(collection(db, "complaints"));
-    const container = document.getElementById("complaint-list");
+    const container = document.getElementById("complaints-list");
     container.innerHTML = "";
     snap.forEach((doc) => {
         const c = doc.data();
