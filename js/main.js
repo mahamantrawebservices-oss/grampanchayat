@@ -1,7 +1,7 @@
 import { db } from "./firebase-config.js";
 import { collection, addDoc, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// Load Settings
+// ૧. વેબસાઇટ સેટિંગ્સ લોડ કરવા
 async function loadSettings() {
     const docRef = doc(db, "settings", "general");
     const docSnap = await getDoc(docRef);
@@ -13,13 +13,14 @@ async function loadSettings() {
     }
 }
 
-// Load Scroll Posts
+// ૨. સ્ક્રોલ થતી પોસ્ટ લોડ કરવી
 async function loadPosts() {
     const querySnapshot = await getDocs(collection(db, "posts"));
     const container = document.getElementById("posts-container");
+    if(!container) return;
     container.innerHTML = "";
-    querySnapshot.forEach((doc) => {
-        const item = doc.data();
+    querySnapshot.forEach((docSnap) => {
+        const item = docSnap.data();
         if(item.type === 'post') {
             container.innerHTML += `
                 <div class="p-2 border-b bg-white rounded shadow-sm">
@@ -31,7 +32,7 @@ async function loadPosts() {
     });
 }
 
-// અગત્યની નોટિસ લોડ કરવાનું ફંક્શન
+// ૩. અગત્યની નોટિસ લોડ કરવી
 async function loadNotices() {
     const querySnapshot = await getDocs(collection(db, "posts"));
     const noticeList = document.getElementById("notice-list");
@@ -40,8 +41,8 @@ async function loadNotices() {
     noticeList.innerHTML = "";
     let hasNotice = false;
 
-    querySnapshot.forEach((doc) => {
-        const item = doc.data();
+    querySnapshot.forEach((docSnap) => {
+        const item = docSnap.data();
         if (item.type === 'notice') {
             hasNotice = true;
             noticeList.innerHTML += `
@@ -58,11 +59,35 @@ async function loadNotices() {
     }
 }
 
-// ફાઇલની છેલ્લે આ ફંક્શનને કોલ કરો
-loadNotices();
+// ૪. ગામનો ઇતિહાસ ફ્રન્ટએન્ડ પર બતાવવો
+async function displayHistory() {
+    const docSnap = await getDoc(doc(db, "settings", "village_history"));
+    const historyContainer = document.getElementById("info-history");
+    if (docSnap.exists() && historyContainer) {
+        historyContainer.innerHTML = docSnap.data().content;
+    }
+}
 
-// Submit Complaint
-document.getElementById("complaint-form").addEventListener("submit", async (e) => {
+// ૫. Blogger ફોટો ગેલેરી ફ્રન્ટએન્ડ પર બતાવવી
+async function displayGallery() {
+    const querySnapshot = await getDocs(collection(db, "gallery"));
+    const container = document.getElementById("gallery-container");
+    if(!container) return;
+    container.innerHTML = "";
+    
+    querySnapshot.forEach((docSnap) => {
+        const item = docSnap.data();
+        container.innerHTML += `
+            <div class="bg-white p-2 rounded-lg shadow border">
+                <img src="${item.imageUrl}" alt="${item.title}" class="h-40 w-full object-cover rounded">
+                <p class="text-xs font-bold text-center mt-2 text-gray-700">${item.title}</p>
+            </div>
+        `;
+    });
+}
+
+// ૬. ફરિયાદ સબમિટ કરવી
+document.getElementById("complaint-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     try {
         await addDoc(collection(db, "complaints"), {
@@ -82,36 +107,9 @@ document.getElementById("complaint-form").addEventListener("submit", async (e) =
     }
 });
 
+// બધી પ્રોસેસ ચાલુ કરવી
 loadSettings();
 loadPosts();
-import { db } from "./firebase-config.js";
-import { doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-// ઇતિહાસ ડિસ્પ્લે કરવો
-async function displayHistory() {
-    const docSnap = await getDoc(doc(db, "settings", "village_history"));
-    if (docSnap.exists()) {
-        document.getElementById("info-history").innerHTML = docSnap.data().content;
-    }
-}
-
-// Blogger ફોટો ગેલેરી ડિસ્પ્લે કરવી
-async function displayGallery() {
-    const querySnapshot = await getDocs(collection(db, "gallery"));
-    const container = document.getElementById("gallery-container");
-    if(!container) return;
-    container.innerHTML = "";
-    
-    querySnapshot.forEach((doc) => {
-        const item = doc.data();
-        container.innerHTML += `
-            <div class="bg-white p-2 rounded-lg shadow border">
-                <img src="${item.imageUrl}" alt="${item.title}" class="h-40 w-full object-cover rounded">
-                <p class="text-xs font-bold text-center mt-2 text-gray-700">${item.title}</p>
-            </div>
-        `;
-    });
-}
-
+loadNotices();
 displayHistory();
 displayGallery();
