@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>પંચાયત એડમિન કંટ્રોલ પેનલ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 font-sans">
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-96">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">એડમિન લોગિન</h2>
+            <form id="admin-login-form" class="space-y-4">
+                <input type="email" id="login-email" placeholder="ઇમેઇલ" required class="w-full border p-2 rounded">
+                <input type="password" id="login-password" placeholder="પાસવર્ડ" required class="w-full border p-2 rounded">
+                <button type="submit" class="w-full bg-emerald-600 text-white font-bold py-2 rounded hover:bg-emerald-700">લોગિન કરો</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Admin Dashboard Dashboard -->
+    <div id="admin-dashboard" class="hidden min-h-screen flex flex-col">
+        <!-- Top Nav -->
+        <header class="bg-emerald-900 text-white px-6 py-4 flex justify-between items-center shadow">
+            <h1 class="text-xl font-bold">ગ્રામ પંચાયત એડમિન પેનલ</h1>
+            <button id="logout-btn" class="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1.5 rounded">લોગઆઉટ</button>
+        </header>
+
+        <div class="flex-1 container mx-auto px-4 py-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            <!-- Panel 1: Site Customization & Logo -->
+            <div class="bg-white p-5 rounded-lg shadow space-y-4">
+                <h3 class="font-bold border-b pb-2 text-emerald-800">૧. વેબસાઇટ સેટિંગ્સ & લોગો</h3>
+                <form id="settings-form" class="space-y-3">
+                    <div>
+                        <label class="text-xs font-semibold">પંચાયત નામ:</label>
+                        <input type="text" id="set-gp-name" class="w-full border p-1.5 rounded text-sm">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold">ટેગ લાઇન:</label>
+                        <input type="text" id="set-gp-tagline" class="w-full border p-1.5 rounded text-sm">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold">નવો લોગો અપલોડ કરો:</label>
+                        <input type="file" id="set-gp-logo" accept="image/*" class="w-full text-xs">
+                    </div>
+                    <button type="submit" class="bg-emerald-600 text-white text-xs px-4 py-2 rounded">સેવ કરો</button>
+                </form>
+            </div>
+
+            <!-- Panel 2: Notice & Post Upload -->
+            <div class="bg-white p-5 rounded-lg shadow space-y-4">
+                <h3 class="font-bold border-b pb-2 text-emerald-800">૨. નવી પોસ્ટ / નોટિસ મૂકો</h3>
+                <form id="post-form" class="space-y-3">
+                    <select id="post-type" class="w-full border p-1.5 rounded text-sm">
+                        <option value="post">સામાન્ય પોસ્ટ (સ્ક્રોલિંગ)</option>
+                        <option value="notice">અગત્યની નોટિસ</option>
+                    </select>
+                    <input type="text" id="post-title" placeholder="ટાઇટલ / વિષય" required class="w-full border p-1.5 rounded text-sm">
+                    <textarea id="post-desc" placeholder="વિગત..." rows="3" required class="w-full border p-1.5 rounded text-sm"></textarea>
+                    <button type="submit" class="bg-blue-600 text-white text-xs px-4 py-2 rounded">પોસ્ટ કરો</button>
+                </form>
+            </div>
+
+            <!-- Panel 3: Complaints Manager & Reports -->
+            <div class="bg-white p-5 rounded-lg shadow space-y-4 md:col-span-1">
+                <h3 class="font-bold border-b pb-2 text-emerald-800">૩. આવેલી ફરિયાદો & રિપોર્ટ</h3>
+                <div id="complaints-list" class="space-y-3 max-h-96 overflow-y-auto text-xs">
+                    <!-- Dynamic Complaints -->
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script type="module" src="js/admin.js"></script>
+</body>
+</html>
