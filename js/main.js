@@ -2,6 +2,7 @@ import { db } from "./firebase-config.js";
 import { collection, addDoc, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // ૧. વેબસાઇટ સેટિંગ્સ લોડ કરવા
+// ૧. ફક્ત ગામનું નામ અને ટેગલાઈન ફાયરબેઝમાંથી લોડ થશે (લોગો પરમેનન્ટ રહેશે)
 async function loadSettings() {
     const docRef = doc(db, "settings", "general");
     const docSnap = await getDoc(docRef);
@@ -9,10 +10,8 @@ async function loadSettings() {
         const data = docSnap.data();
         if(data.name) document.getElementById("gp-name").innerText = data.name;
         if(data.tagline) document.getElementById("gp-tagline").innerText = data.tagline;
-        if(data.logoUrl) document.getElementById("gp-logo").src = data.logoUrl;
     }
 }
-
 // ૨. સ્ક્રોલ થતી પોસ્ટ લોડ કરવી
 async function loadPosts() {
     const querySnapshot = await getDocs(collection(db, "posts"));
