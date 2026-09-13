@@ -1,17 +1,21 @@
 import { db } from "./firebase-config.js";
 import { collection, addDoc, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// ૧. વેબસાઇટ સેટિંગ્સ લોડ કરવા (ગામનું નામ અને ટેગલાઈન)
+// ૧. વેબસાઇટ સેટિંગ્સ લોડ કરવા (ગામનું નામ + ગ્રામ પંચાયત અને ટેગલાઈન)
 async function loadSettings() {
     const docRef = doc(db, "settings", "general");
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
         const data = docSnap.data();
-        if(data.name) document.getElementById("gp-name").innerText = data.name;
-        if(data.tagline) document.getElementById("gp-tagline").innerText = data.tagline;
+        if(data.name) {
+            // Firebase ના નામની પાછળ 'ગ્રામ પંચાયત' ઉમેર્યું
+            document.getElementById("gp-name").innerText = `${data.name} ગ્રામ પંચાયત`;
+        }
+        if(data.tagline) {
+            document.getElementById("gp-tagline").innerText = data.tagline;
+        }
     }
 }
-
 // ૨. સ્ક્રોલ થતી પોસ્ટ લોડ કરવી
 async function loadPosts() {
     const querySnapshot = await getDocs(collection(db, "posts"));
