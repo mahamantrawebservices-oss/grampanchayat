@@ -8,7 +8,7 @@ async function loadSettings() {
     if (docSnap.exists()) {
         const data = docSnap.data();
         
-        // ૧. ઉપર હેડર માટે (Logo પાસે)
+        // હેડર માટે
         if(data.name && document.getElementById("gp-name")) {
             document.getElementById("gp-name").innerText = data.name;
         }
@@ -16,7 +16,7 @@ async function loadSettings() {
             document.getElementById("gp-tagline").innerText = data.tagline;
         }
 
-        // ૨. બેનર ઈમેજ પર બતાવવા માટે (હવે ડુપ્લિકેટ નહીં થાય)
+        // બેનર ઈમેજ પર બતાવવા માટે
         if(data.name && document.getElementById("banner-gp-name")) {
             document.getElementById("banner-gp-name").innerText = data.name;
         }
@@ -25,6 +25,7 @@ async function loadSettings() {
         }
     }
 }
+
 // ૨. સ્ક્રોલ થતી પોસ્ટ લોડ કરવી
 async function loadPosts() {
     const querySnapshot = await getDocs(collection(db, "posts"));
@@ -44,7 +45,7 @@ async function loadPosts() {
     });
 }
 
-// ૩. અગત્યની નોટિસ લોડ કરવી (સફે‍દ અક્ષરો સાથે)
+// ૩. અગત્યની નોટિસ લોડ કરવી
 async function loadNotices() {
     const querySnapshot = await getDocs(collection(db, "posts"));
     const noticeList = document.getElementById("notice-list");
@@ -70,6 +71,7 @@ async function loadNotices() {
         noticeList.innerHTML = "<p class='text-xs text-red-200'>હાલ કોઈ નવી નોટિસ નથી.</p>";
     }
 }
+
 // ૪. ગામનો ઇતિહાસ ફ્રન્ટએન્ડ પર બતાવવો
 async function displayHistory() {
     const docSnap = await getDoc(doc(db, "settings", "village_history"));
@@ -79,7 +81,7 @@ async function displayHistory() {
     }
 }
 
-// ૫. Blogger ફોટો ગેલેરી (Auto Scroll + Fullscreen Lightbox)
+// ૫. ફોટો ગેલેરી (Auto Scroll + Fullscreen Lightbox)
 async function displayGallery() {
     const querySnapshot = await getDocs(collection(db, "gallery"));
     const container = document.getElementById("gallery-container");
@@ -91,7 +93,6 @@ async function displayGallery() {
         return;
     }
 
-    // ઇમેજ કાર્ડ્સ ઉમેરવા (flex-none અને ચોક્કસ પહોળાઈ સાથે હોરિઝોન્ટલ લેઆઉટ માટે)
     querySnapshot.forEach((docSnap) => {
         const item = docSnap.data();
         container.innerHTML += `
@@ -102,19 +103,17 @@ async function displayGallery() {
         `;
     });
 
-    // ઑટો-સ્ક્રોલ ચાલુ કરવું (Horizontal Smooth Auto-Scroll)
     let scrollAmount = 0;
     let autoScrollInterval = setInterval(() => {
         if (container) {
             scrollAmount += 1.5;
             if (scrollAmount >= container.scrollWidth - container.clientWidth) {
-                scrollAmount = 0; // છેલ્લે પહોંચે એટલે શરૂઆતથી ચાલુ થશે
+                scrollAmount = 0;
             }
             container.scrollLeft = scrollAmount;
         }
     }, 30);
 
-    // માઉસ ગેલેરી પર લાવવાથી ઑટો-સ્ક્રોલ અટકી જશે
     container.addEventListener("mouseenter", () => clearInterval(autoScrollInterval));
     container.addEventListener("mouseleave", () => {
         autoScrollInterval = setInterval(() => {
@@ -128,7 +127,6 @@ async function displayGallery() {
         }, 30);
     });
 
-    // ઈમેજ પર ક્લિક કરવાથી ફુલસ્ક્રીન મોડલમાં ઓપન થશે
     document.querySelectorAll(".gallery-card").forEach(card => {
         card.addEventListener("click", () => {
             const url = card.getAttribute("data-url");
@@ -152,7 +150,6 @@ document.getElementById("close-modal-btn")?.addEventListener("click", () => {
     }
 });
 
-// મોડલની બહાર ક્લિક કરવાથી પણ બંધ થશે
 document.getElementById("image-modal")?.addEventListener("click", (e) => {
     if (e.target.id === "image-modal") {
         e.target.classList.add("hidden");
@@ -181,7 +178,7 @@ document.getElementById("complaint-form")?.addEventListener("submit", async (e) 
     }
 });
 
-// મોબાઈલ મેન્યૂ ઓપન/ક્લોઝ (Toggle) કરવા માટે
+// મોબાઈલ મેન્યૂ Toggle
 document.getElementById("mobile-menu-btn")?.addEventListener("click", () => {
     const mobileMenu = document.getElementById("mobile-menu");
     if (mobileMenu) {
@@ -189,9 +186,9 @@ document.getElementById("mobile-menu-btn")?.addEventListener("click", () => {
     }
 });
 
-
+// ૭. સમય પત્રક લોડ કરવું
 async function loadFrontendSchedule() {
-    const container = document.getElementById("frontend-schedule-list"); // વેબસાઈટ પર આપેલ કન્ટેનર ID
+    const container = document.getElementById("frontend-schedule-list");
     if (!container) return;
 
     const snap = await getDocs(collection(db, "panchayat_schedule"));
@@ -221,15 +218,12 @@ async function loadFrontendSchedule() {
         `;
     });
 }
-loadFrontendSchedule();
 
-
+// ૮. પંચાયત બોડી મુદત અને નોંધ દર્શાવવી
 async function displayStaffPageMeta() {
     const snap = await getDoc(doc(db, "panchayat_meta", "staff_page"));
     if (snap.exists()) {
         const data = snap.data();
-        
-        // HTML માં ધરાવતા Element ની ID મુજબ ટેક્સ્ટ સેટ થશે
         const termContainer = document.getElementById("display-term");
         const noteContainer = document.getElementById("display-note");
 
@@ -241,30 +235,63 @@ async function displayStaffPageMeta() {
         }
     }
 }
-displayStaffPageMeta();
 
+// ૯. 🆕 પંચાયત કમિટી અને સ્ટાફ સભ્યો વેબસાઇટ પર લોડ કરવા
+async function loadFrontendCommitteeAndStaff() {
+    const committeeContainer = document.getElementById("frontend-committee-list");
+    const staffContainer = document.getElementById("frontend-staff-list");
 
+    // A. કમિટી સભ્યો
+    if (committeeContainer) {
+        const snap = await getDocs(collection(db, "panchayat_committee"));
+        committeeContainer.innerHTML = "";
+        if (snap.empty) {
+            committeeContainer.innerHTML = "<p class='text-xs text-gray-500'>કોઈ કમિટી સભ્ય ઉપલબ્ધ નથી.</p>";
+        } else {
+            snap.forEach(docSnap => {
+                const item = docSnap.data();
+                committeeContainer.innerHTML += `
+                    <div class="bg-white p-3 rounded-lg border border-blue-100 shadow-sm flex justify-between items-center">
+                        <div>
+                            <h5 class="font-bold text-gray-800 text-sm">${item.name}</h5>
+                            <p class="text-xs text-blue-700 font-medium">${item.designation}</p>
+                            ${item.ward ? `<p class="text-[11px] text-gray-500">વોર્ડ નં: ${item.ward}</p>` : ''}
+                        </div>
+                        <a href="tel:${item.mobile}" class="bg-blue-50 text-blue-700 p-2 rounded-full hover:bg-blue-100 text-xs font-bold">
+                            📞 ${item.mobile}
+                        </a>
+                    </div>
+                `;
+            });
+        }
+    }
 
-
-async function loadFrontendTermAndNote() {
-    const snap = await getDoc(doc(db, "panchayat_meta", "staff_page"));
-    if (snap.exists()) {
-        const data = snap.data();
-        
-        // તમારા Frontend HTML ના જરૂરી Element ની ID પ્રમાણે સેટ કરો
-        const termElem = document.getElementById("display-term");
-        const noteElem = document.getElementById("display-note");
-
-        if (termElem && data.term) termElem.innerText = `બોડી મુદત: ${data.term}`;
-        if (noteElem && data.note) noteElem.innerText = `નોંધ: ${data.note}`;
+    // B. સ્ટાફ / કર્મચારીઓ
+    if (staffContainer) {
+        const snap = await getDocs(collection(db, "panchayat_staff"));
+        staffContainer.innerHTML = "";
+        if (snap.empty) {
+            staffContainer.innerHTML = "<p class='text-xs text-gray-500'>કોઈ સ્ટાફ માહિતી ઉપલબ્ધ નથી.</p>";
+        } else {
+            snap.forEach(docSnap => {
+                const item = docSnap.data();
+                staffContainer.innerHTML += `
+                    <div class="bg-white p-3 rounded-lg border border-blue-100 shadow-sm flex justify-between items-center">
+                        <div>
+                            <h5 class="font-bold text-gray-800 text-sm">${item.name}</h5>
+                            <p class="text-xs text-emerald-700 font-medium">${item.designation}</p>
+                        </div>
+                        <a href="tel:${item.mobile}" class="bg-emerald-50 text-emerald-700 p-2 rounded-full hover:bg-emerald-100 text-xs font-bold">
+                            📞 ${item.mobile}
+                        </a>
+                    </div>
+                `;
+            });
+        }
     }
 }
-loadFrontendTermAndNote();
 
-
-
-
-// પબ્લિક મેનૂ લિસ્ટ લોડ કરવું
+// ૧૦. પબ્લિક વિગતોનો ડ્રોપડાઉન મેનૂ
 async function loadVillageDetailsMenu() {
     const snap = await getDocs(collection(db, "village_details"));
     const container = document.getElementById("village-details-menu-list");
@@ -273,7 +300,6 @@ async function loadVillageDetailsMenu() {
     container.innerHTML = "";
     snap.forEach((docSnap) => {
         const item = docSnap.data();
-        // જો Show હોય તો જ બતાવવું
         if (item.isShow !== false) {
             container.innerHTML += `
                 <a href="details.html?id=${docSnap.id}" target="_blank" class="flex items-center gap-2 p-2 rounded-lg hover:bg-purple-50 text-purple-900 font-medium text-sm transition border-b border-purple-100">
@@ -285,11 +311,13 @@ async function loadVillageDetailsMenu() {
     });
 }
 
-loadVillageDetailsMenu();
-
-// બધી પ્રોસેસ ચાલુ કરવી
+// 🚀 બધા ફંક્શન્સ કોલ કરવા
 loadSettings();
 loadPosts();
 loadNotices();
 displayHistory();
 displayGallery();
+loadFrontendSchedule();
+displayStaffPageMeta();
+loadFrontendCommitteeAndStaff(); // 👈 કમિટી/સ્ટાફ કોલ ઉમેર્યો
+loadVillageDetailsMenu();
