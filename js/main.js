@@ -8,7 +8,7 @@ async function loadSettings() {
     if (docSnap.exists()) {
         const data = docSnap.data();
         
-        // ૧. હેડર (Logo પાસેનું જૂનું નામ)
+        // ૧. ઉપર હેડર માટે (Logo પાસે)
         if(data.name && document.getElementById("gp-name")) {
             document.getElementById("gp-name").innerText = data.name;
         }
@@ -16,9 +16,9 @@ async function loadSettings() {
             document.getElementById("gp-tagline").innerText = data.tagline;
         }
 
-        // ૨. ઈમેજ (બેનર) પરનું નામ + ગ્રામ પંચાયત અને ટેગલાઈન
+        // ૨. બેનર ઈમેજ પર બતાવવા માટે (હવે ડુપ્લિકેટ નહીં થાય)
         if(data.name && document.getElementById("banner-gp-name")) {
-            document.getElementById("banner-gp-name").innerText = `${data.name} ગ્રામ પંચાયત`;
+            document.getElementById("banner-gp-name").innerText = data.name;
         }
         if(data.tagline && document.getElementById("banner-gp-tagline")) {
             document.getElementById("banner-gp-tagline").innerText = data.tagline;
