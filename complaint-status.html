@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ફરિયાદ નોંધણી અને સ્ટેટસ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col font-sans">
+
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-emerald-800 via-teal-900 to-emerald-800 text-white p-4 shadow-md sticky top-0 z-50">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-lg md:text-xl font-bold text-amber-300 flex items-center gap-2">
+                <i class="fa-solid fa-clipboard-list"></i> ફરિયાદ અને સ્ટેટસ પોર્ટલ
+            </h1>
+            <a href="index.html" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow transition">
+                ← મુખ્ય પૃષ્ઠ
+            </a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-6 space-y-8 max-w-4xl flex-grow">
+        
+        <!-- ૧. સ્ટેટસ ટ્રેકર સેક્શન -->
+        <div class="bg-white p-6 rounded-2xl shadow-lg border border-teal-100 space-y-4">
+            <h2 class="text-lg font-bold text-teal-900 border-b border-teal-100 pb-2 flex items-center gap-2">
+                <i class="fa-solid fa-magnifying-glass text-teal-600"></i> તમારી ફરિયાદનું સ્ટેટસ જાણો
+            </h2>
+            
+            <form id="check-status-form" class="flex flex-col sm:flex-row gap-3">
+                <input type="text" id="search-token" placeholder="અહીં તમારો ફરિયાદ નંબર (Token No.) દાખલ કરો" required class="flex-grow border border-gray-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-teal-500 focus:outline-none">
+                <button type="submit" class="bg-teal-700 hover:bg-teal-800 text-white font-bold px-6 py-2.5 rounded-xl text-sm transition shadow">
+                    સ્ટેટસ જુઓ
+                </button>
+            </form>
+
+            <div id="status-result" class="hidden p-4 rounded-xl bg-teal-50 border border-teal-200 text-sm space-y-1 text-teal-950">
+                <!-- Status result dynamic -->
+            </div>
+        </div>
+
+        <!-- ૨. નવી ફરિયાદ નોંધણી સેક્શન -->
+        <div class="bg-white p-6 rounded-2xl shadow-lg border border-emerald-100 space-y-5">
+            <h2 class="text-lg font-bold text-emerald-900 border-b border-emerald-100 pb-2 flex items-center gap-2">
+                <i class="fa-solid fa-pen-to-square text-emerald-600"></i> નવી ફરિયાદ નોંધાવો
+            </h2>
+
+            <form id="add-complaint-form" class="space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-xs font-semibold text-gray-700">પૂરું નામ *</label>
+                        <input type="text" id="c-name" required placeholder="તમારું નામ" class="w-full border border-gray-300 p-2 rounded-lg text-sm mt-1 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-gray-700">૧૦ આંકડાનો મોબાઈલ નંબર *</label>
+                        <input type="tel" id="c-mobile" pattern="[0-9]{10}" maxlength="10" required placeholder="૯૮૨૫૦XXXXX" class="w-full border border-gray-300 p-2 rounded-lg text-sm mt-1 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-xs font-semibold text-gray-700">ફળિયું / વિસ્તાર *</label>
+                        <input type="text" id="c-area" required placeholder="દા.ત. પટેલ વાસ, મંદિર પાસે" class="w-full border border-gray-300 p-2 rounded-lg text-sm mt-1 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-gray-700">સમસ્યાનો પ્રકાર *</label>
+                        <select id="c-type" required class="w-full border border-gray-300 p-2 rounded-lg text-sm mt-1 focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white">
+                            <option value="">-- પ્રકાર પસંદ કરો --</option>
+                            <option value="પીવાના પાણી સંબંધિત">પીવાના પાણી સંબંધિત</option>
+                            <option value="ગટર સંબંધિત">ગટર સંબંધિત</option>
+                            <option value="સફાઈ સંબંધિત">સફાઈ સંબંધિત</option>
+                            <option value="સ્ટ્રીટ લાઈટ સંબંધિત">સ્ટ્રીટ લાઈટ સંબંધિત</option>
+                            <option value="અન્ય રજૂઆત">અન્ય રજૂઆત</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-xs font-semibold text-gray-700">સમસ્યાની વિગતવાર માહિતી *</label>
+                    <textarea id="c-details" rows="4" required placeholder="અહીં તમારી સમસ્યા વિગતવાર લખો..." class="w-full border border-gray-300 p-2 rounded-lg text-sm mt-1 focus:ring-2 focus:ring-emerald-500 focus:outline-none"></textarea>
+                </div>
+
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow transition text-sm flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-paper-plane"></i> ફરિયાદ સબમિટ કરો
+                </button>
+            </form>
+        </div>
+
+    </main>
+
+    <script type="module">
+        import { db } from "./js/firebase-config.js";
+        import { collection, addDoc, query, where, getDocs, Timestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // ૧. ફરિયાદ સબમિટ ફંક્શન (ટોકન જનરેટ કરશે)
+        document.getElementById("add-complaint-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const token = "GP-" + Math.floor(100000 + Math.random() * 900000);
+            
+            await addDoc(collection(db, "complaints"), {
+                token: token,
+                name: document.getElementById("c-name").value,
+                mobile: document.getElementById("c-mobile").value,
+                area: document.getElementById("c-area").value,
+                type: document.getElementById("c-type").value,
+                details: document.getElementById("c-details").value,
+                status: "ફરિયાદ પેન્ડિંગ રાખવામા આવેલ છે",
+                createdAt: Timestamp.now()
+            });
+
+            alert(`તમારી ફરિયાદ નોંધાઈ ગઈ છે!\nતમારો ફરિયાદ નંબર: ${token}\nકૃપા કરીને આ નંબર સાચવી રાખો.`);
+            e.target.reset();
+        });
+
+        // ૨. સ્ટેટસ ટ્રેકિંગ ફંક્શન
+        document.getElementById("check-status-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const tokenInput = document.getElementById("search-token").value.trim();
+            const resultDiv = document.getElementById("status-result");
+
+            const q = query(collection(db, "complaints"), where("token", "==", tokenInput));
+            const querySnap = await getDocs(q);
+
+            resultDiv.classList.remove("hidden");
+            if (!querySnap.empty) {
+                const data = querySnap.docs[0].data();
+                resultDiv.innerHTML = `
+                    <p class="font-bold text-emerald-900">ટોકન નં: <span class="text-amber-600">${data.token}</span></p>
+                    <p><b>અરજદારનું નામ:</b> ${data.name}</p>
+                    <p><b>સમસ્યાનો પ્રકાર:</b> ${data.type}</p>
+                    <p><b>હાલનું સ્ટેટસ:</b> <span class="bg-amber-100 text-amber-900 px-2 py-0.5 rounded font-bold border border-amber-300 text-xs">${data.status}</span></p>
+                    ${data.adminRemark ? `<p class="text-xs text-gray-600 mt-1"><b>રિમાર્ક:</b> ${data.adminRemark}</p>` : ''}
+                `;
+            } else {
+                resultDiv.innerHTML = `<p class="text-red-600 font-medium">આપેલ ફરિયાદ નંબર મુજબ કોઈ રેકોર્ડ મળ્યો નથી.</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
