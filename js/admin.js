@@ -456,8 +456,28 @@ document.getElementById("download-pdf-btn")?.addEventListener("click", async () 
 
 
 // ==========================================
-// ૨. કમિટી / સ્ટાફ લોજિક
+// ૨. કમિટી / સ્ટાફ લોજિક (Add, Edit, Delete & Load)
 // ==========================================
+
+// ૧. સેવ થયેલી મુદત અને નોંધ Admin માં લોડ કરવી
+async function loadAdminMeta() {
+    try {
+        const snap = await getDoc(doc(db, "panchayat_meta", "staff_page"));
+        if (snap.exists()) {
+            const data = snap.data();
+            if (document.getElementById("admin-term-input")) {
+                document.getElementById("admin-term-input").value = data.term || "";
+            }
+            if (document.getElementById("admin-note-input")) {
+                document.getElementById("admin-note-input").value = data.note || "";
+            }
+        }
+    } catch (err) {
+        console.error("Meta loading error:", err);
+    }
+}
+
+// મુદત અને નોંધ સાચવવાની ઈવેન્ટ
 document.getElementById("save-meta-btn")?.addEventListener("click", async () => {
     const term = document.getElementById("admin-term-input").value;
     const note = document.getElementById("admin-note-input").value;
@@ -465,20 +485,141 @@ document.getElementById("save-meta-btn")?.addEventListener("click", async () => 
     alert("મુદત અને નોંધ સાચવી લેવાયેલ છે!");
 });
 
+// ૨. કમિટી સભ્યો અને સ્ટાફની યાદી એડમિન પેનલમાં લોડ કરવી
+async function loadAdminStaffAndCommittee() {
+    const committeeContainer = document.getElementById("admin-committee-list");
+    const staffContainer = document.getElementById("admin-staff-list");
+
+    // A. કમિટી સભ્યો લોડ કરો
+    if (committeeContainer) {
+        const committeeSnap = await getDocs(collection(db, "panchayat_committee"));
+        committeeContainer.innerHTML = "";
+        if (committeeSnap.empty) {
+            committeeContainer.innerHTML = "<p class='text-xs text-gray-500'>કોઈ કમિટી સભ્ય મળેલો નથી.</p>";
+        } else {
+            committeeSnap.forEach(docSnap => {
+                const item = docSnap.data();
+                committeeContainer.innerHTML += `
+                    <div class="flex justify-between items-center bg-white p-2 border rounded shadow-sm text-xs">
+                        <div class="truncate mr-2">
+                            <span class="font-bold text-gray-800">${item.name}</span> (${item.designation})
+                            <br><span class="text-[10px] text-gray-500">વોર્ડ: ${item.ward || '-'} | મો: ${item.mobile}</span>
+                        </div>
+                        <div class="flex items-center gap-1 flex-shrink-0">
+                            <button data-id="${docSnap.id}" data-col="panchayat_committee" class="edit-ms-btn bg-blue-600 hover:bg-blue-700 text-white text-[10px] px-2 py-1 rounded">એડિટ</button>
+                            <button data-id="${docSnap.id}" data-col="panchayat_committee" class="delete-ms-btn bg-red-600 hover:bg-red-700 text-white text-[10px] px-2 py-1 rounded">ડિલીટ</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+    }
+
+    // B. સ્ટાફ કર્મચારીઓ લોડ કરો
+    if (staffContainer) {
+        const staffSnap = await getDocs(collection(db, "panchayat_staff"));
+        staffContainer.innerHTML = "";
+        if (staffSnap.empty) {
+            staffContainer.innerHTML = "<p class='text-xs text-gray-500'>કોઈ સ્ટાફ મળેલો નથી.</p>";
+        } else {
+            staffSnap.forEach(docSnap => {
+                const item = docSnap.data();
+                staffContainer.innerHTML += `
+                    <div class="flex justify-between items-center bg-white p-2 border rounded shadow-sm text-xs">
+                        <div class="truncate mr-2">
+                            <span class="font-bold text-gray-800">${item.name}</span> (${item.designation})
+                            <br><span class="text-[10px] text-gray-500">મો: ${item.mobile}</span>
+                        </div>
+                        <div class="flex items-center gap-1 flex-shrink-0">
+                            <button data-id="${docSnap.id}" data-col="panchayat_staff" class="edit-ms-btn bg-blue-600 hover:bg-blue-700 text-white text-[10px] px-2 py-1 rounded">એડિટ</button>
+                            <button data-id="${docSnap.id}" data-col="panchayat_staff" class="delete-ms-btn bg-red-600 hover:bg-red-700 text-white text-[10px] px-2 py-1 rounded">ડિલીટ</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+    }
+
+    // 🗑️ ડિલીટ ઈવેન્ટ
+    document.querySelectorAll(".delete-ms-btn").forEach(btn => {
+        btn.addEventListener("click", async (e) => {
+            const id = e.target.getAttribute("data-id");
+            const col = e.target.getAttribute("data-col");
+            if (confirm("શું તમે આ સભ્ય/કર્મચારીને કાઢી નાખવા માંગો છો?")) {
+                await deleteDoc(doc(db, col, id));
+                alert("ડિલીટ થઈ ગયું છે.");
+                loadAdminStaffAndCommittee();
+            }
+        });
+    });
+
+    // ✏️ એડિટ ઈવેન્ટ (ફોર્મમાં ડેટા પાછો લાવવો)
+    document.querySelectorAll(".edit-ms-btn").forEach(btn => {
+        btn.addEventListener("click", async (e) => {
+            const id = e.target.getAttribute("data-id");
+            const col = e.target.getAttribute("data-col");
+            const docSnap = await getDoc(doc(db, col, id));
+
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                document.getElementById("ms-category").value = (col === 'panchayat_committee') ? 'committee' : 'staff';
+                document.getElementById("ms-name").value = data.name || '';
+                document.getElementById("ms-desig").value = data.designation || '';
+                document.getElementById("ms-mobile").value = data.mobile || '';
+                document.getElementById("ms-ward").value = data.ward || '';
+
+                // એડિટ મોડ માટે હિડન આઈડી સ્ટોર કરવું
+                let editInput = document.getElementById("edit-ms-id");
+                if (!editInput) {
+                    editInput = document.createElement("input");
+                    editInput.type = "hidden";
+                    editInput.id = "edit-ms-id";
+                    document.getElementById("add-member-staff-form").appendChild(editInput);
+                }
+                editInput.value = id;
+
+                // બટનનું લખાણ બદલવું
+                const submitBtn = document.querySelector("#add-member-staff-form button[type='submit']");
+                if (submitBtn) submitBtn.innerText = "અપડેટ કરો";
+
+                document.getElementById("add-member-staff-form").scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+    });
+}
+
+// ૩. સભ્ય/કર્મચારી ઉમેરવું અથવા અપડેટ કરવું
 document.getElementById("add-member-staff-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const type = document.getElementById("ms-category").value;
     const targetCol = type === 'committee' ? 'panchayat_committee' : 'panchayat_staff';
+    const editId = document.getElementById("edit-ms-id")?.value;
 
-    await addDoc(collection(db, targetCol), {
+    const payload = {
         name: document.getElementById("ms-name").value,
         designation: document.getElementById("ms-desig").value,
         mobile: document.getElementById("ms-mobile").value,
         ward: document.getElementById("ms-ward").value || '',
         order: Date.now()
-    });
-    alert("સફળતાપૂર્વક ઉમેરાઈ ગયું!");
+    };
+
+    if (editId) {
+        // જો એડિટ મોડ હોય તો અપડેટ કરો
+        await setDoc(doc(db, targetCol, editId), payload, { merge: true });
+        alert("વિગત સફળતાપૂર્વક અપડેટ થઈ ગઈ!");
+        document.getElementById("edit-ms-id").value = "";
+    } else {
+        // નવું ઉમેરો
+        await addDoc(collection(db, targetCol), payload);
+        alert("સફળતાપૂર્વક ઉમેરાઈ ગયું!");
+    }
+
+    // રીસેટ બટનનું લેબલ અને ફોર્મ
+    const submitBtn = document.querySelector("#add-member-staff-form button[type='submit']");
+    if (submitBtn) submitBtn.innerText = "સભ્ય/કર્મચારી ઉમેરો";
+    
     e.target.reset();
+    loadAdminStaffAndCommittee();
 });
 
 // ==========================================
