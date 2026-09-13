@@ -10,6 +10,8 @@ onAuthStateChanged(auth, (user) => {
         document.getElementById("admin-dashboard")?.classList.remove("hidden");
         loadAdminComplaints();
         loadAdminGallery();
+        loadAdminMeta();               // મુદત અને નોંધ બોક્સમાં લોડ કરશે
+        loadAdminStaffAndCommittee();  // કમિટી સભ્યો અને સ્ટાફની યાદી લોડ કરશે
     } else {
         document.getElementById("login-modal")?.classList.remove("hidden");
         document.getElementById("admin-dashboard")?.classList.add("hidden");
@@ -455,6 +457,7 @@ document.getElementById("download-pdf-btn")?.addEventListener("click", async () 
 });
 
 
+
 // ==========================================
 // ૨. કમિટી / સ્ટાફ લોજિક (Add, Edit, Delete & Load)
 // ==========================================
@@ -568,7 +571,7 @@ async function loadAdminStaffAndCommittee() {
                 document.getElementById("ms-mobile").value = data.mobile || '';
                 document.getElementById("ms-ward").value = data.ward || '';
 
-                // એડિટ મોડ માટે હિડન આઈડી સ્ટોર કરવું
+                // એડિટ મોડ માટે Hidden Inputs સેટ કરવા
                 let editInput = document.getElementById("edit-ms-id");
                 if (!editInput) {
                     editInput = document.createElement("input");
@@ -578,7 +581,15 @@ async function loadAdminStaffAndCommittee() {
                 }
                 editInput.value = id;
 
-                // બટનનું લખાણ બદલવું
+                let colInput = document.getElementById("edit-ms-col");
+                if (!colInput) {
+                    colInput = document.createElement("input");
+                    colInput.type = "hidden";
+                    colInput.id = "edit-ms-col";
+                    document.getElementById("add-member-staff-form").appendChild(colInput);
+                }
+                colInput.value = col;
+
                 const submitBtn = document.querySelector("#add-member-staff-form button[type='submit']");
                 if (submitBtn) submitBtn.innerText = "અપડેટ કરો";
 
@@ -588,12 +599,14 @@ async function loadAdminStaffAndCommittee() {
     });
 }
 
-// ૩. સભ્ય/કર્મચારી ઉમેરવું અથવા અપડેટ કરવું
+// ૩. સભ્ય / સ્ટાફ સબ્મિટ (ઉમેરવા અને અપડેટ કરવા માટે)
 document.getElementById("add-member-staff-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const type = document.getElementById("ms-category").value;
     const targetCol = type === 'committee' ? 'panchayat_committee' : 'panchayat_staff';
+    
     const editId = document.getElementById("edit-ms-id")?.value;
+    const oldCol = document.getElementById("edit-ms-col")?.value;
 
     const payload = {
         name: document.getElementById("ms-name").value,
@@ -604,23 +617,32 @@ document.getElementById("add-member-staff-form")?.addEventListener("submit", asy
     };
 
     if (editId) {
-        // જો એડિટ મોડ હોય તો અપડેટ કરો
-        await setDoc(doc(db, targetCol, editId), payload, { merge: true });
-        alert("વિગત સફળતાપૂર્વક અપડેટ થઈ ગઈ!");
-        document.getElementById("edit-ms-id").value = "";
+        // જો Category બદલાઈ હોય તો જૂના Collection માંથી ડિલીટ કરીને નવામાં ઉમેરો
+        if (oldCol && oldCol !== targetCol) {
+            await deleteDoc(doc(db, oldCol, editId));
+            await addDoc(collection(db, targetCol), payload);
+        } else {
+            await setDoc(doc(db, targetCol, editId), payload, { merge: true });
+        }
+        alert("વિગત અપડેટ થઈ ગઈ છે!");
     } else {
-        // નવું ઉમેરો
         await addDoc(collection(db, targetCol), payload);
         alert("સફળતાપૂર્વક ઉમેરાઈ ગયું!");
     }
 
-    // રીસેટ બટનનું લેબલ અને ફોર્મ
+    // Reset Form & Clear Edit States
+    if (document.getElementById("edit-ms-id")) document.getElementById("edit-ms-id").value = "";
+    if (document.getElementById("edit-ms-col")) document.getElementById("edit-ms-col").value = "";
+    
     const submitBtn = document.querySelector("#add-member-staff-form button[type='submit']");
     if (submitBtn) submitBtn.innerText = "સભ્ય/કર્મચારી ઉમેરો";
-    
+
     e.target.reset();
     loadAdminStaffAndCommittee();
 });
+
+
+
 
 // ==========================================
 // ૩. સમય પત્રક લોજિક
