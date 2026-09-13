@@ -12,6 +12,7 @@ onAuthStateChanged(auth, (user) => {
         loadAdminGallery();
         loadAdminMeta();               // મુદત અને નોંધ બોક્સમાં લોડ કરશે
         loadAdminStaffAndCommittee();  // કમિટી સભ્યો અને સ્ટાફની યાદી લોડ કરશે
+        loadAdminSchedule(); // 👈 કર્મચારી સમય પત્રક
     } else {
         document.getElementById("login-modal")?.classList.remove("hidden");
         document.getElementById("admin-dashboard")?.classList.add("hidden");
