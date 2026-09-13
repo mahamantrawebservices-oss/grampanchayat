@@ -344,10 +344,10 @@ loadAdminComplaints();
 
 
 // ==========================================
-// ૩. માસિક સિલેક્શન પ્રમાણે PDF રિપોર્ટ જનરેટર
+// ૩. માસિક સિલેક્શન પ્રમાણે PDF રિપોર્ટ જનરેટર (FIXED)
 // ==========================================
 document.getElementById("download-pdf-btn")?.addEventListener("click", async () => {
-    const selectedMonth = document.getElementById("report-month-select")?.value; // YYYY-MM ફોર્મેટ
+    const selectedMonth = document.getElementById("report-month-select")?.value; // YYYY-MM
     if (!selectedMonth) {
         alert("મહેરબાની કરીને રિપોર્ટ માટે મહિનો સિલેક્ટ કરો!");
         return;
@@ -361,27 +361,31 @@ document.getElementById("download-pdf-btn")?.addEventListener("click", async () 
 
     const snap = await getDocs(collection(db, "complaints"));
     
-    // પીડીએફ પ્રિન્ટ કરવા માટેનું ડિવ
+    // ૧. ટેમ્પરરી કન્ટેનર બનાવો (ગુજરાતી ફોન્ટ સપોર્ટ સાથે)
     const reportContainer = document.createElement("div");
     reportContainer.id = "temp-pdf-container";
+    reportContainer.style.width = "1000px"; // ફિક્સ્ડ પહોળાઈ આપવી જરૂરી છે
     reportContainer.style.padding = "20px";
-    reportContainer.style.fontFamily = "Arial, sans-serif";
     reportContainer.style.backgroundColor = "#ffffff";
+    reportContainer.style.color = "#000000";
+    reportContainer.style.fontFamily = "'Noto Sans Gujarati', 'Shruti', 'Gujarati', sans-serif";
 
-    // માસિક હેડિંગ અને ટેબલ સ્ટ્રક્ચર
+    // ૨. હેડર અને ટેબલ સ્ટ્રક્ચર
     let reportHTML = `
-        <h2 style="text-align: center; color: #1e3a8a; margin-bottom: 20px; font-size: 18px; font-weight: bold;">
-            માસિક ફરિયાદ રિપોર્ટ માહે : ${monthGujarati} - ${year}
-        </h2>
-        <table border="1" style="width: 100%; border-collapse: collapse; font-size: 11px; text-align: left;">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <h2 style="color: #1e3a8a; font-size: 20px; font-weight: bold; margin: 0;">
+                માસિક ફરિયાદ રિપોર્ટ માહે : ${monthGujarati} - ${year}
+            </h2>
+        </div>
+        <table border="1" style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; border: 1px solid #666;">
             <thead>
-                <tr style="background-color: #f2f2f2; color: #000;">
-                    <th style="padding: 6px; border: 1px solid #ccc;">ટોકન</th>
-                    <th style="padding: 6px; border: 1px solid #ccc;">તારીખ & સમય</th>
-                    <th style="padding: 6px; border: 1px solid #ccc;">નામ & મોબાઈલ</th>
-                    <th style="padding: 6px; border: 1px solid #ccc;">પ્રકાર</th>
-                    <th style="padding: 6px; border: 1px solid #ccc;">વિસ્તાર</th>
-                    <th style="padding: 6px; border: 1px solid #ccc;">સ્ટેટસ</th>
+                <tr style="background-color: #e2e8f0; color: #000; font-weight: bold;">
+                    <th style="padding: 8px; border: 1px solid #666;">ટોકન</th>
+                    <th style="padding: 8px; border: 1px solid #666;">તારીખ & સમય</th>
+                    <th style="padding: 8px; border: 1px solid #666;">નામ & મોબાઈલ</th>
+                    <th style="padding: 8px; border: 1px solid #666;">પ્રકાર</th>
+                    <th style="padding: 8px; border: 1px solid #666;">વિસ્તાર</th>
+                    <th style="padding: 8px; border: 1px solid #666;">સ્ટેટસ</th>
                 </tr>
             </thead>
             <tbody>
@@ -391,7 +395,6 @@ document.getElementById("download-pdf-btn")?.addEventListener("click", async () 
     snap.forEach(d => {
         const item = d.data();
         
-        // તારીખ ચકાસણી (createdAt અથવા date બંને સપોર્ટ કરવા)
         let itemDate = null;
         if (item.createdAt) {
             itemDate = item.createdAt.toDate ? item.createdAt.toDate() : new Date(item.createdAt);
@@ -401,17 +404,17 @@ document.getElementById("download-pdf-btn")?.addEventListener("click", async () 
 
         if (!itemDate || isNaN(itemDate.getTime())) return;
 
-        // મન્થ અને યર ફિલ્ટર
+        // માસિક ચેક
         if (itemDate.getFullYear() == year && (itemDate.getMonth() + 1) == month) {
             count++;
             reportHTML += `
                 <tr>
-                    <td style="padding: 6px; border: 1px solid #ccc;">${item.token || '-'}</td>
-                    <td style="padding: 6px; border: 1px solid #ccc;">${formatDateTime(item.createdAt || item.date)}</td>
-                    <td style="padding: 6px; border: 1px solid #ccc;">${item.name || '-'}<br>(${item.mobile || '-'})</td>
-                    <td style="padding: 6px; border: 1px solid #ccc;">${item.type || '-'}</td>
-                    <td style="padding: 6px; border: 1px solid #ccc;">${item.area || '-'}</td>
-                    <td style="padding: 6px; border: 1px solid #ccc;">${item.status || '-'}</td>
+                    <td style="padding: 8px; border: 1px solid #666;">${item.token || '-'}</td>
+                    <td style="padding: 8px; border: 1px solid #666;">${formatDateTime(item.createdAt || item.date)}</td>
+                    <td style="padding: 8px; border: 1px solid #666;"><b>${item.name || '-'}</b><br>(${item.mobile || '-'})</td>
+                    <td style="padding: 8px; border: 1px solid #666;">${item.type || '-'}</td>
+                    <td style="padding: 8px; border: 1px solid #666;">${item.area || '-'}</td>
+                    <td style="padding: 8px; border: 1px solid #666;">${item.status || '-'}</td>
                 </tr>
             `;
         }
@@ -425,30 +428,31 @@ document.getElementById("download-pdf-btn")?.addEventListener("click", async () 
     }
 
     reportContainer.innerHTML = reportHTML;
-    
-    // ⚠️ આ લાઇન બ્લેન્ક PDF ની ભૂલ સુધારે છે (DOM માં Append કરવું)
     document.body.appendChild(reportContainer);
 
-    // html2pdf ઓપ્શન્સ
+    // ૩. html2pdf ઓપ્શન્સ (scale અને useCORS ઉમેર્યું જેથી ઈમેજ તરીકે પરફેક્ટ ટેક્સ્ટ રેન્ડર થાય)
     const opt = {
-        margin:       0.4,
+        margin:       0.3,
         filename:     `Complaint_Report_${monthGujarati}_${year}.pdf`,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true, logging: false },
+        image:        { type: 'jpeg', quality: 1.0 },
+        html2canvas:  { 
+            scale: 2, 
+            useCORS: true, 
+            logging: false,
+            letterRendering: true
+        },
         jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' }
     };
 
-    // PDF બનાવો અને પછી DOM માંથી કન્ટેનર હટાવી દો
     try {
         await html2pdf().set(opt).from(reportContainer).save();
     } catch (err) {
         console.error("PDF જનરેટ કરવામાં ભૂલ:", err);
         alert("PDF ડાઉનલોડ કરવામાં સમસ્યા આવી!");
     } finally {
-        document.body.removeChild(reportContainer); // સફાઈ
+        document.body.removeChild(reportContainer); // DOM સફાઈ
     }
 });
-
 
 
 // ==========================================
