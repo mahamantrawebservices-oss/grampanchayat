@@ -182,6 +182,15 @@ document.getElementById("complaint-form")?.addEventListener("submit", async (e) 
     }
 });
 
+// મોબાઈલ મેન્યૂ ઓપન/ક્લોઝ (Toggle) કરવા માટે
+document.getElementById("mobile-menu-btn")?.addEventListener("click", () => {
+    const mobileMenu = document.getElementById("mobile-menu");
+    if (mobileMenu) {
+        mobileMenu.classList.toggle("hidden");
+    }
+});
+
+
 // બધી પ્રોસેસ ચાલુ કરવી
 loadSettings();
 loadPosts();
