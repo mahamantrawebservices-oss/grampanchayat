@@ -110,25 +110,32 @@
                 </div>
             </div>
 
-            <!-- Quick Action Buttons -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <a href="#complaint" class="bg-emerald-600 text-white p-4 rounded-xl text-center shadow hover:bg-emerald-700 transition">
-                    <i class="fa-solid fa-file-circle-exclamation text-2xl mb-1"></i>
-                    <span class="block text-xs font-bold">ફરિયાદ નોંધાવો</span>
-                </a>
-                <a href="#about" class="bg-blue-600 text-white p-4 rounded-xl text-center shadow hover:bg-blue-700 transition">
-                    <i class="fa-solid fa-users text-2xl mb-1"></i>
-                    <span class="block text-xs font-bold">પંચાયત બોડી</span>
-                </a>
-                <a href="#notices" class="bg-amber-600 text-white p-4 rounded-xl text-center shadow hover:bg-amber-700 transition">
-                    <i class="fa-solid fa-clipboard-list text-2xl mb-1"></i>
-                    <span class="block text-xs font-bold">અગત્યની નોટિસ</span>
-                </a>
-                <a href="#gallery" class="bg-purple-600 text-white p-4 rounded-xl text-center shadow hover:bg-purple-700 transition">
-                    <i class="fa-solid fa-images text-2xl mb-1"></i>
-                    <span class="block text-xs font-bold">ફોટો ગેલેરી</span>
-                </a>
-            </div>
+<!-- ૪ મુખ્ય ક્વિક બટન્સ -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-3 my-6">
+    <!-- ૧. ફરિયાદ અને સ્ટેટસ -->
+    <a href="complaint-status.html" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white p-4 rounded-xl shadow-md flex flex-col items-center justify-center gap-2 transition-all hover:scale-105 border border-emerald-500">
+        <i class="fa-solid fa-clipboard-list text-2xl text-amber-300"></i>
+        <span class="font-bold text-xs md:text-sm text-center">ફરિયાદ અને સ્ટેટસ</span>
+    </a>
+
+    <!-- ૨. પંચાયત કમિટી અને સ્ટાફ -->
+    <a href="panchayat-staff.html" class="bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-800 hover:to-indigo-800 text-white p-4 rounded-xl shadow-md flex flex-col items-center justify-center gap-2 transition-all hover:scale-105 border border-blue-500">
+        <i class="fa-solid fa-users-gear text-2xl text-amber-300"></i>
+        <span class="font-bold text-xs md:text-sm text-center">પંચાયત કમિટી અને સ્ટાફ</span>
+    </a>
+
+    <!-- ૩. અધિકારી/કર્મચારી સમય પત્રક -->
+    <a href="officer-timetable.html" class="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white p-4 rounded-xl shadow-md flex flex-col items-center justify-center gap-2 transition-all hover:scale-105 border border-amber-500">
+        <i class="fa-solid fa-calendar-days text-2xl text-white"></i>
+        <span class="font-bold text-xs md:text-sm text-center">અધિકારી/કર્મચારી સમય પત્રક</span>
+    </a>
+
+    <!-- ૪. કાર્યરત સમિતિઓ -->
+    <a href="active-committees.html" class="bg-gradient-to-r from-purple-700 to-pink-700 hover:from-purple-800 hover:to-pink-800 text-white p-4 rounded-xl shadow-md flex flex-col items-center justify-center gap-2 transition-all hover:scale-105 border border-purple-500">
+        <i class="fa-solid fa-sitemap text-2xl text-amber-300"></i>
+        <span class="font-bold text-xs md:text-sm text-center">કાર્યરત સમિતિઓ</span>
+    </a>
+</div>
 
             <!-- Complaint Form -->
             <div id="complaint" class="bg-white p-6 rounded-xl shadow-md border border-gray-100">
