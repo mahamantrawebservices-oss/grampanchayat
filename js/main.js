@@ -44,7 +44,7 @@ async function loadPosts() {
     });
 }
 
-// ૩. અગત્યની નોટિસ લોડ કરવી
+// ૩. અગત્યની નોટિસ લોડ કરવી (સફે‍દ અક્ષરો સાથે)
 async function loadNotices() {
     const querySnapshot = await getDocs(collection(db, "posts"));
     const noticeList = document.getElementById("notice-list");
@@ -58,19 +58,18 @@ async function loadNotices() {
         if (item.type === 'notice') {
             hasNotice = true;
             noticeList.innerHTML += `
-                <div class="border-b border-amber-200 pb-2 mb-2 last:border-b-0">
-                    <h5 class="font-bold text-amber-900">• ${item.title}</h5>
-                    <p class="text-xs text-amber-800 mt-1">${item.desc}</p>
+                <div class="border-b border-red-400/40 pb-2 mb-2 last:border-b-0">
+                    <h5 class="font-bold text-white text-sm md:text-base leading-snug">• ${item.title}</h5>
+                    <p class="text-xs text-red-100 mt-1 leading-relaxed pl-3">${item.desc}</p>
                 </div>
             `;
         }
     });
 
     if (!hasNotice) {
-        noticeList.innerHTML = "<p class='text-xs text-gray-500'>હાલ કોઈ નવી નોટિસ નથી.</p>";
+        noticeList.innerHTML = "<p class='text-xs text-red-200'>હાલ કોઈ નવી નોટિસ નથી.</p>";
     }
 }
-
 // ૪. ગામનો ઇતિહાસ ફ્રન્ટએન્ડ પર બતાવવો
 async function displayHistory() {
     const docSnap = await getDoc(doc(db, "settings", "village_history"));
