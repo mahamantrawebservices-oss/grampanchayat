@@ -15,30 +15,39 @@
 </head>
 <body class="bg-slate-50 text-gray-800 font-sans">
 
-    <!-- Header Section -->
-    <header class="bg-white shadow-md sticky top-0 z-50">
-        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-            <div class="flex items-center space-x-3 space-x-reverse">
-                <!-- ડાયરેક્ટ સ્ટેટિક લોગો -->
-                 <img id="gp-logo" src="./logo.png" alt="ગામ પંચાયત લોગો" class="h-16 w-16 object-contain">
-                <div>
-                    <h1 id="gp-name" class="text-xl font-bold text-emerald-800">ગ્રામ પંચાયત</h1>
-                    <p id="gp-tagline" class="text-xs text-gray-600">ડિજિટલ સેવાઓ તરફ એક પગલું</p>
-                </div>
+<!-- સુધારેલું આછા પર્પલ રંગનું હેડર -->
+<header class="bg-purple-50/90 backdrop-blur-md border-b border-purple-200 sticky top-0 z-50 shadow-sm">
+    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+        
+        <!-- ૧. લોગો અને પંચાયતનું નામ -->
+        <div class="flex items-center space-x-3">
+            <img id="gp-logo" src="./logo.png" alt="ગામ પંચાયત લોગો" class="h-14 w-14 object-contain rounded-full border border-purple-300 p-0.5 bg-white shadow-sm">
+            <div>
+                <h1 id="gp-name" class="text-xl font-bold text-purple-950 leading-tight">ગ્રામ પંચાયત</h1>
+                <p id="gp-tagline" class="text-xs text-purple-700 font-medium">ડિજિટલ સેવાઓ તરફ એક પગલું</p>
             </div>
-            <!-- Navigation Menu -->
-            <nav class="hidden md:flex space-x-6 space-x-reverse text-sm font-semibold text-gray-700">
-                <a href="#home" class="hover:text-emerald-600">મુખ્ય પૃષ્ઠ</a>
-                <a href="#about" class="hover:text-emerald-600">માહિતી</a>
-                <a href="#notices" class="hover:text-emerald-600">નોટિસ</a>
-                <a href="#complaint" class="hover:text-emerald-600">ફરિયાદ નોંધાવો</a>
-                <a href="#gallery" class="hover:text-emerald-600">ગેલેરી</a>
-            </nav>
-            <a href="https://cybergarvi.gujarat.gov.in/" target="_blank" class="bg-amber-500 hover:bg-amber-600 text-white font-bold px-4 py-2 rounded-lg shadow text-xs md:text-sm">
-                <i class="fa-solid font-icon fa-indian-rupee-sign"></i> મિલકત વેરો ભરો
+        </div>
+
+        <!-- ૨. નેવિગેશન મેન્યુ (ડેસ્કટોપ માટે) -->
+        <nav class="hidden lg:flex items-center space-x-4 text-xs xl:text-sm font-semibold text-purple-950">
+            <a href="#hero-banner" class="px-2.5 py-1.5 rounded-lg hover:text-purple-700 hover:bg-purple-100/80 transition">મુખ્ય પૃષ્ઠ</a>
+            <a href="#info-section" class="px-2.5 py-1.5 rounded-lg hover:text-purple-700 hover:bg-purple-100/80 transition">માહિતી</a>
+            <a href="#gallery-section" class="px-2.5 py-1.5 rounded-lg hover:text-purple-700 hover:bg-purple-100/80 transition">ગેલેરી</a>
+            <a href="#proactive-disclosure" class="px-2.5 py-1.5 rounded-lg hover:text-purple-700 hover:bg-purple-100/80 transition">સ્વયં જાહેર કરેલ માહિતી</a>
+            <a href="#terms-section" class="px-2.5 py-1.5 rounded-lg hover:text-purple-700 hover:bg-purple-100/80 transition">ઉપયોગની શરતો</a>
+            <a href="#contact-section" class="px-2.5 py-1.5 rounded-lg hover:text-purple-700 hover:bg-purple-100/80 transition">સંપર્ક</a>
+        </nav>
+
+        <!-- ૩. મિલકત વેરા બટન -->
+        <div class="flex items-center gap-2">
+            <a href="https://cybergarvi.gujarat.gov.in/" target="_blank" class="bg-amber-500 hover:bg-amber-600 text-white font-bold px-3 py-2 rounded-lg shadow text-xs md:text-sm flex items-center gap-1.5 transition">
+                <i class="fa-solid fa-indian-rupee-sign"></i> 
+                <span>મિલકત વેરો ભરો</span>
             </a>
         </div>
-    </header>
+
+    </div>
+</header>
 
     <!-- Animated Banner Section -->
 <section id="hero-banner" class="hero-bg h-64 md:h-96 flex items-center justify-center md:justify-end text-white relative shadow-inner bg-cover bg-center pr-4 md:pr-16" style="background-image: linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(0,0,0,0.3)), url('./website_bg.png');">
