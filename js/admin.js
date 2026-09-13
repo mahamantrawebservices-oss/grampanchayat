@@ -169,6 +169,7 @@ var menuQuill = new Quill('#menu-editor-container', {
         toolbar: [
             [{ 'header': [1, 2, 3, false] }],
             ['bold', 'italic', 'underline'],
+            [{ 'indent': '-1'}, { 'indent': '+1' }], // 👈 (+1 સ્પેસ આપશે)
             [{ 'list': 'ordered'}, { 'list': 'bullet' }],
             [{ 'color': [] }, { 'background': [] }],
             ['clean']
