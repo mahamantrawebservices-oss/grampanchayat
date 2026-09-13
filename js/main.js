@@ -7,8 +7,22 @@ async function loadSettings() {
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
         const data = docSnap.data();
-        if(data.name) document.getElementById("gp-name").innerText = data.name;
-        if(data.tagline) document.getElementById("gp-tagline").innerText = data.tagline;
+        
+        // ૧. હેડર (Logo પાસેનું જૂનું નામ)
+        if(data.name && document.getElementById("gp-name")) {
+            document.getElementById("gp-name").innerText = data.name;
+        }
+        if(data.tagline && document.getElementById("gp-tagline")) {
+            document.getElementById("gp-tagline").innerText = data.tagline;
+        }
+
+        // ૨. ઈમેજ (બેનર) પરનું નામ + ગ્રામ પંચાયત અને ટેગલાઈન
+        if(data.name && document.getElementById("banner-gp-name")) {
+            document.getElementById("banner-gp-name").innerText = `${data.name} ગ્રામ પંચાયત`;
+        }
+        if(data.tagline && document.getElementById("banner-gp-tagline")) {
+            document.getElementById("banner-gp-tagline").innerText = data.tagline;
+        }
     }
 }
 // ૨. સ્ક્રોલ થતી પોસ્ટ લોડ કરવી
