@@ -162,7 +162,7 @@ async function loadAdminGallery() {
     });
 }
 
-// ૧. વિગત મેનેજર માટે Quill Word Editor ચાલુ કરવું
+// ૧. વિગત મેનેજર માટે Quill Word Editor
 var menuQuill = new Quill('#menu-editor-container', {
     theme: 'snow',
     modules: {
@@ -176,26 +176,51 @@ var menuQuill = new Quill('#menu-editor-container', {
     }
 });
 
-// ૨. નવું મેનૂ એડ કરવું (Word Editor માંથી ડેટા લેશે)
+// ૨. નવું મેનૂ ઉમેરવું તથા જૂનું મેનૂ એડિટ (અપડેટ) કરવું
 document.getElementById("add-menu-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
+    const editId = document.getElementById("edit-menu-id").value;
     const title = document.getElementById("menu-title").value;
-    const content = menuQuill.root.innerHTML; // Editor નું લખાણ લેશે
+    const content = menuQuill.root.innerHTML;
 
-    await addDoc(collection(db, "village_details"), {
-        title: title,
-        content: content,
-        isShow: true,
-        createdAt: new Date()
-    });
+    if (editId) {
+        // ૧. જો એડિટ મોડ હોય તો અપડેટ કરશે
+        await setDoc(doc(db, "village_details", editId), {
+            title: title,
+            content: content,
+            updatedAt: new Date()
+        }, { merge: true });
 
-    alert("નવું મેનૂ સફળતાપૂર્વક ઉમેરાઈ ગયું!");
-    e.target.reset();
-    menuQuill.root.innerHTML = ""; // Editor ખાલી કરશે
+        alert("મેનૂ સફળતાપૂર્વક અપડેટ થઈ ગયું!");
+    } else {
+        // ૨. નવું મેનૂ એડ કરશે
+        await addDoc(collection(db, "village_details"), {
+            title: title,
+            content: content,
+            isShow: true,
+            createdAt: new Date()
+        });
+
+        alert("નવું મેનૂ સફળતાપૂર્વક ઉમેરાઈ ગયું!");
+    }
+
+    resetMenuForm();
     loadAdminMenuList();
 });
 
-// ૩. એડમિન લિસ્ટ લોડ કરવું (Show/Hide & Delete)
+// ફોર્મ રીસેટ કરવા માટેનું ફંક્શન
+function resetMenuForm() {
+    document.getElementById("add-menu-form").reset();
+    document.getElementById("edit-menu-id").value = "";
+    menuQuill.root.innerHTML = "";
+    document.getElementById("save-menu-btn").innerText = "મેનૂ સેવ કરો";
+    document.getElementById("cancel-edit-btn").classList.add("hidden");
+}
+
+// કેન્સલ બટન પર કિલક કરવાથી એડિટ મોડ બંધ થશે
+document.getElementById("cancel-edit-btn")?.addEventListener("click", resetMenuForm);
+
+// ૩. એડમિન લિસ્ટ લોડ કરવું (Edit, Show/Hide & Delete સાથે)
 async function loadAdminMenuList() {
     const snap = await getDocs(collection(db, "village_details"));
     const container = document.getElementById("admin-menu-list");
@@ -215,9 +240,12 @@ async function loadAdminMenuList() {
         container.innerHTML += `
             <div class="flex justify-between items-center bg-white p-2 border rounded shadow-sm">
                 <span class="text-xs font-semibold ${isShow ? 'text-gray-800' : 'text-gray-400 line-through'}">${item.title}</span>
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-1.5">
+                    <button data-id="${id}" class="edit-menu-btn bg-blue-600 hover:bg-blue-700 text-white text-[10px] px-2 py-1 rounded">
+                        એડિટ
+                    </button>
                     <button data-id="${id}" data-status="${isShow}" class="toggle-show-btn text-[10px] px-2 py-1 rounded text-white ${isShow ? 'bg-amber-600 hover:bg-amber-700' : 'bg-gray-500 hover:bg-gray-600'}">
-                        ${isShow ? 'સંતાડો (Hide)' : 'બતાવો (Show)'}
+                        ${isShow ? 'સંતાડો' : 'બતાવો'}
                     </button>
                     <button data-id="${id}" class="delete-menu-btn bg-red-600 hover:bg-red-700 text-white text-[10px] px-2 py-1 rounded">
                         ડિલીટ
@@ -227,7 +255,28 @@ async function loadAdminMenuList() {
         `;
     });
 
-    // Show/Hide ઈવેન્ટ
+    // ✏️ એડિટ બટન ઈવેન્ટ
+    document.querySelectorAll(".edit-menu-btn").forEach(btn => {
+        btn.addEventListener("click", async (e) => {
+            const id = e.target.getAttribute("data-id");
+            const docSnap = await getDoc(doc(db, "village_details", id));
+            
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                document.getElementById("edit-menu-id").value = id;
+                document.getElementById("menu-title").value = data.title;
+                menuQuill.root.innerHTML = data.content || "";
+                
+                document.getElementById("save-menu-btn").innerText = "અપડેટ કરો";
+                document.getElementById("cancel-edit-btn").classList.remove("hidden");
+                
+                // સ્ક્રોલ કરીને ફોર્મ સુધી લઈ જશે
+                document.getElementById("add-menu-form").scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+    });
+
+    // 👁️ Show/Hide ઈવેન્ટ
     document.querySelectorAll(".toggle-show-btn").forEach(btn => {
         btn.addEventListener("click", async (e) => {
             const id = e.target.getAttribute("data-id");
@@ -237,7 +286,7 @@ async function loadAdminMenuList() {
         });
     });
 
-    // ડિલીટ ઈવેન્ટ
+    // 🗑️ ડિલીટ ઈવેન્ટ
     document.querySelectorAll(".delete-menu-btn").forEach(btn => {
         btn.addEventListener("click", async (e) => {
             const id = e.target.getAttribute("data-id");
@@ -248,6 +297,5 @@ async function loadAdminMenuList() {
         });
     });
 }
-
 // Check Auth માં લોડ કરવા માટે ઉમેરો
 loadAdminMenuList();
