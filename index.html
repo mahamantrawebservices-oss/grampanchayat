@@ -174,33 +174,18 @@
             </div>
 
             <!-- Village Info Sections -->
-            <div id="about" class="bg-white p-5 rounded-xl shadow-md space-y-4">
-                <h4 class="font-bold text-gray-800 border-b pb-2 text-lg">ગામ અને પંચાયત વિગત</h4>
-                
-                <details class="group border rounded-lg p-3">
-                    <summary class="font-semibold cursor-pointer text-emerald-800 flex justify-between">
-                        <span><i class="fa-solid fa-landmark mr-2"></i> ગામનો ઇતિહાસ</span>
-                    </summary>
-                    <p id="info-history" class="text-xs text-gray-600 mt-2">માહિતી લોડ થઈ રહી છે...</p>
-                </details>
-
-                <details class="group border rounded-lg p-3">
-                    <summary class="font-semibold cursor-pointer text-emerald-800 flex justify-between">
-                        <span><i class="fa-solid fa-users-gear mr-2"></i> ગ્રામ પંચાયત કમિટી & સ્ટાફ</span>
-                    </summary>
-                    <div id="info-staff" class="text-xs text-gray-600 mt-2 space-y-1"></div>
-                </details>
-
-                <details class="group border rounded-lg p-3">
-                    <summary class="font-semibold cursor-pointer text-emerald-800 flex justify-between">
-                        <span><i class="fa-solid fa-clock mr-2"></i> અધિકારી મુલાકાત સમય</span>
-                    </summary>
-                    <div id="info-timing" class="text-xs text-gray-600 mt-2 space-y-2">
-                        <!-- Talati & Gram Sevak Timings -->
-                    </div>
-                </details>
-            </div>
-
+<!-- dynamic ગામ અને પંચાયત વિગત સેક્શન -->
+<div id="about" class="bg-white p-5 rounded-xl shadow-md space-y-4 border border-purple-100">
+    <h4 class="font-bold text-purple-950 border-b border-purple-200 pb-2 text-lg flex items-center gap-2">
+        <i class="fa-solid fa-square-poll-vertical text-purple-700"></i>
+        <span>ગામ અને પંચાયત વિગત</span>
+    </h4>
+    
+    <!-- Firebase માંથી મેનૂ આ આઈડી (village-details-menu-list) માં લોડ થશે -->
+    <div id="village-details-menu-list" class="space-y-2">
+        <p class="text-xs text-gray-400 p-2">મેનૂ લોડ થઈ રહ્યા છે...</p>
+    </div>
+</div>
         </div>
 
     </div>
