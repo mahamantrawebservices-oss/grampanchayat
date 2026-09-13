@@ -162,11 +162,25 @@ async function loadAdminGallery() {
     });
 }
 
-// ૧. નવું મેનૂ એડ કરવું
+// ૧. વિગત મેનેજર માટે Quill Word Editor ચાલુ કરવું
+var menuQuill = new Quill('#menu-editor-container', {
+    theme: 'snow',
+    modules: {
+        toolbar: [
+            [{ 'header': [1, 2, 3, false] }],
+            ['bold', 'italic', 'underline'],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            [{ 'color': [] }, { 'background': [] }],
+            ['clean']
+        ]
+    }
+});
+
+// ૨. નવું મેનૂ એડ કરવું (Word Editor માંથી ડેટા લેશે)
 document.getElementById("add-menu-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const title = document.getElementById("menu-title").value;
-    const content = document.getElementById("menu-content").value;
+    const content = menuQuill.root.innerHTML; // Editor નું લખાણ લેશે
 
     await addDoc(collection(db, "village_details"), {
         title: title,
@@ -177,10 +191,11 @@ document.getElementById("add-menu-form")?.addEventListener("submit", async (e) =
 
     alert("નવું મેનૂ સફળતાપૂર્વક ઉમેરાઈ ગયું!");
     e.target.reset();
+    menuQuill.root.innerHTML = ""; // Editor ખાલી કરશે
     loadAdminMenuList();
 });
 
-// ૨. એડમિન લિસ્ટ લોડ કરવું અને Show/Hide / Delete કરવું
+// ૩. એડમિન લિસ્ટ લોડ કરવું (Show/Hide & Delete)
 async function loadAdminMenuList() {
     const snap = await getDocs(collection(db, "village_details"));
     const container = document.getElementById("admin-menu-list");
