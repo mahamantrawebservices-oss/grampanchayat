@@ -1,6 +1,6 @@
 import { db, storage, auth } from "./firebase-config.js";
 import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { collection, addDoc, getDocs, doc, setDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { collection, addDoc, getDocs, doc, setDoc, getDoc, deleteDoc, query, where, Timestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
 // Check Authentication
@@ -269,3 +269,143 @@ async function loadAdminMenuList() {
 }
 // Check Auth માં લોડ કરવા માટે ઉમેરો
 loadAdminMenuList();
+
+
+
+// ==========================================
+// ૧. ફરિયાદ લોજિક & ૬ મહિના જૂનો ડેટા ઓટો ડિલીટ
+// ==========================================
+async function cleanOldComplaints() {
+    const sixMonthsAgo = Timestamp.fromDate(new Date(Date.now() - 180 * 24 * 60 * 60 * 1000));
+    const q = query(collection(db, "complaints"), where("createdAt", "<", sixMonthsAgo));
+    const snap = await getDocs(q);
+    snap.forEach(async (d) => {
+        await deleteDoc(doc(db, "complaints", d.id));
+    });
+}
+cleanOldComplaints(); // ઓટો ક્લીનઅપ ફાયર થશે
+
+async function loadAdminComplaints() {
+    const filter = document.getElementById("admin-complaint-filter")?.value || "ALL";
+    const snap = await getDocs(collection(db, "complaints"));
+    const container = document.getElementById("admin-complaint-list");
+    if(!container) return;
+
+    container.innerHTML = "";
+    snap.forEach(d => {
+        const item = d.data();
+        const isPending = item.status.includes("પેન્ડિંગ") || item.status.includes("ચાલ") || item.status.includes("નથી");
+        
+        if (filter === "PENDING" && !isPending) return;
+
+        container.innerHTML += `
+            <div class="bg-white p-3 border rounded shadow-sm space-y-2 text-xs">
+                <div class="flex justify-between font-bold text-gray-800 border-b pb-1">
+                    <span>ટોકન: <span class="text-amber-600">${item.token}</span> (${item.name} - ${item.mobile})</span>
+                    <span class="text-emerald-700">${item.type}</span>
+                </div>
+                <p><b>વિસ્તાર:</b> ${item.area} | <b>વિગત:</b> ${item.details}</p>
+                <div class="flex flex-wrap items-center gap-2">
+                    <label class="font-bold">સ્ટેટસ બદલો:</label>
+                    <select data-id="${d.id}" class="update-status-select border p-1 rounded bg-amber-50">
+                        <option value="${item.status}" selected>હાલનું: ${item.status}</option>
+                        <option value="ફરિયાદ પર કામ ચાલી રહ્યું છે">ફરિયાદ પર કામ ચાલી રહ્યું છે</option>
+                        <option value="ફરિયાદ નિવારણ થઈ ગયું છે">ફરિયાદ નિવારણ થઈ ગયું છે</option>
+                        <option value="ફરિયાદ આ વિભાગની ના હોય દફતરે કરવામાં આવેલ છે">ફરિયાદ આ વિભાગની ના હોય દફતરે કરવામાં આવેલ છે</option>
+                        <option value="ફરિયાદ પેન્ડિંગ રાખવામા આવેલ છે">ફરિયાદ પેન્ડિંગ રાખવામા આવેલ છે</option>
+                        <option value="ફરિયાદ પર હાલ કામ થઈ શકે તેમ નથી">ફરિયાદ પર હાલ કામ થઈ શકે તેમ નથી</option>
+                        <option value="ફરિયાદ અયોગ્ય હોય રદ કરવામાં આવેલ છે">ફરિયાદ અયોગ્ય હોય રદ કરવામાં આવેલ છે</option>
+                    </select>
+                </div>
+            </div>
+        `;
+    });
+
+    // સ્ટેટસ અપડેટ લિશનર
+    document.querySelectorAll(".update-status-select").forEach(sel => {
+        sel.addEventListener("change", async (e) => {
+            const id = e.target.getAttribute("data-id");
+            await setDoc(doc(db, "complaints", id), { status: e.target.value }, { merge: true });
+            alert("સ્ટેટસ અપડેટ થઈ ગયું!");
+            loadAdminComplaints();
+        });
+    });
+}
+
+document.getElementById("admin-complaint-filter")?.addEventListener("change", loadAdminComplaints);
+
+// PDF રિપોર્ટ જનરેટર
+document.getElementById("download-pdf-btn")?.addEventListener("click", () => {
+    const element = document.getElementById("admin-complaint-list");
+    html2pdf().from(element).save("Monthly_Complaint_Report.pdf");
+});
+
+// ==========================================
+// ૨. કમિટી / સ્ટાફ લોજિક
+// ==========================================
+document.getElementById("save-meta-btn")?.addEventListener("click", async () => {
+    const term = document.getElementById("admin-term-input").value;
+    const note = document.getElementById("admin-note-input").value;
+    await setDoc(doc(db, "panchayat_meta", "staff_page"), { term, note }, { merge: true });
+    alert("મુદત અને નોંધ સાચવી લેવાયેલ છે!");
+});
+
+document.getElementById("add-member-staff-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const type = document.getElementById("ms-category").value;
+    const targetCol = type === 'committee' ? 'panchayat_committee' : 'panchayat_staff';
+
+    await addDoc(collection(db, targetCol), {
+        name: document.getElementById("ms-name").value,
+        designation: document.getElementById("ms-desig").value,
+        mobile: document.getElementById("ms-mobile").value,
+        ward: document.getElementById("ms-ward").value || '',
+        order: Date.now()
+    });
+    alert("સફળતાપૂર્વક ઉમેરાઈ ગયું!");
+    e.target.reset();
+});
+
+// ==========================================
+// ૩. સમય પત્રક લોજિક
+// ==========================================
+document.getElementById("add-timetable-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    await addDoc(collection(db, "officer_timetable"), {
+        name: document.getElementById("tt-name").value,
+        designation: document.getElementById("tt-desig").value,
+        mobile: document.getElementById("tt-mobile").value,
+        days: document.getElementById("tt-days").value,
+        timing: document.getElementById("tt-timing").value,
+        villages: document.getElementById("tt-villages").value
+    });
+    alert("સમય પત્રક ઉમેરાઈ ગયું!");
+    e.target.reset();
+});
+
+// ==========================================
+// ૪. કાર્યરત સમિતિઓ લોજિક
+// ==========================================
+document.getElementById("add-committee-group-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const title = document.getElementById("cg-title").value;
+    const rawMembers = document.getElementById("cg-members-raw").value.split("\n");
+
+    const members = rawMembers.map(row => {
+        const parts = row.split(",");
+        return {
+            name: parts[0]?.trim() || '',
+            originalDesignation: parts[1]?.trim() || '',
+            committeeRole: parts[2]?.trim() || ''
+        };
+    }).filter(m => m.name !== '');
+
+    await addDoc(collection(db, "active_committees"), {
+        committeeName: title,
+        members: members
+    });
+    alert("નવી સમિતિ ઉમેરાઈ ગઈ!");
+    e.target.reset();
+});
+
+loadAdminComplaints();
