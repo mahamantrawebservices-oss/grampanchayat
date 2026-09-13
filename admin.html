@@ -141,23 +141,41 @@
     </div>
 </div>
 
+
+
+
+            
 <!-- 📄 html2pdf લાઈબ્રેરી PDF રિપોર્ટ ડાઉનલોડ કરવા માટે -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
+
+
+
+            
 <!-- ૧. ફરિયાદ મેનેજમેન્ટ અને PDF રિપોર્ટ સેક્શન -->
 <div class="bg-emerald-50/80 border border-emerald-200 p-5 rounded-xl shadow-sm space-y-4">
     <h3 class="font-bold border-b border-emerald-300 pb-2 text-emerald-950">૧. આવેલ ફરિયાદો અને સ્ટેટસ મેનેજર</h3>
     
-    <!-- ફિલ્ટર અને PDF બટન -->
-    <div class="flex flex-wrap items-center justify-between gap-2">
-        <select id="admin-complaint-filter" class="border border-emerald-300 p-2 rounded text-xs bg-white">
-            <option value="ALL">તમામ ફરિયાદો</option>
-            <option value="PENDING">ફક્ત કામ ના થયેલ/પેન્ડિંગ</option>
-        </select>
+    <!-- ફિલ્ટર, મહિનો પસંદગી અને PDF બટન -->
+    <div class="flex flex-wrap items-center justify-between gap-3">
+        
+        <!-- સ્ટેટસ ફિલ્ટર -->
+        <div class="flex items-center gap-2">
+            <select id="admin-complaint-filter" class="border border-emerald-300 p-2 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                <option value="ALL">તમામ ફરિયાદો</option>
+                <option value="PENDING">ફક્ત કામ ના થયેલ/પેન્ડિંગ</option>
+            </select>
+        </div>
 
-        <button id="download-pdf-btn" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-3 py-1.5 rounded text-xs shadow flex items-center gap-1">
-            <i class="fa-solid fa-file-pdf"></i> આ મહિનાનો રિપોર્ટ (PDF)
-        </button>
+        <!-- માસિક રિપોર્ટ PDF સેક્શન -->
+        <div class="flex items-center gap-2 bg-emerald-100/60 p-1.5 rounded-lg border border-emerald-200">
+            <input type="month" id="report-month-select" class="border border-emerald-300 p-1 rounded text-xs bg-white text-gray-700 focus:outline-none" />
+            
+            <button id="download-pdf-btn" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-3 py-1.5 rounded text-xs shadow flex items-center gap-1 transition-colors">
+                <i class="fa-solid fa-file-pdf"></i> રિપોર્ટ (PDF) ડાઉનલોડ કરો
+            </button>
+        </div>
+
     </div>
 
     <!-- ફરિયાદોનું ડાયનેમિક લિસ્ટ -->
@@ -165,6 +183,7 @@
         <p class="text-xs text-gray-500">ફરિયાદો લોડ થઈ રહી છે...</p>
     </div>
 </div>
+            
 
 <!-- ૨. પંચાયત કમિટી અને સ્ટાફ મેનેજર -->
 <div class="bg-blue-50/80 border border-blue-200 p-5 rounded-xl shadow-sm space-y-4 mt-6">
