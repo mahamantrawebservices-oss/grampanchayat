@@ -196,23 +196,34 @@
 
 
             
-            <!-- ૩. અધિકારી/કર્મચારી સમય પત્રક મેનેજર -->
-            <div class="bg-amber-50/80 border border-amber-200 p-5 rounded-xl shadow-sm space-y-4">
-                <h3 class="font-bold border-b border-amber-300 pb-2 text-amber-950">૩. અધિકારી/કર્મચારી સમય પત્રક મેનેજર</h3>
-                <form id="add-timetable-form" class="space-y-3">
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                        <input type="text" id="tt-name" placeholder="કર્મચારીનું નામ" required class="border border-amber-300 p-1.5 rounded text-xs bg-white">
-                        <input type="text" id="tt-desig" placeholder="હોદ્દો (દા.ત. રેવન્યુ તલાટી)" required class="border border-amber-300 p-1.5 rounded text-xs bg-white">
-                        <input type="text" id="tt-mobile" placeholder="મોબાઈલ નંબર" required class="border border-amber-300 p-1.5 rounded text-xs bg-white">
-                    </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        <input type="text" id="tt-days" placeholder="આવવાના દિવસો (દા.ત. સોમ, બુધ, શુક્ર)" required class="border border-amber-300 p-1.5 rounded text-xs bg-white">
-                        <input type="text" id="tt-timing" placeholder="સમય (દા.ત. સવારે ૧૧:૦૦ થી ૫:૦૦)" required class="border border-amber-300 p-1.5 rounded text-xs bg-white">
-                    </div>
-                    <input type="text" id="tt-villages" placeholder="અન્ય ગામે જવાના દિવસો/વિગત" class="border border-amber-300 p-1.5 rounded text-xs bg-white w-full">
-                    <button type="submit" class="bg-amber-700 text-white font-bold px-4 py-2 rounded text-xs w-full shadow">સમય પત્રક સાચવો</button>
-                </form>
-            </div>
+<!-- ૩. અધિકારી/કર્મચારી સમય પત્રક મેનેજર -->
+<div class="bg-blue-50/80 border border-blue-200 p-5 rounded-xl shadow-sm space-y-4">
+    <h3 class="font-bold border-b border-blue-300 pb-2 text-blue-950">૩. અધિકારી / કર્મચારી સમય પત્રક મેનેજર</h3>
+    
+    <form id="add-schedule-form" class="space-y-3">
+        <input type="hidden" id="edit-schedule-id" value=""> <!-- એડિટ મોડ આઈડી -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <input type="text" id="sch-name" placeholder="કર્મચારીનું નામ" required class="border border-blue-300 p-2 rounded text-xs bg-white">
+            <input type="text" id="sch-desig" placeholder="હોદ્દો (દા.ત. તલાટી, સરપંચ)" required class="border border-blue-300 p-2 rounded text-xs bg-white">
+            <input type="text" id="sch-timing" placeholder="સમય (દા.ત. સવારે ૧૧:૦૦ થી ૫:૦૦)" required class="border border-blue-300 p-2 rounded text-xs bg-white">
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <input type="text" id="sch-days" placeholder="હાજરીના દિવસો (દા.ત. સોમ, બુધ, શુક્ર)" required class="border border-blue-300 p-2 rounded text-xs bg-white">
+            <input type="text" id="sch-note" placeholder="વિશેષ નોંધ (દા.ત. ક્ષેત્રિય મુલાકાત/રજાનો દિવસ)" class="border border-blue-300 p-2 rounded text-xs bg-white">
+        </div>
+        <button type="submit" id="sch-submit-btn" class="bg-indigo-700 hover:bg-indigo-800 text-white font-bold px-4 py-2 rounded text-xs w-full shadow">
+            સમય પત્રક ઉમેરો
+        </button>
+    </form>
+
+    <!-- 📋 હાલમાં વેબસાઈટ પર દર્શાવેલ સમય પત્રકની યાદી -->
+    <div class="border-t border-blue-200 pt-3">
+        <h4 class="text-xs font-bold text-blue-950 mb-2">📋 વેબસાઈટ પર દર્શાવેલ સમય પત્રક:</h4>
+        <div id="admin-schedule-list" class="space-y-2 max-h-60 overflow-y-auto pr-1">
+            <p class="text-xs text-gray-500">લોડ થઈ રહ્યું છે...</p>
+        </div>
+    </div>
+</div>
 
             <!-- ૪. કાર્યરત સમિતિઓ મેનેજર -->
             <div class="bg-purple-50/80 border border-purple-200 p-5 rounded-xl shadow-sm space-y-4">
