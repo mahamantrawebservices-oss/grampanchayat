@@ -197,18 +197,26 @@ async function loadFrontendSchedule() {
 
     snap.forEach(docSnap => {
         const item = docSnap.data();
+        
+        // જો ફિલ્ડનું નામ અલગ હોય તો પણ ડેટા બતાવે તે માટેનું લોજિક
+        const name = item.name || item.officerName || "-";
+        const designation = item.designation || item.post || item.role || "-";
+        const timing = item.timing || item.time || "-";
+        const days = item.days || item.workDays || "-";
+        const note = item.note || item.extraNote || "";
+
         container.innerHTML += `
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-2">
                 <div class="flex justify-between items-start">
                     <div>
-                        <h4 class="font-bold text-gray-900 text-base">${item.name}</h4>
-                        <span class="text-xs font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded">${item.designation}</span>
+                        <h4 class="font-bold text-gray-900 text-base">${name}</h4>
+                        <span class="text-xs font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded">${designation}</span>
                     </div>
                 </div>
                 <div class="text-xs text-gray-600 space-y-1 border-t pt-2">
-                    <div><b>⏰ સમય:</b> ${item.timing}</div>
-                    <div><b>📅 દિવસો:</b> ${item.days}</div>
-                    ${item.note ? `<div class="text-amber-800 bg-amber-50 p-1.5 rounded border border-amber-200 mt-1"><b>📌 નોંધ:</b> ${item.note}</div>` : ''}
+                    <div><b>⏰ સમય:</b> ${timing}</div>
+                    <div><b>📅 દિવસો:</b> ${days}</div>
+                    ${note ? `<div class="text-amber-800 bg-amber-50 p-1.5 rounded border border-amber-200 mt-1"><b>📌 નોંધ:</b> ${note}</div>` : ''}
                 </div>
             </div>
         `;
