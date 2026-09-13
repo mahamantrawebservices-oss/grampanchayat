@@ -255,18 +255,39 @@ loadAdminMenuList();
 
 
 // ==========================================
-// ૧. ફરિયાદ લોજિક & ૬ મહિના જૂનો ડેટા ઓટો ડિલીટ
+// ૧. ૬ મહિના જૂનો ડેટા ઓટો ડિલીટ (Async Safe)
 // ==========================================
 async function cleanOldComplaints() {
-    const sixMonthsAgo = Timestamp.fromDate(new Date(Date.now() - 180 * 24 * 60 * 60 * 1000));
-    const q = query(collection(db, "complaints"), where("createdAt", "<", sixMonthsAgo));
-    const snap = await getDocs(q);
-    snap.forEach(async (d) => {
-        await deleteDoc(doc(db, "complaints", d.id));
+    try {
+        const sixMonthsAgo = Timestamp.fromDate(new Date(Date.now() - 180 * 24 * 60 * 60 * 1000));
+        const q = query(collection(db, "complaints"), where("createdAt", "<", sixMonthsAgo));
+        const snap = await getDocs(q);
+        
+        const deletePromises = snap.docs.map(d => deleteDoc(doc(db, "complaints", d.id)));
+        await Promise.all(deletePromises);
+    } catch (error) {
+        console.error("Auto cleanup error:", error);
+    }
+}
+cleanOldComplaints();
+
+// Helper Function: તારીખ અને સમય ફોર્મેટ કરવા માટે
+function formatDateTime(timestamp) {
+    if (!timestamp) return "N/A";
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    return date.toLocaleString('gu-IN', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
     });
 }
-cleanOldComplaints(); // ઓટો ક્લીનઅપ ફાયર થશે
 
+// ==========================================
+// ૨. આવેલ ફરિયાદો અને સ્ટેટસ મેનેજર (તારીખ/સમય સાથે)
+// ==========================================
 async function loadAdminComplaints() {
     const filter = document.getElementById("admin-complaint-filter")?.value || "ALL";
     const snap = await getDocs(collection(db, "complaints"));
@@ -276,17 +297,20 @@ async function loadAdminComplaints() {
     container.innerHTML = "";
     snap.forEach(d => {
         const item = d.data();
-        const isPending = item.status.includes("પેન્ડિંગ") || item.status.includes("ચાલ") || item.status.includes("નથી");
+        const isPending = item.status?.includes("પેન્ડિંગ") || item.status?.includes("ચાલ") || item.status?.includes("નથી");
         
         if (filter === "PENDING" && !isPending) return;
 
+        const formattedDate = formatDateTime(item.createdAt);
+
         container.innerHTML += `
-            <div class="bg-white p-3 border rounded shadow-sm space-y-2 text-xs">
+            <div class="bg-white p-3 border rounded shadow-sm space-y-2 text-xs mb-2">
                 <div class="flex justify-between font-bold text-gray-800 border-b pb-1">
-                    <span>ટોકન: <span class="text-amber-600">${item.token}</span> (${item.name} - ${item.mobile})</span>
-                    <span class="text-emerald-700">${item.type}</span>
+                    <span>ટોકન: <span class="text-amber-600">${item.token || 'N/A'}</span> (${item.name || ''} - ${item.mobile || ''})</span>
+                    <span class="text-emerald-700">${item.type || ''}</span>
                 </div>
-                <p><b>વિસ્તાર:</b> ${item.area} | <b>વિગત:</b> ${item.details}</p>
+                <p><b>તારીખ & સમય:</b> <span class="text-blue-600 font-semibold">${formattedDate}</span></p>
+                <p><b>વિસ્તાર:</b> ${item.area || ''} | <b>વિગત:</b> ${item.details || ''}</p>
                 <div class="flex flex-wrap items-center gap-2">
                     <label class="font-bold">સ્ટેટસ બદલો:</label>
                     <select data-id="${d.id}" class="update-status-select border p-1 rounded bg-amber-50">
@@ -315,11 +339,92 @@ async function loadAdminComplaints() {
 }
 
 document.getElementById("admin-complaint-filter")?.addEventListener("change", loadAdminComplaints);
+loadAdminComplaints();
 
-// PDF રિપોર્ટ જનરેટર
-document.getElementById("download-pdf-btn")?.addEventListener("click", () => {
-    const element = document.getElementById("admin-complaint-list");
-    html2pdf().from(element).save("Monthly_Complaint_Report.pdf");
+// ==========================================
+// ૩. માસિક સિલેક્શન પ્રમાણે PDF રિપોર્ટ જનરેટર
+// ==========================================
+document.getElementById("download-pdf-btn")?.addEventListener("click", async () => {
+    const selectedMonth = document.getElementById("report-month-select")?.value; // YYYY-MM ફોર્મેટ
+    if (!selectedMonth) {
+        alert("મહેરબાની કરીને રિપોર્ટ માટે મહિનો સિલેક્ટ કરો!");
+        return;
+    }
+
+    const [year, month] = selectedMonth.split("-");
+    const dateObj = new Date(year, month - 1);
+    
+    const monthNames = ["જાન્યુઆરી", "ફેબ્રુઆરી", "માર્ચ", "એપ્રિલ", "મે", "જૂન", "જુલાઈ", "ઓગસ્ટ", "સપ્ટેમ્બર", "ઓક્ટોબર", "નવેમ્બર", "ડિસેમ્બર"];
+    const monthGujarati = monthNames[dateObj.getMonth()];
+
+    const snap = await getDocs(collection(db, "complaints"));
+    
+    // પીડીએફ પ્રિન્ટ કરવા માટેનું કામચલાઉ ડિવ (Temporary Element)
+    const reportContainer = document.createElement("div");
+    reportContainer.style.padding = "20px";
+    reportContainer.style.fontFamily = "Arial, sans-serif";
+
+    // માસિક હેડિંગ
+    let reportHTML = `
+        <h2 style="text-align: center; color: #1e3a8a; margin-bottom: 20px;">
+            માસિક ફરિયાદ રિપોર્ટ માહે : ${monthGujarati} - ${year}
+        </h2>
+        <table border="1" style="width: 100%; border-collapse: collapse; font-size: 11px; text-align: left;">
+            <thead>
+                <tr style="background-color: #f2f2f2;">
+                    <th style="padding: 6px;">ટોકન</th>
+                    <th style="padding: 6px;">તારીખ & સમય</th>
+                    <th style="padding: 6px;">નામ & મોબાઈલ</th>
+                    <th style="padding: 6px;">પ્રકાર</th>
+                    <th style="padding: 6px;">વિસ્તાર</th>
+                    <th style="padding: 6px;">સ્ટેટસ</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+    let count = 0;
+    snap.forEach(d => {
+        const item = d.data();
+        if (!item.createdAt) return;
+
+        const itemDate = item.createdAt.toDate ? item.createdAt.toDate() : new Date(item.createdAt);
+
+        // મન્થ અને યર ફિલ્ટર
+        if (itemDate.getFullYear() == year && (itemDate.getMonth() + 1) == month) {
+            count++;
+            reportHTML += `
+                <tr>
+                    <td style="padding: 6px;">${item.token || '-'}</td>
+                    <td style="padding: 6px;">${formatDateTime(item.createdAt)}</td>
+                    <td style="padding: 6px;">${item.name || '-'}<br>(${item.mobile || '-'})</td>
+                    <td style="padding: 6px;">${item.type || '-'}</td>
+                    <td style="padding: 6px;">${item.area || '-'}</td>
+                    <td style="padding: 6px;">${item.status || '-'}</td>
+                </tr>
+            `;
+        }
+    });
+
+    reportHTML += `</tbody></table>`;
+
+    if (count === 0) {
+        alert("પસંદ કરેલ મહિના માટે કોઈ ફરિયાદો મળી નથી.");
+        return;
+    }
+
+    reportContainer.innerHTML = reportHTML;
+
+    // html2pdf ઓપ્શન્સ
+    const opt = {
+        margin:       0.5,
+        filename:     `Complaint_Report_${monthGujarati}_${year}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2 },
+        jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' }
+    };
+
+    html2pdf().set(opt).from(reportContainer).save();
 });
 
 // ==========================================
