@@ -54,24 +54,6 @@ document.getElementById("post-form")?.addEventListener("submit", async (e) => {
     e.target.reset();
 });
 
-// Fetch Complaints
-async function loadAdminComplaints() {
-    const snap = await getDocs(collection(db, "complaints"));
-    const container = document.getElementById("complaints-list");
-    if (!container) return;
-    container.innerHTML = "";
-    snap.forEach((docSnap) => {
-        const c = docSnap.data();
-        container.innerHTML += `
-            <div class="border p-2 rounded bg-gray-50 mb-2">
-                <div class="font-bold">${c.name} (${c.mobile})</div>
-                <div class="text-xs text-gray-600">${c.type} - ${c.faliya}, ${c.house}</div>
-                <div class="text-sm mt-1">${c.msg}</div>
-                <button onclick="window.print()" class="mt-2 bg-slate-700 text-white px-2 py-0.5 text-[10px] rounded">પ્રિન્ટ રિપોર્ટ</button>
-            </div>
-        `;
-    });
-}
 
 
 // Blogger ફોટો ગેલેરી સેવ કરવી
