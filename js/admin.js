@@ -73,37 +73,6 @@ async function loadAdminComplaints() {
     });
 }
 
-// Quill Word Editor setup
-var quill = new Quill('#editor-container', {
-    theme: 'snow',
-    modules: {
-        toolbar: [
-            [{ 'header': [1, 2, 3, false] }],
-            ['bold', 'italic', 'underline', 'strike'],
-            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-            [{ 'color': [] }, { 'background': [] }],
-            ['clean']
-        ]
-    }
-});
-
-async function loadHistory() {
-    const docRef = doc(db, "settings", "village_history");
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
-        quill.root.innerHTML = docSnap.data().content;
-    }
-}
-loadHistory();
-
-document.getElementById("save-history-btn")?.addEventListener("click", async () => {
-    const historyHTML = quill.root.innerHTML;
-    await setDoc(doc(db, "settings", "village_history"), {
-        content: historyHTML,
-        updatedAt: new Date()
-    });
-    alert("ગામનો ઇતિહાસ સફળતાપૂર્વક સેવ થઈ ગયો!");
-});
 
 // Blogger ફોટો ગેલેરી સેવ કરવી
 document.getElementById("gallery-form")?.addEventListener("submit", async (e) => {
