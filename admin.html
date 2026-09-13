@@ -149,30 +149,53 @@
                 </div>
             </div>
 
-            <!-- ૨. પંચાયત કમિટી અને સ્ટાફ મેનેજર -->
-            <div class="bg-blue-50/80 border border-blue-200 p-5 rounded-xl shadow-sm space-y-4">
-                <h3 class="font-bold border-b border-blue-300 pb-2 text-blue-950">૨. પંચાયત કમિટી, સ્ટાફ અને મુદત મેનેજર</h3>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <input type="text" id="admin-term-input" placeholder="પંચાયત મુદત (દા.ત. ૨૦૨૧ થી ૨૦૨૬)" class="border border-blue-300 p-2 rounded text-xs bg-white">
-                    <input type="text" id="admin-note-input" placeholder="નીચે દર્શાવવાની નોંધ" class="border border-blue-300 p-2 rounded text-xs bg-white">
-                </div>
-                <button id="save-meta-btn" class="bg-blue-700 hover:bg-blue-800 text-white font-bold px-3 py-1.5 rounded text-xs shadow">મુદત / નોંધ સાચવો</button>
+            
+           <!-- ૨. પંચાયત કમિટી અને સ્ટાફ મેનેજર -->
+<div class="bg-blue-50/80 border border-blue-200 p-5 rounded-xl shadow-sm space-y-4">
+    <h3 class="font-bold border-b border-blue-300 pb-2 text-blue-950">૨. પંચાયત કમિટી, સ્ટાફ અને મુદત મેનેજર</h3>
+    
+    <!-- મુદત અને નોંધ સેક્શન -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <input type="text" id="admin-term-input" placeholder="પંચાયત મુદત (દા.ત. ૨૦૨૧ થી ૨૦૨૬)" class="border border-blue-300 p-2 rounded text-xs bg-white">
+        <input type="text" id="admin-note-input" placeholder="નીચે દર્શાવવાની નોંધ" class="border border-blue-300 p-2 rounded text-xs bg-white">
+    </div>
+    <button id="save-meta-btn" class="bg-blue-700 hover:bg-blue-800 text-white font-bold px-3 py-1.5 rounded text-xs shadow">મુદત / નોંધ સાચવો</button>
 
-                <form id="add-member-staff-form" class="space-y-3 border-t border-blue-200 pt-3">
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                        <select id="ms-category" class="border border-blue-300 p-1.5 rounded text-xs bg-white">
-                            <option value="committee">પંચાયત કમિટી</option>
-                            <option value="staff">કર્મચારી</option>
-                        </select>
-                        <input type="text" id="ms-name" placeholder="નામ" required class="border border-blue-300 p-1.5 rounded text-xs bg-white">
-                        <input type="text" id="ms-desig" placeholder="હોદ્દો" required class="border border-blue-300 p-1.5 rounded text-xs bg-white">
-                        <input type="text" id="ms-mobile" placeholder="મોબાઈલ" required class="border border-blue-300 p-1.5 rounded text-xs bg-white">
-                    </div>
-                    <input type="text" id="ms-ward" placeholder="વોર્ડ નં. (ફક્ત કમિટી માટે)" class="border border-blue-300 p-1.5 rounded text-xs bg-white w-full">
-                    <button type="submit" class="bg-indigo-700 text-white font-bold px-4 py-2 rounded text-xs w-full shadow">સભ્ય/કર્મચારી ઉમેરો</button>
-                </form>
+    <!-- સભ્ય / સ્ટાફ ઉમેરવાનું કે એડિટ કરવાનું ફોર્મ -->
+    <form id="add-member-staff-form" class="space-y-3 border-t border-blue-200 pt-3">
+        <input type="hidden" id="edit-ms-id" value=""> <!-- એડિટ મોડ આઈડી માટે -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <select id="ms-category" class="border border-blue-300 p-1.5 rounded text-xs bg-white">
+                <option value="committee">પંચાયત કમિટી</option>
+                <option value="staff">કર્મચારી</option>
+            </select>
+            <input type="text" id="ms-name" placeholder="નામ" required class="border border-blue-300 p-1.5 rounded text-xs bg-white">
+            <input type="text" id="ms-desig" placeholder="હોદ્દો" required class="border border-blue-300 p-1.5 rounded text-xs bg-white">
+            <input type="text" id="ms-mobile" placeholder="મોબાઈલ" required class="border border-blue-300 p-1.5 rounded text-xs bg-white">
+        </div>
+        <input type="text" id="ms-ward" placeholder="વોર્ડ નં. (ફક્ત કમિટી માટે)" class="border border-blue-300 p-1.5 rounded text-xs bg-white w-full">
+        <button type="submit" id="ms-submit-btn" class="bg-indigo-700 hover:bg-indigo-800 text-white font-bold px-4 py-2 rounded text-xs w-full shadow">સભ્ય/કર્મચારી ઉમેરો</button>
+    </form>
+
+    <!-- 👥 ઉમેરાયેલ કમિટી અને સ્ટાફની યાદી દર્શાવવાનું સેક્શન -->
+    <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-blue-200 pt-3">
+        <div>
+            <h4 class="text-xs font-bold text-blue-950 mb-2">👥 પંચાયત કમિટી સભ્યો:</h4>
+            <div id="admin-committee-list" class="space-y-2 max-h-56 overflow-y-auto pr-1">
+                <p class="text-xs text-gray-500">લોડ થઈ રહ્યું છે...</p>
             </div>
+        </div>
+        <div>
+            <h4 class="text-xs font-bold text-blue-950 mb-2">👔 સ્ટાફ / કર્મચારીઓ:</h4>
+            <div id="admin-staff-list" class="space-y-2 max-h-56 overflow-y-auto pr-1">
+                <p class="text-xs text-gray-500">લોડ થઈ રહ્યું છે...</p>
+            </div>
+        </div>
+    </div>
+</div>
 
+
+            
             <!-- ૩. અધિકારી/કર્મચારી સમય પત્રક મેનેજર -->
             <div class="bg-amber-50/80 border border-amber-200 p-5 rounded-xl shadow-sm space-y-4">
                 <h3 class="font-bold border-b border-amber-300 pb-2 text-amber-950">૩. અધિકારી/કર્મચારી સમય પત્રક મેનેજર</h3>
