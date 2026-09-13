@@ -645,22 +645,109 @@ document.getElementById("add-member-staff-form")?.addEventListener("submit", asy
 
 
 // ==========================================
-// ૩. સમય પત્રક લોજિક
+// ૩. સમય પત્રક લોજિક (Add, Edit, Delete & Load)
 // ==========================================
-document.getElementById("add-timetable-form")?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    await addDoc(collection(db, "officer_timetable"), {
-        name: document.getElementById("tt-name").value,
-        designation: document.getElementById("tt-desig").value,
-        mobile: document.getElementById("tt-mobile").value,
-        days: document.getElementById("tt-days").value,
-        timing: document.getElementById("tt-timing").value,
-        villages: document.getElementById("tt-villages").value
-    });
-    alert("સમય પત્રક ઉમેરાઈ ગયું!");
-    e.target.reset();
-});
 
+// ૧. એડમિન પેનલમાં સમય પત્રકની યાદી લોડ કરવી
+async function loadAdminSchedule() {
+    const container = document.getElementById("admin-schedule-list");
+    if (!container) return;
+
+    try {
+        const snap = await getDocs(collection(db, "panchayat_schedule"));
+        container.innerHTML = "";
+
+        if (snap.empty) {
+            container.innerHTML = "<p class='text-xs text-gray-500'>કોઈ સમય પત્રક ઉમેરાયેલ નથી.</p>";
+            return;
+        }
+
+        snap.forEach(docSnap => {
+            const item = docSnap.data();
+            container.innerHTML += `
+                <div class="flex justify-between items-center bg-white p-2 border border-blue-100 rounded shadow-sm text-xs mb-2">
+                    <div class="space-y-0.5">
+                        <div class="font-bold text-gray-800">${item.name} <span class="text-blue-700">(${item.designation})</span></div>
+                        <div class="text-[11px] text-gray-600"><b>સમય:</b> ${item.timing} | <b>દિવસો:</b> ${item.days}</div>
+                        ${item.note ? `<div class="text-[10px] text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded inline-block"><b>નોંધ:</b> ${item.note}</div>` : ''}
+                    </div>
+                    <div class="flex items-center gap-1 flex-shrink-0">
+                        <button data-id="${docSnap.id}" class="edit-sch-btn bg-blue-600 hover:bg-blue-700 text-white text-[10px] px-2 py-1 rounded">એડિટ</button>
+                        <button data-id="${docSnap.id}" class="delete-sch-btn bg-red-600 hover:bg-red-700 text-white text-[10px] px-2 py-1 rounded">ડિલીટ</button>
+                    </div>
+                </div>
+            `;
+        });
+
+        // 🗑️ ડિલીટ કરવાની ઈવેન્ટ
+        document.querySelectorAll(".delete-sch-btn").forEach(btn => {
+            btn.addEventListener("click", async (e) => {
+                const id = e.target.getAttribute("data-id");
+                if (confirm("શું તમે આ સમય પત્રક ડિલીટ કરવા માંગો છો?")) {
+                    await deleteDoc(doc(db, "panchayat_schedule", id));
+                    alert("સમય પત્રક ડિલીટ થઈ ગયું!");
+                    loadAdminSchedule();
+                }
+            });
+        });
+
+        // ✏️ એડિટ કરવાની ઈવેન્ટ
+        document.querySelectorAll(".edit-sch-btn").forEach(btn => {
+            btn.addEventListener("click", async (e) => {
+                const id = e.target.getAttribute("data-id");
+                const docSnap = await getDoc(doc(db, "panchayat_schedule", id));
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    document.getElementById("sch-name").value = data.name || '';
+                    document.getElementById("sch-desig").value = data.designation || '';
+                    document.getElementById("sch-timing").value = data.timing || '';
+                    document.getElementById("sch-days").value = data.days || '';
+                    document.getElementById("sch-note").value = data.note || '';
+                    document.getElementById("edit-schedule-id").value = id;
+
+                    const submitBtn = document.getElementById("sch-submit-btn");
+                    if (submitBtn) submitBtn.innerText = "સમય પત્રક અપડેટ કરો";
+
+                    document.getElementById("add-schedule-form").scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+
+    } catch (err) {
+        console.error("સમય પત્રક લોડ કરવામાં ભૂલ:", err);
+    }
+}
+
+// ૨. સમય પત્રક ઉમેરવું / અપડેટ કરવું
+document.getElementById("add-schedule-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const editId = document.getElementById("edit-schedule-id")?.value;
+
+    const payload = {
+        name: document.getElementById("sch-name").value,
+        designation: document.getElementById("sch-desig").value,
+        timing: document.getElementById("sch-timing").value,
+        days: document.getElementById("sch-days").value,
+        note: document.getElementById("sch-note").value || '',
+        order: Date.now()
+    };
+
+    if (editId) {
+        await setDoc(doc(db, "panchayat_schedule", editId), payload, { merge: true });
+        alert("સમય પત્રક અપડેટ થઈ ગયું!");
+        document.getElementById("edit-schedule-id").value = "";
+    } else {
+        await addDoc(collection(db, "panchayat_schedule"), payload);
+        alert("સમય પત્રક ઉમેરાઈ ગયું!");
+    }
+
+    const submitBtn = document.getElementById("sch-submit-btn");
+    if (submitBtn) submitBtn.innerText = "સમય પત્રક ઉમેરો";
+
+    e.target.reset();
+    loadAdminSchedule();
+});
 // ==========================================
 // ૪. કાર્યરત સમિતિઓ લોજિક
 // ==========================================
