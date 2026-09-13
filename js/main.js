@@ -190,6 +190,28 @@ document.getElementById("mobile-menu-btn")?.addEventListener("click", () => {
     }
 });
 
+// પબ્લિક મેનૂ લિસ્ટ લોડ કરવું
+async function loadVillageDetailsMenu() {
+    const snap = await getDocs(collection(db, "village_details"));
+    const container = document.getElementById("village-details-menu-list");
+    if (!container) return;
+
+    container.innerHTML = "";
+    snap.forEach((docSnap) => {
+        const item = docSnap.data();
+        // જો Show હોય તો જ બતાવવું
+        if (item.isShow !== false) {
+            container.innerHTML += `
+                <a href="details.html?id=${docSnap.id}" target="_blank" class="flex items-center gap-2 p-2 rounded-lg hover:bg-purple-50 text-purple-900 font-medium text-sm transition border-b border-purple-100">
+                    <i class="fa-solid fa-chevron-right text-xs text-purple-600"></i>
+                    <span>${item.title}</span>
+                </a>
+            `;
+        }
+    });
+}
+
+loadVillageDetailsMenu();
 
 // બધી પ્રોસેસ ચાલુ કરવી
 loadSettings();
