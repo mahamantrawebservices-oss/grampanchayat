@@ -161,3 +161,78 @@ async function loadAdminGallery() {
         });
     });
 }
+
+// ૧. નવું મેનૂ એડ કરવું
+document.getElementById("add-menu-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const title = document.getElementById("menu-title").value;
+    const content = document.getElementById("menu-content").value;
+
+    await addDoc(collection(db, "village_details"), {
+        title: title,
+        content: content,
+        isShow: true,
+        createdAt: new Date()
+    });
+
+    alert("નવું મેનૂ સફળતાપૂર્વક ઉમેરાઈ ગયું!");
+    e.target.reset();
+    loadAdminMenuList();
+});
+
+// ૨. એડમિન લિસ્ટ લોડ કરવું અને Show/Hide / Delete કરવું
+async function loadAdminMenuList() {
+    const snap = await getDocs(collection(db, "village_details"));
+    const container = document.getElementById("admin-menu-list");
+    if (!container) return;
+
+    container.innerHTML = "";
+    if (snap.empty) {
+        container.innerHTML = "<p class='text-xs text-gray-500'>કોઈ મેનૂ મળે લ નથી.</p>";
+        return;
+    }
+
+    snap.forEach((docSnap) => {
+        const item = docSnap.data();
+        const id = docSnap.id;
+        const isShow = item.isShow !== false;
+
+        container.innerHTML += `
+            <div class="flex justify-between items-center bg-white p-2 border rounded shadow-sm">
+                <span class="text-xs font-semibold ${isShow ? 'text-gray-800' : 'text-gray-400 line-through'}">${item.title}</span>
+                <div class="flex items-center gap-2">
+                    <button data-id="${id}" data-status="${isShow}" class="toggle-show-btn text-[10px] px-2 py-1 rounded text-white ${isShow ? 'bg-amber-600 hover:bg-amber-700' : 'bg-gray-500 hover:bg-gray-600'}">
+                        ${isShow ? 'સંતાડો (Hide)' : 'બતાવો (Show)'}
+                    </button>
+                    <button data-id="${id}" class="delete-menu-btn bg-red-600 hover:bg-red-700 text-white text-[10px] px-2 py-1 rounded">
+                        ડિલીટ
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+
+    // Show/Hide ઈવેન્ટ
+    document.querySelectorAll(".toggle-show-btn").forEach(btn => {
+        btn.addEventListener("click", async (e) => {
+            const id = e.target.getAttribute("data-id");
+            const currentStatus = e.target.getAttribute("data-status") === "true";
+            await setDoc(doc(db, "village_details", id), { isShow: !currentStatus }, { merge: true });
+            loadAdminMenuList();
+        });
+    });
+
+    // ડિલીટ ઈવેન્ટ
+    document.querySelectorAll(".delete-menu-btn").forEach(btn => {
+        btn.addEventListener("click", async (e) => {
+            const id = e.target.getAttribute("data-id");
+            if (confirm("શું તમે આ મેનૂ ડિલીટ કરવા માંગો છો?")) {
+                await deleteDoc(doc(db, "village_details", id));
+                loadAdminMenuList();
+            }
+        });
+    });
+}
+
+// Check Auth માં લોડ કરવા માટે ઉમેરો
+loadAdminMenuList();
