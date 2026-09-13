@@ -189,6 +189,81 @@ document.getElementById("mobile-menu-btn")?.addEventListener("click", () => {
     }
 });
 
+
+async function loadFrontendSchedule() {
+    const container = document.getElementById("frontend-schedule-list"); // વેબસાઈટ પર આપેલ કન્ટેનર ID
+    if (!container) return;
+
+    const snap = await getDocs(collection(db, "panchayat_schedule"));
+    container.innerHTML = "";
+
+    if (snap.empty) {
+        container.innerHTML = "<p class='text-center text-gray-500 py-4 text-sm'>કોઈ માહિતી ઉપલબ્ધ નથી.</p>";
+        return;
+    }
+
+    snap.forEach(docSnap => {
+        const item = docSnap.data();
+        container.innerHTML += `
+            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-2">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h4 class="font-bold text-gray-900 text-base">${item.name}</h4>
+                        <span class="text-xs font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded">${item.designation}</span>
+                    </div>
+                </div>
+                <div class="text-xs text-gray-600 space-y-1 border-t pt-2">
+                    <div><b>⏰ સમય:</b> ${item.timing}</div>
+                    <div><b>📅 દિવસો:</b> ${item.days}</div>
+                    ${item.note ? `<div class="text-amber-800 bg-amber-50 p-1.5 rounded border border-amber-200 mt-1"><b>📌 નોંધ:</b> ${item.note}</div>` : ''}
+                </div>
+            </div>
+        `;
+    });
+}
+loadFrontendSchedule();
+
+
+async function displayStaffPageMeta() {
+    const snap = await getDoc(doc(db, "panchayat_meta", "staff_page"));
+    if (snap.exists()) {
+        const data = snap.data();
+        
+        // HTML માં ધરાવતા Element ની ID મુજબ ટેક્સ્ટ સેટ થશે
+        const termContainer = document.getElementById("display-term");
+        const noteContainer = document.getElementById("display-note");
+
+        if (termContainer && data.term) {
+            termContainer.innerText = `પંચાયત મુદત: ${data.term}`;
+        }
+        if (noteContainer && data.note) {
+            noteContainer.innerText = `નોંધ: ${data.note}`;
+        }
+    }
+}
+displayStaffPageMeta();
+
+
+
+
+async function loadFrontendTermAndNote() {
+    const snap = await getDoc(doc(db, "panchayat_meta", "staff_page"));
+    if (snap.exists()) {
+        const data = snap.data();
+        
+        // તમારા Frontend HTML ના જરૂરી Element ની ID પ્રમાણે સેટ કરો
+        const termElem = document.getElementById("display-term");
+        const noteElem = document.getElementById("display-note");
+
+        if (termElem && data.term) termElem.innerText = `બોડી મુદત: ${data.term}`;
+        if (noteElem && data.note) noteElem.innerText = `નોંધ: ${data.note}`;
+    }
+}
+loadFrontendTermAndNote();
+
+
+
+
 // પબ્લિક મેનૂ લિસ્ટ લોડ કરવું
 async function loadVillageDetailsMenu() {
     const snap = await getDocs(collection(db, "village_details"));
