@@ -341,6 +341,8 @@ async function loadAdminComplaints() {
 document.getElementById("admin-complaint-filter")?.addEventListener("change", loadAdminComplaints);
 loadAdminComplaints();
 
+
+
 // ==========================================
 // ૩. માસિક સિલેક્શન પ્રમાણે PDF રિપોર્ટ જનરેટર
 // ==========================================
@@ -359,25 +361,27 @@ document.getElementById("download-pdf-btn")?.addEventListener("click", async () 
 
     const snap = await getDocs(collection(db, "complaints"));
     
-    // પીડીએફ પ્રિન્ટ કરવા માટેનું કામચલાઉ ડિવ (Temporary Element)
+    // પીડીએફ પ્રિન્ટ કરવા માટેનું ડિવ
     const reportContainer = document.createElement("div");
+    reportContainer.id = "temp-pdf-container";
     reportContainer.style.padding = "20px";
     reportContainer.style.fontFamily = "Arial, sans-serif";
+    reportContainer.style.backgroundColor = "#ffffff";
 
-    // માસિક હેડિંગ
+    // માસિક હેડિંગ અને ટેબલ સ્ટ્રક્ચર
     let reportHTML = `
-        <h2 style="text-align: center; color: #1e3a8a; margin-bottom: 20px;">
+        <h2 style="text-align: center; color: #1e3a8a; margin-bottom: 20px; font-size: 18px; font-weight: bold;">
             માસિક ફરિયાદ રિપોર્ટ માહે : ${monthGujarati} - ${year}
         </h2>
         <table border="1" style="width: 100%; border-collapse: collapse; font-size: 11px; text-align: left;">
             <thead>
-                <tr style="background-color: #f2f2f2;">
-                    <th style="padding: 6px;">ટોકન</th>
-                    <th style="padding: 6px;">તારીખ & સમય</th>
-                    <th style="padding: 6px;">નામ & મોબાઈલ</th>
-                    <th style="padding: 6px;">પ્રકાર</th>
-                    <th style="padding: 6px;">વિસ્તાર</th>
-                    <th style="padding: 6px;">સ્ટેટસ</th>
+                <tr style="background-color: #f2f2f2; color: #000;">
+                    <th style="padding: 6px; border: 1px solid #ccc;">ટોકન</th>
+                    <th style="padding: 6px; border: 1px solid #ccc;">તારીખ & સમય</th>
+                    <th style="padding: 6px; border: 1px solid #ccc;">નામ & મોબાઈલ</th>
+                    <th style="padding: 6px; border: 1px solid #ccc;">પ્રકાર</th>
+                    <th style="padding: 6px; border: 1px solid #ccc;">વિસ્તાર</th>
+                    <th style="padding: 6px; border: 1px solid #ccc;">સ્ટેટસ</th>
                 </tr>
             </thead>
             <tbody>
@@ -386,21 +390,28 @@ document.getElementById("download-pdf-btn")?.addEventListener("click", async () 
     let count = 0;
     snap.forEach(d => {
         const item = d.data();
-        if (!item.createdAt) return;
+        
+        // તારીખ ચકાસણી (createdAt અથવા date બંને સપોર્ટ કરવા)
+        let itemDate = null;
+        if (item.createdAt) {
+            itemDate = item.createdAt.toDate ? item.createdAt.toDate() : new Date(item.createdAt);
+        } else if (item.date) {
+            itemDate = new Date(item.date);
+        }
 
-        const itemDate = item.createdAt.toDate ? item.createdAt.toDate() : new Date(item.createdAt);
+        if (!itemDate || isNaN(itemDate.getTime())) return;
 
         // મન્થ અને યર ફિલ્ટર
         if (itemDate.getFullYear() == year && (itemDate.getMonth() + 1) == month) {
             count++;
             reportHTML += `
                 <tr>
-                    <td style="padding: 6px;">${item.token || '-'}</td>
-                    <td style="padding: 6px;">${formatDateTime(item.createdAt)}</td>
-                    <td style="padding: 6px;">${item.name || '-'}<br>(${item.mobile || '-'})</td>
-                    <td style="padding: 6px;">${item.type || '-'}</td>
-                    <td style="padding: 6px;">${item.area || '-'}</td>
-                    <td style="padding: 6px;">${item.status || '-'}</td>
+                    <td style="padding: 6px; border: 1px solid #ccc;">${item.token || '-'}</td>
+                    <td style="padding: 6px; border: 1px solid #ccc;">${formatDateTime(item.createdAt || item.date)}</td>
+                    <td style="padding: 6px; border: 1px solid #ccc;">${item.name || '-'}<br>(${item.mobile || '-'})</td>
+                    <td style="padding: 6px; border: 1px solid #ccc;">${item.type || '-'}</td>
+                    <td style="padding: 6px; border: 1px solid #ccc;">${item.area || '-'}</td>
+                    <td style="padding: 6px; border: 1px solid #ccc;">${item.status || '-'}</td>
                 </tr>
             `;
         }
@@ -414,18 +425,31 @@ document.getElementById("download-pdf-btn")?.addEventListener("click", async () 
     }
 
     reportContainer.innerHTML = reportHTML;
+    
+    // ⚠️ આ લાઇન બ્લેન્ક PDF ની ભૂલ સુધારે છે (DOM માં Append કરવું)
+    document.body.appendChild(reportContainer);
 
     // html2pdf ઓપ્શન્સ
     const opt = {
-        margin:       0.5,
+        margin:       0.4,
         filename:     `Complaint_Report_${monthGujarati}_${year}.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2 },
-        jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' }
+        html2canvas:  { scale: 2, useCORS: true, logging: false },
+        jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' }
     };
 
-    html2pdf().set(opt).from(reportContainer).save();
+    // PDF બનાવો અને પછી DOM માંથી કન્ટેનર હટાવી દો
+    try {
+        await html2pdf().set(opt).from(reportContainer).save();
+    } catch (err) {
+        console.error("PDF જનરેટ કરવામાં ભૂલ:", err);
+        alert("PDF ડાઉનલોડ કરવામાં સમસ્યા આવી!");
+    } finally {
+        document.body.removeChild(reportContainer); // સફાઈ
+    }
 });
+
+
 
 // ==========================================
 // ૨. કમિટી / સ્ટાફ લોજિક
