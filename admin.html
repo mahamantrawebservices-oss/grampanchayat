@@ -4,14 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>પંચાયત એડમિન કંટ્રોલ પેનલ</title>
+
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome (Icons માટે) -->
+
+    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <!-- Quill Editor CSS & JS -->
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
-    <!-- jsPDF & AutoTable Library -->
+
+    <!-- jsPDF & AutoTable Library (PDF ડાઉનલોડ માટે) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 </head>
@@ -41,7 +45,7 @@
         <!-- Main Content Area -->
         <main class="flex-1 container mx-auto px-4 py-6 space-y-6">
 
-            <!-- Grid-1: વેબસાઈટ સેટિંગ્સ, નોટિસ, ફોટો ગેલેરી, પંચાયત વિગત -->
+            <!-- Grid-1: વેબસાઈટ સેટિંગ્સ, નોટિસ, ફોટો ગેલેરી -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
                 <!-- સેક્શન ૧: વેબસાઇટ સેટિંગ્સ -->
@@ -106,37 +110,37 @@
                     </div>
                 </div>
 
-                <!-- સેક્શન ૬: ગામ અને પંચાયત વિગત -->
-                <div class="bg-purple-50/70 border border-purple-200 p-5 rounded-xl shadow-sm space-y-4 md:col-span-2 lg:col-span-3">
-                    <h3 class="font-bold border-b border-purple-300 pb-2 text-purple-900">૬. ગામ અને પંચાયત વિગત મેનેજર</h3>
-                    <form id="add-menu-form" class="space-y-3">
-                        <input type="hidden" id="edit-menu-id" value="">
-                        <div>
-                            <label class="text-xs font-semibold text-purple-950">મેનૂનું નામ (શીર્ષક):</label>
-                            <input type="text" id="menu-title" placeholder="દા.ત. આપત્તિ વ્યવસ્થાપન પ્લાન" required class="w-full border border-purple-300 p-2 rounded text-sm bg-white">
-                        </div>
-                        <div>
-                            <label class="text-xs font-semibold text-purple-950">વિગત/માહિતી:</label>
-                            <div id="menu-editor-container" class="bg-white rounded border border-purple-300" style="min-height: 150px;"></div>
-                        </div>
-                        <div class="flex gap-2">
-                            <button type="submit" id="save-menu-btn" class="w-full bg-purple-700 hover:bg-purple-800 text-white text-xs px-4 py-2 rounded font-bold shadow transition">મેનૂ સેવ કરો</button>
-                            <button type="button" id="cancel-edit-btn" class="hidden bg-gray-500 hover:bg-gray-600 text-white text-xs px-4 py-2 rounded font-bold transition">રદ કરો</button>
-                        </div>
-                    </form>
-
-                    <div class="mt-4 border-t border-purple-200 pt-3">
-                        <h4 class="text-xs font-bold text-purple-950 mb-2">📋 હાલના મેનૂ:</h4>
-                        <div id="admin-menu-list" class="space-y-2 max-h-60 overflow-y-auto pr-1">
-                            <p class="text-xs text-gray-500">મેનૂ લોડ થઈ રહ્યા છે...</p>
-                        </div>
-                    </div>
-                </div>
-
             </div>
 
-            <!-- Grid-2: ફરિયાદો, સ્ટાફ અને સમય પત્રક સેક્શન -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+            <!-- સેક્શન ૬: ગામ અને પંચાયત વિગત (Full Width) -->
+            <div class="bg-purple-50/70 border border-purple-200 p-5 rounded-xl shadow-sm space-y-4">
+                <h3 class="font-bold border-b border-purple-300 pb-2 text-purple-900">૬. ગામ અને પંચાયત વિગત મેનેજર</h3>
+                <form id="add-menu-form" class="space-y-3">
+                    <input type="hidden" id="edit-menu-id" value="">
+                    <div>
+                        <label class="text-xs font-semibold text-purple-950">મેનૂનું નામ (શીર્ષક):</label>
+                        <input type="text" id="menu-title" placeholder="દા.ત. આપત્તિ વ્યવસ્થાપન પ્લાન" required class="w-full border border-purple-300 p-2 rounded text-sm bg-white">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-purple-950">વિગત/માહિતી:</label>
+                        <div id="menu-editor-container" class="bg-white rounded border border-purple-300" style="min-height: 150px;"></div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button type="submit" id="save-menu-btn" class="w-full bg-purple-700 hover:bg-purple-800 text-white text-xs px-4 py-2 rounded font-bold shadow transition">મેનૂ સેવ કરો</button>
+                        <button type="button" id="cancel-edit-btn" class="hidden bg-gray-500 hover:bg-gray-600 text-white text-xs px-4 py-2 rounded font-bold transition">રદ કરો</button>
+                    </div>
+                </form>
+
+                <div class="mt-4 border-t border-purple-200 pt-3">
+                    <h4 class="text-xs font-bold text-purple-950 mb-2">📋 હાલના મેનૂ:</h4>
+                    <div id="admin-menu-list" class="space-y-2 max-h-60 overflow-y-auto pr-1">
+                        <p class="text-xs text-gray-500">મેનૂ લોડ થઈ રહ્યા છે...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grid-2: ફરિયાદો, કમિટી, સમય પત્રક અને સમિતિઓ -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                 <!-- ૧. ફરિયાદ મેનેજમેન્ટ અને PDF રિપોર્ટ -->
                 <div class="bg-emerald-50/80 border border-emerald-200 p-5 rounded-xl shadow-sm space-y-4">
@@ -218,7 +222,9 @@
         </main>
     </div>
 
-    <!-- JavaScript Reference (જો તમારી admin.js કોઈ ફોલ્ડરમાં હોય તો તે મુજબ પાથ બદલી લેવો) -->
-    <script type="module" src="admin.js"></script>
+    <!-- JavaScript Reference -->
+    <!-- ⚠️ જો admin.js મુખ્ય ફોલ્ડરમાં હોય તો src="./admin.js" રહેવા દો -->
+    <!-- ⚠️ જો admin.js 'js' નામના ફોલ્ડરમાં હોય તો src="./js/admin.js" કરી દેવું -->
+    <script type="module" src="./admin.js"></script>
 </body>
 </html>
