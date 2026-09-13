@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>પંચાયત વિગત</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 font-sans min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-purple-900 via-indigo-900 to-purple-900 text-white shadow-lg p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 id="page-title" class="text-xl font-bold text-amber-300">વિગત લોડ થઈ રહી છે...</h1>
+            <a href="index.html" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow">
+                ← મુખ્ય પૃષ્ઠ પર પાછા જાઓ
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="container mx-auto px-4 py-6 flex-grow">
+        <div class="bg-white rounded-xl shadow-md p-6 border border-purple-100">
+            <div id="page-content" class="text-gray-800 leading-relaxed space-y-4">
+                <p class="text-center text-gray-500">ડેટા લોડ થઈ રહ્યો છે...</p>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        import { db } from "./js/firebase-config.js";
+        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        async function loadDetailPage() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const menuId = urlParams.get('id');
+
+            if (!menuId) {
+                document.getElementById("page-title").innerText = "ભૂલ!";
+                document.getElementById("page-content").innerHTML = "<p class='text-red-500'>કોઈ ચોક્કસ મેનૂ પસંદ કરેલ નથી.</p>";
+                return;
+            }
+
+            const docRef = doc(db, "village_details", menuId);
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                document.getElementById("page-title").innerText = data.title;
+                document.getElementById("page-content").innerHTML = data.content || "<p>કોઈ માહિતી ઉપલબ્ધ નથી.</p>";
+            } else {
+                document.getElementById("page-title").innerText = "માહિતી મળી નથી";
+                document.getElementById("page-content").innerHTML = "<p>આ વિભાગ માટે કોઈ ડેટા મળ્યો નથી.</p>";
+            }
+        }
+
+        loadDetailPage();
+    </script>
+</body>
+</html>
