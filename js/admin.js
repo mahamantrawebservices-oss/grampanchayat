@@ -665,12 +665,20 @@ async function loadAdminSchedule() {
 
         snap.forEach(docSnap => {
             const item = docSnap.data();
+            
+            // જો જૂના કે નવા ડેટામાં કી-નામ અલગ હોય તો પણ ડેટા લોડ થઈ જશે
+            const name = item.name || item.officerName || "-";
+            const designation = item.designation || item.post || item.role || "-";
+            const timing = item.timing || item.time || "-";
+            const days = item.days || item.workDays || "-";
+            const note = item.note || item.extraNote || "";
+
             container.innerHTML += `
                 <div class="flex justify-between items-center bg-white p-2 border border-blue-100 rounded shadow-sm text-xs mb-2">
                     <div class="space-y-0.5">
-                        <div class="font-bold text-gray-800">${item.name} <span class="text-blue-700">(${item.designation})</span></div>
-                        <div class="text-[11px] text-gray-600"><b>સમય:</b> ${item.timing} | <b>દિવસો:</b> ${item.days}</div>
-                        ${item.note ? `<div class="text-[10px] text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded inline-block"><b>નોંધ:</b> ${item.note}</div>` : ''}
+                        <div class="font-bold text-gray-800">${name} <span class="text-blue-700">(${designation})</span></div>
+                        <div class="text-[11px] text-gray-600"><b>સમય:</b> ${timing} | <b>દિવસો:</b> ${days}</div>
+                        ${note ? `<div class="text-[10px] text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded inline-block"><b>નોંધ:</b> ${note}</div>` : ''}
                     </div>
                     <div class="flex items-center gap-1 flex-shrink-0">
                         <button data-id="${docSnap.id}" class="edit-sch-btn bg-blue-600 hover:bg-blue-700 text-white text-[10px] px-2 py-1 rounded">એડિટ</button>
@@ -700,17 +708,26 @@ async function loadAdminSchedule() {
 
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    document.getElementById("sch-name").value = data.name || '';
-                    document.getElementById("sch-desig").value = data.designation || '';
-                    document.getElementById("sch-timing").value = data.timing || '';
-                    document.getElementById("sch-days").value = data.days || '';
-                    document.getElementById("sch-note").value = data.note || '';
+                    
+                    // HTML Input Element ની સાચી ID મુજબ ડેટા ભરવો
+                    const nameEl = document.getElementById("sch-officer-name") || document.getElementById("sch-name");
+                    const desigEl = document.getElementById("sch-officer-post") || document.getElementById("sch-desig");
+                    const timingEl = document.getElementById("sch-officer-time") || document.getElementById("sch-timing");
+                    const daysEl = document.getElementById("sch-officer-days") || document.getElementById("sch-days");
+                    const noteEl = document.getElementById("sch-officer-note") || document.getElementById("sch-note");
+
+                    if (nameEl) nameEl.value = data.name || data.officerName || '';
+                    if (desigEl) desigEl.value = data.designation || data.post || '';
+                    if (timingEl) timingEl.value = data.timing || data.time || '';
+                    if (daysEl) daysEl.value = data.days || data.workDays || '';
+                    if (noteEl) noteEl.value = data.note || data.extraNote || '';
+                    
                     document.getElementById("edit-schedule-id").value = id;
 
                     const submitBtn = document.getElementById("sch-submit-btn");
                     if (submitBtn) submitBtn.innerText = "સમય પત્રક અપડેટ કરો";
 
-                    document.getElementById("add-schedule-form").scrollIntoView({ behavior: 'smooth' });
+                    document.getElementById("add-schedule-form")?.scrollIntoView({ behavior: 'smooth' });
                 }
             });
         });
@@ -725,30 +742,44 @@ document.getElementById("add-schedule-form")?.addEventListener("submit", async (
     e.preventDefault();
     const editId = document.getElementById("edit-schedule-id")?.value;
 
+    // સાચા Elements માંથી જ Value મેળવવી
+    const nameVal = (document.getElementById("sch-officer-name") || document.getElementById("sch-name"))?.value;
+    const desigVal = (document.getElementById("sch-officer-post") || document.getElementById("sch-desig"))?.value;
+    const timingVal = (document.getElementById("sch-officer-time") || document.getElementById("sch-timing"))?.value;
+    const daysVal = (document.getElementById("sch-officer-days") || document.getElementById("sch-days"))?.value;
+    const noteVal = (document.getElementById("sch-officer-note") || document.getElementById("sch-note"))?.value || '';
+
     const payload = {
-        name: document.getElementById("sch-name").value,
-        designation: document.getElementById("sch-desig").value,
-        timing: document.getElementById("sch-timing").value,
-        days: document.getElementById("sch-days").value,
-        note: document.getElementById("sch-note").value || '',
+        name: nameVal,
+        designation: desigVal,
+        timing: timingVal,
+        days: daysVal,
+        note: noteVal,
         order: Date.now()
     };
 
-    if (editId) {
-        await setDoc(doc(db, "panchayat_schedule", editId), payload, { merge: true });
-        alert("સમય પત્રક અપડેટ થઈ ગયું!");
-        document.getElementById("edit-schedule-id").value = "";
-    } else {
-        await addDoc(collection(db, "panchayat_schedule"), payload);
-        alert("સમય પત્રક ઉમેરાઈ ગયું!");
+    try {
+        if (editId) {
+            await setDoc(doc(db, "panchayat_schedule", editId), payload, { merge: true });
+            alert("સમય પત્રક અપડેટ થઈ ગયું!");
+            document.getElementById("edit-schedule-id").value = "";
+        } else {
+            await addDoc(collection(db, "panchayat_schedule"), payload);
+            alert("સમય પત્રક ઉમેરાઈ ગયું!");
+        }
+
+        const submitBtn = document.getElementById("sch-submit-btn");
+        if (submitBtn) submitBtn.innerText = "સમય પત્રક ઉમેરો";
+
+        e.target.reset();
+        loadAdminSchedule();
+    } catch (error) {
+        alert("સેવ કરવામાં ભૂલ આવી: " + error.message);
     }
-
-    const submitBtn = document.getElementById("sch-submit-btn");
-    if (submitBtn) submitBtn.innerText = "સમય પત્રક ઉમેરો";
-
-    e.target.reset();
-    loadAdminSchedule();
 });
+
+// શરૂઆતમાં જ ડેટા લોડ કરવો
+loadAdminSchedule();
 // ==========================================
 // ૪. કાર્યરત સમિતિઓ લોજિક
 // ==========================================
