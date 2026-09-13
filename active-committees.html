@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>કાર્યરત સમિતિઓ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col font-sans">
+
+    <header class="bg-gradient-to-r from-purple-900 via-pink-950 to-purple-900 text-white p-4 shadow-md sticky top-0 z-50">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-lg md:text-xl font-bold text-amber-300 flex items-center gap-2">
+                <i class="fa-solid fa-sitemap"></i> ગ્રામ પંચાયતની કાર્યરત સમિતિઓ
+            </h1>
+            <a href="index.html" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow">← મુખ્ય પૃષ્ઠ</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-6 max-w-5xl flex-grow space-y-6" id="committees-list">
+        <p class="text-center text-gray-400">સમિતિઓ લોડ થઈ રહી છે...</p>
+    </main>
+
+    <script type="module">
+        import { db } from "./js/firebase-config.js";
+        import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        async function loadCommittees() {
+            const snap = await getDocs(collection(db, "active_committees"));
+            const container = document.getElementById("committees-list");
+            container.innerHTML = "";
+
+            if (snap.empty) {
+                container.innerHTML = `<p class="text-gray-500 text-center">કોઈ સમિતિ મળે લ નથી.</p>`;
+                return;
+            }
+
+            snap.forEach(d => {
+                const item = d.data();
+                let membersRows = "";
+                if(item.members && item.members.length > 0) {
+                    item.members.forEach((m, idx) => {
+                        membersRows += `
+                            <tr class="hover:bg-gray-50 border-b border-purple-50">
+                                <td class="p-2">${idx + 1}</td>
+                                <td class="p-2 font-semibold text-gray-800">${m.name}</td>
+                                <td class="p-2">${m.originalDesignation}</td>
+                                <td class="p-2"><span class="bg-purple-100 text-purple-900 px-2 py-0.5 rounded font-bold text-xs">${m.committeeRole}</span></td>
+                            </tr>
+                        `;
+                    });
+                }
+
+                container.innerHTML += `
+                    <div class="bg-white p-5 rounded-2xl shadow-md border border-purple-100 space-y-3">
+                        <h2 class="text-base font-bold text-purple-950 border-b border-purple-100 pb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-users text-purple-700"></i> ${item.committeeName}
+                        </h2>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs md:text-sm">
+                                <thead>
+                                    <tr class="bg-purple-50 text-purple-950">
+                                        <th class="p-2">ક્રમ</th>
+                                        <th class="p-2">સભ્યનું નામ</th>
+                                        <th class="p-2">મૂળ હોદ્દો</th>
+                                        <th class="p-2">સમિતિમાં હોદ્દો</th>
+                                    </tr>
+                                </thead>
+                                <tbody>${membersRows}</tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+        loadCommittees();
+    </script>
+</body>
+</html>
