@@ -808,24 +808,24 @@ document.getElementById("add-committee-group-form")?.addEventListener("submit", 
 loadAdminComplaints();
 
 
-import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// ૧. હાલની સેવ થયેલી લિંક એડમિન ફોર્મમાં લોડ કરવી
-async function loadTaxLinkAdmin() {
-    const urlInput = document.getElementById("tax-payment-url");
-    if (!urlInput) return;
+
+// ૧. એડમિન પેનલમાં હાલની લિંક લોડ કરવી
+async function loadAdminTaxLink() {
+    const inputEl = document.getElementById("tax-payment-url");
+    if (!inputEl) return;
 
     try {
         const docSnap = await getDoc(doc(db, "settings", "tax_payment"));
         if (docSnap.exists()) {
-            urlInput.value = docSnap.data().url || "";
+            inputEl.value = docSnap.data().url || "";
         }
     } catch (err) {
-        console.error("ટેક્સ લિંક લોડ કરવામાં ભૂલ:", err);
+        console.error("એડમિન લિંક લોડમાં ભૂલ:", err);
     }
 }
 
-// ૨. નવી લિંક સેવ કરવી
+// ૨. ફોર્મ સબમિટ થતાં લિંક સેવ કરવી
 document.getElementById("tax-link-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const urlValue = document.getElementById("tax-payment-url").value;
@@ -836,11 +836,10 @@ document.getElementById("tax-link-form")?.addEventListener("submit", async (e) =
             updatedAt: Date.now()
         }, { merge: true });
 
-        alert("મિલકત વેરાની લિંક સફળતાપૂર્વક સેવ થઈ ગઈ!");
+        alert("મિલકત વેરાની લિંક સફળતાપૂર્વક અપડેટ થઈ ગઈ!");
     } catch (err) {
         alert("લિંક સેવ કરવામાં ભૂલ આવી: " + err.message);
     }
 });
 
-// પેજ લોડ થતાં જ લિંક બતાવવી
-loadTaxLinkAdmin();
+loadAdminTaxLink();
