@@ -865,21 +865,52 @@ async function loadAdminCustomButtons() {
             listDiv.innerHTML += `
                 <div class="flex justify-between items-center bg-gray-50 p-2 border rounded text-xs">
                     <span class="font-bold text-gray-800">${data.buttonTitle}</span>
-                    <div class="flex gap-1">
-                        <button data-id="${docSnap.id}" class="delete-page-btn bg-red-600 hover:bg-red-700 text-white px-2 py-0.5 rounded text-[10px]">ડિલીટ</button>
+                    <div class="flex gap-1.5">
+                        <button data-id="${docSnap.id}" class="edit-page-btn bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-[10px]">એડિટ</button>
+                        <button data-id="${docSnap.id}" class="delete-page-btn bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-[10px]">ડિલીટ</button>
                     </div>
                 </div>
             `;
         });
 
-        // ડિલીટ ઇવેન્ટ
+        // 🗑️ ડિલીટ કરવાની ઇવેન્ટ
         document.querySelectorAll(".delete-page-btn").forEach(btn => {
             btn.addEventListener("click", async (e) => {
                 const id = e.target.getAttribute("data-id");
                 if (confirm("શું તમે આ બટન અને તેનું પેજ ડિલીટ કરવા માંગો છો?")) {
                     await deleteDoc(doc(db, "custom_pages", id));
                     alert("બટન ડિલીટ થઈ ગયું!");
+                    resetCustomPageForm();
                     loadAdminCustomButtons();
+                }
+            });
+        });
+
+        // ✏️ એડિટ કરવાની ઇવેન્ટ
+        document.querySelectorAll(".edit-page-btn").forEach(btn => {
+            btn.addEventListener("click", async (e) => {
+                const id = e.target.getAttribute("data-id");
+                try {
+                    const docSnap = await getDoc(doc(db, "custom_pages", id));
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        
+                        // ફોર્મમાં ડેટા ભરવો
+                        document.getElementById("edit-custom-page-id").value = id;
+                        document.getElementById("custom-btn-title").value = data.buttonTitle || '';
+                        document.getElementById("custom-page-html").value = data.htmlContent || '';
+
+                        // બટનનું લખાણ બદલવું
+                        const submitBtn = document.getElementById("custom-page-submit-btn");
+                        const cancelBtn = document.getElementById("custom-page-cancel-btn");
+                        if (submitBtn) submitBtn.innerText = "બટન અને પેજ અપડેટ કરો";
+                        if (cancelBtn) cancelBtn.classList.remove("hidden");
+
+                        // સ્ક્રોલ કરીને ફોર્મ પર જવું
+                        document.getElementById("add-page-button-form")?.scrollIntoView({ behavior: 'smooth' });
+                    }
+                } catch (err) {
+                    console.error("ડેટા મેળવવામાં ભૂલ:", err);
                 }
             });
         });
@@ -889,26 +920,56 @@ async function loadAdminCustomButtons() {
     }
 }
 
-// ૨. નવું બટન અને પેજ સેવ કરવું
+// ૨. ફોર્મ રિસેટ કરવા માટેનું ફંક્શન
+function resetCustomPageForm() {
+    const form = document.getElementById("add-page-button-form");
+    if (form) form.reset();
+    
+    document.getElementById("edit-custom-page-id").value = "";
+    const submitBtn = document.getElementById("custom-page-submit-btn");
+    const cancelBtn = document.getElementById("custom-page-cancel-btn");
+    
+    if (submitBtn) submitBtn.innerText = "નવું બટન અને પેજ ઉમેરો";
+    if (cancelBtn) cancelBtn.classList.add("hidden");
+}
+
+// ૩. કેન્સલ બટન માટે ઇવેન્ટ
+document.getElementById("custom-page-cancel-btn")?.addEventListener("click", () => {
+    resetCustomPageForm();
+});
+
+// ૪. નવું બટન ઉમેરવું અથવા જૂનું અપડેટ કરવું
 document.getElementById("add-page-button-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     
+    const editId = document.getElementById("edit-custom-page-id").value;
     const title = document.getElementById("custom-btn-title").value;
     const htmlContent = document.getElementById("custom-page-html").value;
 
-    try {
-        await addDoc(collection(db, "custom_pages"), {
-            buttonTitle: title,
-            htmlContent: htmlContent,
-            createdAt: Date.now()
-        });
+    const payload = {
+        buttonTitle: title,
+        htmlContent: htmlContent,
+        updatedAt: Date.now()
+    };
 
-        alert("નવું બટન અને પેજ ઉમેરાઈ ગયું!");
-        e.target.reset();
+    try {
+        if (editId) {
+            // જો એડિટ આઈડી હોય તો અપડેટ કરો
+            await setDoc(doc(db, "custom_pages", editId), payload, { merge: true });
+            alert("બટન અને પેજ સફળતાપૂર્વક અપડેટ થઈ ગયું!");
+        } else {
+            // નવું એડ કરો
+            payload.createdAt = Date.now();
+            await addDoc(collection(db, "custom_pages"), payload);
+            alert("નવું બટન અને પેજ ઉમેરાઈ ગયું!");
+        }
+
+        resetCustomPageForm();
         loadAdminCustomButtons();
     } catch (err) {
-        alert("સેવ કરવામાં ભૂલ આવી: " + err.message);
+        alert("સેવ/અપડેટ કરવામાં ભૂલ આવી: " + err.message);
     }
 });
 
+// શરૂઆતમાં ડેટા લોડ કરવો
 loadAdminCustomButtons();
