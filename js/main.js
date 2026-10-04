@@ -244,7 +244,7 @@ async function loadVillageDetailsMenu() {
 }
 
 
-
+// 15. ડાયનેમિક બટન સેક્શન
 async function setupTaxLink() {
     const taxBtn = document.getElementById("pay-tax-btn");
     if (!taxBtn) return;
@@ -261,6 +261,44 @@ async function setupTaxLink() {
 }
 
 setupTaxLink();
+
+
+
+
+async function loadCustomButtons() {
+    const container = document.getElementById("custom-buttons-container");
+    if (!container) return;
+
+    try {
+        const snap = await getDocs(collection(db, "custom_pages"));
+        container.innerHTML = "";
+
+        if (snap.empty) {
+            container.innerHTML = "<p class='text-xs text-gray-500 col-span-full text-center py-2'>હાલ કોઈ વધારાની સેવા ઉમેરાયેલ નથી.</p>";
+            return;
+        }
+
+        snap.forEach(docSnap => {
+            const data = docSnap.data();
+            const pageId = docSnap.id;
+
+            container.innerHTML += `
+                <a href="custom-page.html?id=${pageId}" 
+                   class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold p-3 rounded-xl shadow-sm hover:shadow text-xs md:text-sm text-center flex flex-col items-center justify-center gap-2 transition transform hover:-translate-y-0.5">
+                    <i class="fa-solid fa-link text-lg"></i>
+                    <span>${data.buttonTitle}</span>
+                </a>
+            `;
+        });
+    } catch (err) {
+        console.error("બટનો લોડ કરવામાં ભૂલ:", err);
+    }
+}
+
+loadCustomButtons();
+
+
+
 
 
 
