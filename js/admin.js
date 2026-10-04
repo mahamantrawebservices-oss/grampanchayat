@@ -843,3 +843,72 @@ document.getElementById("tax-link-form")?.addEventListener("submit", async (e) =
 });
 
 loadAdminTaxLink();
+
+
+
+// ૧. એડમિનમાં ઉમેરેલા બટન્સનું લિસ્ટ લોડ કરવું
+async function loadAdminCustomButtons() {
+    const listDiv = document.getElementById("admin-custom-buttons-list");
+    if (!listDiv) return;
+
+    try {
+        const snap = await getDocs(collection(db, "custom_pages"));
+        listDiv.innerHTML = "";
+
+        if (snap.empty) {
+            listDiv.innerHTML = "<p class='text-xs text-gray-400'>કોઈ કસ્ટમ બટન ઉમેરાયેલ નથી.</p>";
+            return;
+        }
+
+        snap.forEach(docSnap => {
+            const data = docSnap.data();
+            listDiv.innerHTML += `
+                <div class="flex justify-between items-center bg-gray-50 p-2 border rounded text-xs">
+                    <span class="font-bold text-gray-800">${data.buttonTitle}</span>
+                    <div class="flex gap-1">
+                        <button data-id="${docSnap.id}" class="delete-page-btn bg-red-600 hover:bg-red-700 text-white px-2 py-0.5 rounded text-[10px]">ડિલીટ</button>
+                    </div>
+                </div>
+            `;
+        });
+
+        // ડિલીટ ઇવેન્ટ
+        document.querySelectorAll(".delete-page-btn").forEach(btn => {
+            btn.addEventListener("click", async (e) => {
+                const id = e.target.getAttribute("data-id");
+                if (confirm("શું તમે આ બટન અને તેનું પેજ ડિલીટ કરવા માંગો છો?")) {
+                    await deleteDoc(doc(db, "custom_pages", id));
+                    alert("બટન ડિલીટ થઈ ગયું!");
+                    loadAdminCustomButtons();
+                }
+            });
+        });
+
+    } catch (err) {
+        console.error("બટન લિસ્ટ લોડમાં ભૂલ:", err);
+    }
+}
+
+// ૨. નવું બટન અને પેજ સેવ કરવું
+document.getElementById("add-page-button-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    
+    const title = document.getElementById("custom-btn-title").value;
+    const htmlContent = document.getElementById("custom-page-html").value;
+
+    try {
+        await addDoc(collection(db, "custom_pages"), {
+            buttonTitle: title,
+            htmlContent: htmlContent,
+            createdAt: Date.now()
+        });
+
+        alert("નવું બટન અને પેજ ઉમેરાઈ ગયું!");
+        e.target.reset();
+        loadAdminCustomButtons();
+    } catch (err) {
+        alert("સેવ કરવામાં ભૂલ આવી: " + err.message);
+    }
+});
+
+loadAdminCustomButtons();
