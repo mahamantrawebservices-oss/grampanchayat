@@ -244,7 +244,7 @@ async function loadVillageDetailsMenu() {
 }
 
 
-// 15. ડાયનેમિક બટન સેક્શન
+// 15. વેરો ભરો બટન સેક્શન
 async function setupTaxLink() {
     const taxBtn = document.getElementById("pay-tax-btn");
     if (!taxBtn) return;
@@ -264,7 +264,7 @@ setupTaxLink();
 
 
 
-
+// 15. ડાયનેમિક બટન સેક્શન
 async function loadCustomButtons() {
     const container = document.getElementById("custom-buttons-container");
     if (!container) return;
