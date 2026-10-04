@@ -973,3 +973,143 @@ document.getElementById("add-page-button-form")?.addEventListener("submit", asyn
 
 // શરૂઆતમાં ડેટા લોડ કરવો
 loadAdminCustomButtons();
+
+
+
+
+// ૧. એડમિનમાં ઇવેન્ટ્સનું લિસ્ટ લોડ કરવું
+async function loadAdminEvents() {
+    const listDiv = document.getElementById("admin-events-list");
+    if (!listDiv) return;
+
+    try {
+        const snap = await getDocs(collection(db, "events"));
+        listDiv.innerHTML = "";
+
+        const today = new Date().toISOString().split('T')[0];
+
+        if (snap.empty) {
+            listDiv.innerHTML = "<p class='text-xs text-gray-400'>કોઈ ઇવેન્ટ ઉમેરાયેલ નથી.</p>";
+            return;
+        }
+
+        for (const docSnap of snap.docs) {
+            const data = docSnap.data();
+
+            // જૂની ઇવેન્ટ્સ આપોઆપ ડિલીટ કરવી
+            if (data.eventDate < today) {
+                await deleteDoc(doc(docSnap.ref));
+                continue;
+            }
+
+            listDiv.innerHTML += `
+                <div class="flex justify-between items-center bg-gray-50 p-2 border rounded text-xs">
+                    <div>
+                        <p class="font-bold text-gray-800">${data.eventName}</p>
+                        <p class="text-[10px] text-gray-500">📅 ${data.eventDate} | 📍 ${data.eventLocation}</p>
+                    </div>
+                    <div class="flex gap-1.5">
+                        <button data-id="${docSnap.id}" class="edit-event-btn bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-[10px]">એડિટ</button>
+                        <button data-id="${docSnap.id}" class="delete-event-btn bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-[10px]">ડિલીટ</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 🗑️ ડિલીટ ઇવેન્ટ
+        document.querySelectorAll(".delete-event-btn").forEach(btn => {
+            btn.addEventListener("click", async (e) => {
+                const id = e.target.getAttribute("data-id");
+                if (confirm("શું તમે આ ઇવેન્ટ ડિલીટ કરવા માંગો છો?")) {
+                    await deleteDoc(doc(db, "events", id));
+                    alert("ઇવેન્ટ ડિલીટ થઈ ગઈ!");
+                    resetEventForm();
+                    loadAdminEvents();
+                }
+            });
+        });
+
+        // ✏️ એડિટ ઇવેન્ટ
+        document.querySelectorAll(".edit-event-btn").forEach(btn => {
+            btn.addEventListener("click", async (e) => {
+                const id = e.target.getAttribute("data-id");
+                try {
+                    const docSnap = await getDoc(doc(db, "events", id));
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        
+                        document.getElementById("edit-event-id").value = id;
+                        document.getElementById("event-name").value = data.eventName || '';
+                        document.getElementById("event-date").value = data.eventDate || '';
+                        document.getElementById("event-location").value = data.eventLocation || '';
+
+                        const submitBtn = document.getElementById("event-submit-btn");
+                        const cancelBtn = document.getElementById("event-cancel-btn");
+                        if (submitBtn) submitBtn.innerText = "ઇવેન્ટ અપડેટ કરો";
+                        if (cancelBtn) cancelBtn.classList.remove("hidden");
+
+                        document.getElementById("event-form")?.scrollIntoView({ behavior: 'smooth' });
+                    }
+                } catch (err) {
+                    console.error("ઇવેન્ટ મેળવવામાં ભૂલ:", err);
+                }
+            });
+        });
+
+    } catch (err) {
+        console.error("ઇવેન્ટ્સ લોડમાં ભૂલ:", err);
+    }
+}
+
+// ૨. ફોર્મ રિસેટ ફંક્શન
+function resetEventForm() {
+    const form = document.getElementById("event-form");
+    if (form) form.reset();
+    
+    document.getElementById("edit-event-id").value = "";
+    const submitBtn = document.getElementById("event-submit-btn");
+    const cancelBtn = document.getElementById("event-cancel-btn");
+    
+    if (submitBtn) submitBtn.innerText = "નવી ઇવેન્ટ ઉમેરો";
+    if (cancelBtn) cancelBtn.classList.add("hidden");
+}
+
+// ૩. કેન્સલ બટન ઇવેન્ટ
+document.getElementById("event-cancel-btn")?.addEventListener("click", () => {
+    resetEventForm();
+});
+
+// ૪. ઇવેન્ટ સેવ અથવા અપડેટ કરવી
+document.getElementById("event-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    
+    const editId = document.getElementById("edit-event-id").value;
+    const name = document.getElementById("event-name").value;
+    const date = document.getElementById("event-date").value;
+    const location = document.getElementById("event-location").value;
+
+    const payload = {
+        eventName: name,
+        eventDate: date,
+        eventLocation: location,
+        updatedAt: Date.now()
+    };
+
+    try {
+        if (editId) {
+            await setDoc(doc(db, "events", editId), payload, { merge: true });
+            alert("ઇવેન્ટ સફળતાપૂર્વક અપડેટ થઈ ગઈ!");
+        } else {
+            payload.createdAt = Date.now();
+            await addDoc(collection(db, "events"), payload);
+            alert("નવી ઇવેન્ટ ઉમેરાઈ ગઈ!");
+        }
+
+        resetEventForm();
+        loadAdminEvents();
+    } catch (err) {
+        alert("સેવ કરવામાં ભૂલ આવી: " + err.message);
+    }
+});
+
+loadAdminEvents();
