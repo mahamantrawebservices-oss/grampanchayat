@@ -137,35 +137,15 @@
     </a>
 </div>
 
-            <!-- Complaint Form -->
-            <div id="complaint" class="bg-white p-6 rounded-xl shadow-md border border-gray-100">
-                <h3 class="text-xl font-bold text-red-600 border-b pb-2 mb-4">
-                    <i class="fa-solid fa-pen-to-square"></i> પંચાયતમાં સમસ્યા/ફરિયાદ નોંધાવો
-                </h3>
-                <form id="complaint-form" class="space-y-4">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <input type="text" id="c-name" placeholder="તમારું નામ" required class="w-full border p-2.5 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
-                        <input type="tel" id="c-mobile" placeholder="મોબાઈલ નંબર" required class="w-full border p-2.5 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <input type="text" id="c-faliya" placeholder="ફળિયું / વિસ્તાર" required class="w-full border p-2.5 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
-                        <input type="text" id="c-house" placeholder="મકાન નંબર" class="w-full border p-2.5 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
-                    </div>
-                    <div>
-                        <select id="c-type" required class="w-full border p-2.5 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
-                            <option value="">સમસ્યાનો પ્રકાર પસંદ કરો</option>
-                            <option value="પાણી">પીવાના પાણીની સમસ્યા</option>
-                            <option value="ગટર/સફાઈ">ગટર / રસ્તાની સફાઈ</option>
-                            <option value="સ્ટ્રીટ લાઈટ">સ્ટ્રીટ લાઈટ બંધ છે</option>
-                            <option value="અન્ય">અન્ય રજૂઆત</option>
-                        </select>
-                    </div>
-                    <textarea id="c-msg" placeholder="સમસ્યાની વિગતવાર માહિતી લખો..." rows="3" required class="w-full border p-2.5 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"></textarea>
-                    <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg shadow transition">
-                        ફરિયાદ સબમિટ કરો
-                    </button>
-                </form>
-            </div>
+<!-- ડાયનેમિક કસ્ટમ બટન્સ સેક્શન -->
+<div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 my-6">
+    <h3 class="font-bold text-gray-800 text-base md:text-lg mb-4 flex items-center gap-2 border-b pb-2">
+        <i class="fa-solid fa-grid-2 text-amber-600"></i> પંચાયત સેવાઓ અને અન્ય લિંક્સ
+    </h3>
+    <div id="custom-buttons-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+        <p class="text-xs text-gray-400 col-span-full text-center py-4">બટનો લોડ થઈ રહ્યા છે...</p>
+    </div>
+</div>
 
         </div>
 
