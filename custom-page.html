@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">ગામ પંચાયત - સેવા</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col font-sans">
+
+    <header class="bg-amber-800 text-white p-4 shadow-md sticky top-0 z-50">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 id="header-title" class="text-lg md:text-xl font-bold flex items-center gap-2">
+                <i class="fa-solid fa-file-lines"></i> પંચાયત સેવા
+            </h1>
+            <a href="index.html" class="bg-amber-900 hover:bg-amber-950 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-amber-700">← મુખ્ય પૃષ્ઠ</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8 max-w-5xl flex-grow">
+        <div id="page-content" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 min-h-[300px]">
+            <p class="text-xs text-gray-400 text-center py-8">માહિતી લોડ થઈ રહી છે...</p>
+        </div>
+    </main>
+
+    <script type="module">
+        import { db } from "./js/firebase-config.js";
+        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const pageId = urlParams.get('id');
+
+        async function loadCustomPageContent() {
+            const contentDiv = document.getElementById("page-content");
+            const headerTitle = document.getElementById("header-title");
+            const pageTitle = document.getElementById("page-title");
+
+            if (!pageId) {
+                contentDiv.innerHTML = "<p class='text-red-500 text-center'>અમાન્ય પેજ લિંક.</p>";
+                return;
+            }
+
+            try {
+                const docSnap = await getDoc(doc(db, "custom_pages", pageId));
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    headerTitle.innerHTML = `<i class="fa-solid fa-file-lines"></i> ${data.buttonTitle}`;
+                    pageTitle.innerText = data.buttonTitle;
+                    
+                    // HTML કોડ રેન્ડર કરવો
+                    contentDiv.innerHTML = data.htmlContent || "<p class='text-gray-500 text-center'>કોઈ કન્ટેન્ટ ઉપલબ્ધ નથી.</p>";
+                } else {
+                    contentDiv.innerHTML = "<p class='text-red-500 text-center'>પેજ મળ્યું નથી.</p>";
+                }
+            } catch (err) {
+                console.error("પેજ કન્ટેન્ટ લોડ કરવામાં ભૂલ:", err);
+            }
+        }
+
+        loadCustomPageContent();
+    </script>
+</body>
+</html>
