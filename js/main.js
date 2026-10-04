@@ -1,5 +1,5 @@
 import { db } from "./firebase-config.js";
-import { collection, addDoc, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { collection, addDoc, getDocs, doc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // ૧. વેબસાઇટ સેટિંગ્સ લોડ કરવા
 async function loadSettings() {
@@ -296,6 +296,75 @@ async function loadCustomButtons() {
 }
 
 loadCustomButtons();
+
+
+
+
+// 16. Events સેક્શન
+async function loadUpcomingEvents() {
+    const container = document.getElementById("events-container");
+    if (!container) return;
+
+    try {
+        const snap = await getDocs(collection(db, "events"));
+        container.innerHTML = "";
+
+        // આજની તારીખ (YYYY-MM-DD ફોરમેટમાં)
+        const today = new Date().toISOString().split('T')[0];
+        let hasEvents = false;
+
+        if (snap.empty) {
+            container.innerHTML = "<p class='text-xs text-gray-500 col-span-full text-center py-4'>હાલ કોઈ આવનારો કાર્યક્રમ નથી.</p>";
+            return;
+        }
+
+        for (const docSnap of snap.docs) {
+            const data = docSnap.data();
+
+            // 🧹 પૂરી થયેલી ઇવેન્ટ્સ આપોઆપ ડિલીટ કરવી
+            if (data.eventDate < today) {
+                await deleteDoc(doc(db, "events", docSnap.id));
+                continue;
+            }
+
+            hasEvents = true;
+
+            // તારીખને ભારતીય ફોરમેટમાં કન્વર્ટ કરવી (DD/MM/YYYY)
+            const formattedDate = new Date(data.eventDate).toLocaleDateString('gu-IN', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+
+            container.innerHTML += `
+                <div class="bg-amber-50/50 border border-amber-200/60 rounded-xl p-4 shadow-sm hover:shadow transition flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between gap-2 mb-2">
+                            <span class="bg-amber-100 text-amber-800 text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-amber-300/50 flex items-center gap-1">
+                                <i class="fa-regular fa-calendar"></i> ${formattedDate}
+                            </span>
+                        </div>
+                        <h4 class="font-bold text-gray-800 text-sm md:text-base mb-1">${data.eventName}</h4>
+                        <p class="text-xs text-gray-600 flex items-start gap-1.5 mt-2">
+                            <i class="fa-solid fa-location-dot text-amber-600 mt-0.5"></i>
+                            <span>${data.eventLocation}</span>
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
+
+        if (!hasEvents) {
+            container.innerHTML = "<p class='text-xs text-gray-500 col-span-full text-center py-4'>હાલ કોઈ આવનારો કાર્યક્રમ નથી.</p>";
+        }
+
+    } catch (err) {
+        console.error("ઇવેન્ટ્સ લોડ કરવામાં ભૂલ:", err);
+    }
+}
+
+loadUpcomingEvents();
+
 
 
 
