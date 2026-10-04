@@ -243,6 +243,30 @@ async function loadVillageDetailsMenu() {
     });
 }
 
+
+
+async function setupTaxLink() {
+    const taxBtn = document.getElementById("pay-tax-btn");
+    if (!taxBtn) return;
+
+    try {
+        const docSnap = await getDoc(doc(db, "settings", "tax_payment"));
+        if (docSnap.exists() && docSnap.data().url) {
+            taxBtn.href = docSnap.data().url;
+            taxBtn.target = "_blank"; // નવા ટેબમાં ખોલવા માટે
+        }
+    } catch (err) {
+        console.error("ટેક્સ લિંક લોડ કરવામાં ભૂલ:", err);
+    }
+}
+
+setupTaxLink();
+
+
+
+
+
+
 // 🚀 સબમિટ/સ્ટાર્ટઅપ પ્રોસેસ
 loadSettings();
 loadPosts();
