@@ -162,8 +162,76 @@
 </div>
 
 
+
+<!-- Disaster Management Section (Events Section ની નીચે) -->
+<section class="my-8 px-4 container mx-auto">
+    <div class="bg-white p-6 rounded-2xl shadow-md border border-blue-100">
+        <h2 class="text-xl font-bold text-gray-800 mb-4 pb-2 border-b flex items-center gap-2">
+            🚨 આપત્તિ વ્યવસ્થાપન (Disaster Management)
+        </h2>
+
+        <!-- 4 સુંદર બ્લૂ બટન્સ -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            
+            <!-- બટન ૧: અગત્યના સંપર્ક નંબર -->
+            <button onclick="openDisasterPage('important_contacts', 'અગત્યના સંપર્ક નંબરો')" 
+                class="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-800 text-white font-bold py-3 px-4 rounded-xl shadow transition duration-300 transform hover:-translate-y-0.5">
+                📞 Important Contacts
+            </button>
+
+            <!-- બટન ૨: મોક ડ્રિલ -->
+            <button onclick="openDisasterPage('mock_drills', 'મોક ડ્રિલ (Mock Drills)')" 
+                class="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-800 text-white font-bold py-3 px-4 rounded-xl shadow transition duration-300 transform hover:-translate-y-0.5">
+                🛡️ Mock Drills
+            </button>
+
+            <!-- બટન ૩: VDRMP -->
+            <button onclick="openDisasterPage('vdrmp', 'VDRMP (ગામ આપત્તિ વ્યવસ્થાપન યોજના)')" 
+                class="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-800 text-white font-bold py-3 px-4 rounded-xl shadow transition duration-300 transform hover:-translate-y-0.5">
+                📜 VDRMP
+            </button>
+
+            <!-- બટન ૪: વ્યવસ્થાપન ગેલેરી -->
+            <button onclick="openDisasterPage('disaster_gallery', 'આપત્તિ વ્યવસ્થાપન ગેલેરી')" 
+                class="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-800 text-white font-bold py-3 px-4 rounded-xl shadow transition duration-300 transform hover:-translate-y-0.5">
+                🖼️ વ્યવસ્થાપન ગેલેરી
+            </button>
+
+        </div>
+    </div>
+</section>
+
+<!-- પેજ/માહિતી દર્શાવવા માટેનું Dynamic Modal Modal Container -->
+<div id="disaster-modal" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden">
+        <div class="bg-blue-700 text-white p-4 flex justify-between items-center">
+            <h3 id="disaster-modal-title" class="font-bold text-lg"></h3>
+            <button onclick="closeDisasterPage()" class="text-white hover:text-red-200 text-xl font-bold">&times;</button>
+        </div>
+        <div id="disaster-modal-content" class="p-6 overflow-y-auto space-y-4 text-gray-800">
+            <!-- અહીં Admin પેનલમાંથી એડિટ કરેલી HTML/Text માહિતી દેખાશે -->
+        </div>
+        <div class="p-3 bg-gray-100 border-t text-right">
+            <button onclick="closeDisasterPage()" class="bg-gray-600 hover:bg-gray-700 text-white text-xs font-bold px-4 py-2 rounded">બંધ કરો</button>
+        </div>
+    </div>
+</div>
+
+
+
+            
+
+
+
+
+            
   </div>
 
+
+
+
+
+        
         
         <!-- Right Column: Sidebar Info -->
         <div class="space-y-6">
