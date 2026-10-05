@@ -1115,64 +1115,64 @@ document.getElementById("event-form")?.addEventListener("submit", async (e) => {
 loadAdminEvents();
 
 
-// window.openDisasterPage તરીકે વ્યાખ્યાયિત કરો
-window.openDisasterPage = async function(key, title) {
-    const modal = document.getElementById('disaster-modal');
-    const modalTitle = document.getElementById('disaster-modal-title');
-    const modalContent = document.getElementById('disaster-modal-content');
 
-    if (!modal) {
-        console.error("modal element 'disaster-modal' મલ્યો નથી.");
-        return;
+
+document.addEventListener('DOMContentLoaded', function() {
+    const disasterSelect = document.getElementById('disaster-page-key');
+    const disasterTextarea = document.getElementById('disaster-page-content');
+    const disasterForm = document.getElementById('disaster-management-form');
+
+    if (!disasterForm) return;
+
+    // ફંક્શન: Firestore માંથી જૂનો ડેટા મેળવી ટેક્સ્ટએરિયામાં દર્શાવવો
+    async function fetchDisasterContent() {
+        const key = disasterSelect.value;
+        disasterTextarea.value = "લોડ થઈ રહ્યું છે...";
+        
+        try {
+            const docRef = doc(db, "disaster_management", key);
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                disasterTextarea.value = docSnap.data().content || '';
+            } else {
+                disasterTextarea.value = '';
+            }
+        } catch (error) {
+            console.error("ડેટા મેળવવામાં ભૂલ:", error);
+            disasterTextarea.value = '';
+        }
     }
 
-    modalTitle.innerText = title;
-    modalContent.innerHTML = "<p class='text-gray-500'>લોડ થઈ રહ્યું છે...</p>";
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
+    // શરૂઆતમાં અને ડ્રોપડાઉન બદલાય ત્યારે Firestore માંથી ડેટા લોડ કરવો
+    fetchDisasterContent();
+    disasterSelect.addEventListener('change', fetchDisasterContent);
 
-    try {
-        let savedData = JSON.parse(localStorage.getItem('disaster_pages_data') || '{}');
-        let content = savedData[key] || "<p class='text-gray-500'>હજુ સુધી કોઈ માહિતી ઉમેરવામાં આવી નથી.</p>";
-
-        modalContent.innerHTML = content;
-    } catch (error) {
-        modalContent.innerHTML = "<p class='text-red-500'>માહિતી લોડ કરવામાં ભૂલ આવી.</p>";
-    }
-};
-
-// window.closeDisasterPage તરીકે વ્યાખ્યાયિત કરો
-window.closeDisasterPage = function() {
-    const modal = document.getElementById('disaster-modal');
-    if (modal) {
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-    }
-};
-
-// Dropdown બદલાય ત્યારે તે પેજનો જૂનો ડેટા ટેક્સ્ટએરિયામાં લોડ કરવો
-const pageKeySelect = document.getElementById('disaster-page-key');
-if (pageKeySelect) {
-    pageKeySelect.addEventListener('change', function(e) {
-        const key = e.target.value;
-        let savedData = JSON.parse(localStorage.getItem('disaster_pages_data') || '{}');
-        document.getElementById('disaster-page-content').value = savedData[key] || '';
-    });
-}
-
-// માહિતી સેવ / અપડેટ કરવા માટે Form Submit Event
-const formElem = document.getElementById('disaster-management-form');
-if (formElem) {
-    formElem.addEventListener('submit', function(e) {
+    // ફોર્મ સબમિટ વખતે Firestore માં ડેટા Save / Update કરવો
+    disasterForm.addEventListener('submit', async function(e) {
         e.preventDefault();
-        const key = document.getElementById('disaster-page-key').value;
-        const content = document.getElementById('disaster-page-content').value;
+        
+        const key = disasterSelect.value;
+        const content = disasterTextarea.value;
+        const submitBtn = disasterForm.querySelector('button[type="submit"]');
 
-        let savedData = JSON.parse(localStorage.getItem('disaster_pages_data') || '{}');
-        savedData[key] = content;
+        submitBtn.disabled = true;
+        submitBtn.innerText = "સેવ થઈ રહ્યું છે...";
 
-        localStorage.setItem('disaster_pages_data', JSON.stringify(savedData));
+        try {
+            // Firestore માં "disaster_management" નામનું કલેક્શન અને "key" નામનો ડૉક્યુમેન્ટ
+            await setDoc(doc(db, "disaster_management", key), {
+                content: content,
+                updatedAt: new Date()
+            }, { merge: true });
 
-        alert('આપત્તિ વ્યવસ્થાપન પેજની માહિતી સફળતાપૂર્વક અપડેટ થઈ ગઈ છે!');
+            alert('✅ Firebase માં માહિતી સફળતાપૂર્વક અપડેટ થઈ ગઈ!');
+        } catch (error) {
+            console.error("Firebase માં સેવ કરવામાં ભૂલ:", error);
+            alert('❌ માહિતી સેવ કરવામાં સમસ્યા આવી!');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerText = "માહિતી સાચવો / અપડેટ કરો";
+        }
     });
-}
+});
