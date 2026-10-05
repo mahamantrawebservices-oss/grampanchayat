@@ -1180,49 +1180,53 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-document.addEventListener('DOMContentLoaded', function() {
+
+
+// એડમિન પેનલ લોડ થાય ત્યારે અને સેવ વખતે આ ફંક્શન ચાલશે
+document.addEventListener('DOMContentLoaded', () => {
     const mapForm = document.getElementById('village-map-form');
     const satInput = document.getElementById('admin-satellite-url');
     const pdfInput = document.getElementById('admin-revenue-pdf-url');
 
     if (!mapForm) return;
 
-    // ૧. હાલની લિંક્સ Firestore માંથી લોડ કરવી
-    async function loadMapSettings() {
+    // ૧. પહેલાં સેવ થયેલી લિંક્સ એડમિન પેનલમાં લાવવી
+    async function fetchMapSettings() {
         try {
             const docRef = doc(db, "village_map_settings", "links");
             const docSnap = await getDoc(docRef);
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                satInput.value = data.satelliteUrl || '';
-                pdfInput.value = data.revenuePdfUrl || '';
+                if (satInput) satInput.value = data.satelliteUrl || "";
+                if (pdfInput) pdfInput.value = data.revenuePdfUrl || "";
             }
-        } catch (error) {
-            console.error("નક્શા સેટિંગ્સ મેળવવામાં ભૂલ:", error);
+        } catch (err) {
+            console.error("એડમિનમાં ડેટા લોડિંગ એરર:", err);
         }
     }
 
-    loadMapSettings();
+    fetchMapSettings();
 
-    // ૨. નવી લિંક્સ સાચવવી
-    mapForm.addEventListener('submit', async function(e) {
+    // ૨. ફોર્મ સબમિટ વખતે Firebase માં સાચવવું
+    mapForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
+
         const submitBtn = mapForm.querySelector('button[type="submit"]');
         submitBtn.disabled = true;
         submitBtn.innerText = "સેવ થઈ રહ્યું છે...";
 
         try {
+            // Firestore Collection: village_map_settings | Document: links
             await setDoc(doc(db, "village_map_settings", "links"), {
-                satelliteUrl: satInput.value,
-                revenuePdfUrl: pdfInput.value,
+                satelliteUrl: satInput.value.trim(),
+                revenuePdfUrl: pdfInput.value.trim(),
                 updatedAt: new Date()
             }, { merge: true });
 
             alert('✅ નક્શાની લિંક્સ સફળતાપૂર્વક અપડેટ થઈ ગઈ!');
         } catch (error) {
-            console.error("લિંક સેવ કરવામાં ભૂલ:", error);
-            alert('❌ વિગત સાચવવામાં સમસ્યા આવી!');
+            console.error("Firebase Save Error:", error);
+            alert('❌ સેવ કરવામાં ભૂલ આવી: ' + error.message);
         } finally {
             submitBtn.disabled = false;
             submitBtn.innerText = "લિંક્સ સાચવો / અપડેટ કરો";
