@@ -1,104 +1,63 @@
-<!DOCTYPE html>
-<html lang="gu">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ગામનો નક્શો અને વિગતો</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-slate-100 min-h-screen flex flex-col font-sans">
+<script type="module">
+    import { db } from './js/firebase-config.js';
+    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    <!-- Header -->
-    <header class="bg-emerald-900 text-white py-4 px-6 shadow-md flex justify-between items-center">
-        <h1 class="text-xl font-bold flex items-center gap-2">🗺️ ગામનો નક્શો અને વિગત</h1>
-        <a href="index.html" class="bg-emerald-700 hover:bg-emerald-800 text-xs px-3 py-1.5 rounded text-white font-bold transition">મુખ્ય પેજ પર જાઓ</a>
-    </header>
+    const frame = document.getElementById('map-frame');
+    const btnGram = document.getElementById('btn-gram');
+    const btnSat = document.getElementById('btn-satellite');
+    const btnPdf = document.getElementById('btn-revenue-pdf');
 
-    <main class="container mx-auto p-4 md:p-6 flex-1 flex flex-col space-y-4">
-        
-        <!-- ૩ મુખ્ય બટનો -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    let satUrl = "";
+    let pdfUrl = "";
+    let isDataLoaded = false;
+
+    // Firebase Firestore માંથી એડમિન દ્વારા સેવ કરાયેલી લિંક્સ લોડ કરવી
+    async function loadMapLinks() {
+        try {
+            const docRef = doc(db, "village_map_settings", "links");
+            const docSnap = await getDoc(docRef);
             
-            <!-- બટન ૧: ગ્રામ મંચિત્ર -->
-            <button id="btn-gram" 
-               class="bg-blue-600 hover:bg-blue-800 text-white font-bold py-3 px-4 rounded-xl shadow transition text-center flex items-center justify-center gap-2">
-                🏛️ ગામની માહિતી મેપ (Gram Manchitra)
-            </button>
-
-            <!-- બટન ૨: સેટેલાઇટ મેપ -->
-            <button id="btn-satellite" 
-               class="bg-emerald-600 hover:bg-emerald-800 text-white font-bold py-3 px-4 rounded-xl shadow transition text-center flex items-center justify-center gap-2">
-                🛰️ સેટેલાઇટ મેપ (Google Map)
-            </button>
-
-            <!-- બટન ૩: રેવન્યુ સર્વે નંબર PDF -->
-            <button id="btn-revenue-pdf" 
-               class="bg-purple-600 hover:bg-purple-800 text-white font-bold py-3 px-4 rounded-xl shadow transition text-center flex items-center justify-center gap-2">
-                📄 રેવન્યુ સર્વે નંબર મેપ (PDF)
-            </button>
-
-        </div>
-
-        <!-- સમાન ટેબમાં માહિતી / મેપ / PDF દર્શાવવા માટેનું Container -->
-        <div class="flex-1 bg-white rounded-2xl shadow-lg border p-2 min-h-[600px] relative flex flex-col">
-            <iframe id="map-frame" class="w-full h-full min-h-[580px] rounded-xl border-0" src="https://grammanchitra.gov.in/"></iframe>
-        </div>
-
-    </main>
-
-    <!-- Firebase Script -->
-    <script type="module">
-        import { db } from './js/firebase-config.js';
-        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-        const frame = document.getElementById('map-frame');
-        const btnGram = document.getElementById('btn-gram');
-        const btnSat = document.getElementById('btn-satellite');
-        const btnPdf = document.getElementById('btn-revenue-pdf');
-
-        let satUrl = "";
-        let pdfUrl = "";
-
-        // Firestore માંથી એડમિન દ્વારા સેવ કરાયેલી લિંક્સ લોડ કરવી
-        async function loadMapLinks() {
-            try {
-                const docRef = doc(db, "village_map_settings", "links");
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    satUrl = data.satelliteUrl || "";
-                    pdfUrl = data.revenuePdfUrl || "";
-                }
-            } catch (err) {
-                console.error("લિંક લોડ કરવામાં ભૂલ:", err);
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                satUrl = data.satelliteUrl || "";
+                pdfUrl = data.revenuePdfUrl || "";
+                isDataLoaded = true;
+                console.log("લોડ થયેલી લિંક્સ:", { satUrl, pdfUrl });
+            } else {
+                console.warn("Firestore માં 'village_map_settings/links' નામનો ડૉક્યુમેન્ટ મળ્યો નથી.");
             }
+        } catch (err) {
+            console.error("Firebase માંથી લિંક લોડ કરવામાં ભૂલ આવે છે:", err);
         }
+    }
 
-        // ૧. ગ્રામ મંચિત્ર બટન
-        btnGram.addEventListener('click', () => {
-            frame.src = "https://grammanchitra.gov.in/";
-        });
+    // ૧. ગ્રામ મંચિત્ર બટન
+    btnGram.addEventListener('click', () => {
+        frame.src = "https://grammanchitra.gov.in/";
+    });
 
-        // ૨. સેટેલાઇટ મેપ બટન
-        btnSat.addEventListener('click', () => {
-            if (satUrl && satUrl.trim() !== "") {
-                frame.src = satUrl;
-            } else {
-                alert("સેટેલાઇટ મેપ લિંક એડમિન પેનલમાંથી સેટ કરેલી નથી.");
-            }
-        });
+    // ૨. સેટેલાઇટ મેપ બટન
+    btnSat.addEventListener('click', async () => {
+        if (!isDataLoaded) await loadMapLinks(); // જો ડેટા લોડ થવામાં સમય લાગ્યો હોય તો ફરી ટ્રાય કરો
 
-        // ૩. રેવન્યુ સર્વે નંબર PDF બટન
-        btnPdf.addEventListener('click', () => {
-            if (pdfUrl && pdfUrl.trim() !== "") {
-                frame.src = pdfUrl;
-            } else {
-                alert("રેવન્યુ PDF લિંક એડમિન પેનલમાંથી સેટ કરેલી નથી.");
-            }
-        });
+        if (satUrl && satUrl.trim() !== "") {
+            frame.src = satUrl;
+        } else {
+            alert("સેટેલાઇટ મેપ લિંક એડમિન પેનલમાંથી સેટ કરેલી નથી. કૃપા કરીને એડમિન પેનલમાં જઈ લિંક ઉમેરી સેવ કરો.");
+        }
+    });
 
-        // પેજ લોડ થતાં જ Firebase માંથી લિંક્સ મેળવવી
-        loadMapLinks();
-    </script>
-</body>
-</html>
+    // ૩. રેવન્યુ સર્વે નંબર PDF બટન
+    btnPdf.addEventListener('click', async () => {
+        if (!isDataLoaded) await loadMapLinks();
+
+        if (pdfUrl && pdfUrl.trim() !== "") {
+            frame.src = pdfUrl;
+        } else {
+            alert("રેવન્યુ PDF લિંક એડમિન પેનલમાંથી સેટ કરેલી નથી. કૃપા કરીને એડમિન પેનલમાં જઈ લિંક ઉમેરી સેવ કરો.");
+        }
+    });
+
+    // પેજ લોડ થતાં જ કનેક્શન શરૂ કરો
+    loadMapLinks();
+</script>
