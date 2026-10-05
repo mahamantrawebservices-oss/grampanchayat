@@ -20,10 +20,10 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             
             <!-- બટન ૧: ગ્રામ મંચિત્ર -->
-            <a href="https://grammanchitra.gov.in/" target="_blank" 
+            <button id="btn-gram" 
                class="bg-blue-600 hover:bg-blue-800 text-white font-bold py-3 px-4 rounded-xl shadow transition text-center flex items-center justify-center gap-2">
                 🏛️ ગામની માહિતી મેપ (Gram Manchitra)
-            </a>
+            </button>
 
             <!-- બટન ૨: સેટેલાઇટ મેપ -->
             <button id="btn-satellite" 
@@ -40,7 +40,7 @@
         </div>
 
         <!-- સમાન ટેબમાં માહિતી / મેપ / PDF દર્શાવવા માટેનું Container -->
-        <div class="flex-1 bg-white rounded-2xl shadow-lg border p-2 min-h-[600px] flex flex-col">
+        <div class="flex-1 bg-white rounded-2xl shadow-lg border p-2 min-h-[600px] relative flex flex-col">
             <iframe id="map-frame" class="w-full h-full min-h-[580px] rounded-xl border-0" src="https://grammanchitra.gov.in/"></iframe>
         </div>
 
@@ -52,39 +52,52 @@
         import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const frame = document.getElementById('map-frame');
+        const btnGram = document.getElementById('btn-gram');
         const btnSat = document.getElementById('btn-satellite');
         const btnPdf = document.getElementById('btn-revenue-pdf');
 
-        let satUrl = "https://maps.google.com";
+        let satUrl = "";
         let pdfUrl = "";
 
-        // Firestore માંથી લિંક્સ લોડ કરવી
+        // Firestore માંથી એડમિન દ્વારા સેવ કરાયેલી લિંક્સ લોડ કરવી
         async function loadMapLinks() {
             try {
                 const docRef = doc(db, "village_map_settings", "links");
                 const docSnap = await getDoc(docRef);
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    if(data.satelliteUrl) satUrl = data.satelliteUrl;
-                    if(data.revenuePdfUrl) pdfUrl = data.revenuePdfUrl;
+                    satUrl = data.satelliteUrl || "";
+                    pdfUrl = data.revenuePdfUrl || "";
                 }
             } catch (err) {
                 console.error("લિંક લોડ કરવામાં ભૂલ:", err);
             }
         }
 
-        btnSat.addEventListener('click', () => {
-            frame.src = satUrl;
+        // ૧. ગ્રામ મંચિત્ર બટન
+        btnGram.addEventListener('click', () => {
+            frame.src = "https://grammanchitra.gov.in/";
         });
 
-        btnPdf.addEventListener('click', () => {
-            if (pdfUrl) {
-                frame.src = pdfUrl;
+        // ૨. સેટેલાઇટ મેપ બટન
+        btnSat.addEventListener('click', () => {
+            if (satUrl && satUrl.trim() !== "") {
+                frame.src = satUrl;
             } else {
-                alert("રેવન્યુ PDF હજુ સુધી એડમિન પેનલમાંથી અપલોડ કરવામાં આવી નથી.");
+                alert("સેટેલાઇટ મેપ લિંક એડમિન પેનલમાંથી સેટ કરેલી નથી.");
             }
         });
 
+        // ૩. રેવન્યુ સર્વે નંબર PDF બટન
+        btnPdf.addEventListener('click', () => {
+            if (pdfUrl && pdfUrl.trim() !== "") {
+                frame.src = pdfUrl;
+            } else {
+                alert("રેવન્યુ PDF લિંક એડમિન પેનલમાંથી સેટ કરેલી નથી.");
+            }
+        });
+
+        // પેજ લોડ થતાં જ Firebase માંથી લિંક્સ મેળવવી
         loadMapLinks();
     </script>
 </body>
