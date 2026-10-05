@@ -367,6 +367,67 @@ loadUpcomingEvents();
 
 
 
+// Firebase Firestore માંથી મોડ્યુલ્સ ઇમ્પોર્ટ કરો (તમારી Firebase આયાત મુજબ સેટ કરો)
+
+// ૧. આપત્તિ વ્યવસ્થાપન મોડલ ખોલવાનું ફંક્શન
+window.openDisasterPage = async function(key, title) {
+    const modal = document.getElementById('disaster-modal');
+    const modalTitle = document.getElementById('disaster-modal-title');
+    const modalContent = document.getElementById('disaster-modal-content');
+
+    if (!modal) {
+        console.error("દુઃખદ! 'disaster-modal' નામનું એલિમેન્ટ મળ્યું નથી.");
+        return;
+    }
+
+    // ટાઇટલ અને લોડિંગ સ્ટેટ બતાવવું
+    modalTitle.innerText = title;
+    modalContent.innerHTML = "<p class='text-gray-500 font-bold animate-pulse'>Firebase માંથી માહિતી લોડ થઈ રહી છે...</p>";
+
+    // મોડલ શો કરવું
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+
+    try {
+        // Firestore માંથી "disaster_management" કલેક્શનમાંથી Document રીડ કરવો
+        const docRef = doc(db, "disaster_management", key);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists() && docSnap.data().content) {
+            modalContent.innerHTML = docSnap.data().content;
+        } else {
+            modalContent.innerHTML = `
+                <div class="text-center py-6 text-gray-500">
+                    <p class="text-base font-semibold">હજુ સુધી કોઈ માહિતી ઉમેરવામાં આવી નથી.</p>
+                    <p class="text-xs text-gray-400 mt-1">એડમિન પેનલમાંથી આ પેજની વિગત ઉમેરો.</p>
+                </div>`;
+        }
+    } catch (error) {
+        console.error("Firebase માંથી ડેટા મેળવવામાં ભૂલ:", error);
+        modalContent.innerHTML = "<p class='text-red-500'>માહિતી લોડ કરવામાં કઈંક ભૂલ આવી છે.</p>";
+    }
+};
+
+// ૨. મોડલ બંધ કરવાનું ફંક્શન
+window.closeDisasterPage = function() {
+    const modal = document.getElementById('disaster-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+};
+
+// મોડલની બહાર ક્લિક કરવાથી મોડલ બંધ થાય તે માટે
+document.addEventListener('click', function(event) {
+    const modal = document.getElementById('disaster-modal');
+    if (event.target === modal) {
+        closeDisasterPage();
+    }
+});
+
+
+
+
 
 
 
