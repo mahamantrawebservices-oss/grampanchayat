@@ -1113,3 +1113,42 @@ document.getElementById("event-form")?.addEventListener("submit", async (e) => {
 });
 
 loadAdminEvents();
+
+
+// Firestore / LocalStorage માંથી કન્ટેન્ટ મેળવીને Modal માં બતાવવું
+async function openDisasterPage(key, title) {
+    const modal = document.getElementById('disaster-modal');
+    const modalTitle = document.getElementById('disaster-modal-title');
+    const modalContent = document.getElementById('disaster-modal-content');
+
+    modalTitle.innerText = title;
+    modalContent.innerHTML = "<p class='text-gray-500'>લોડ થઈ રહ્યું છે...</p>";
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+
+    try {
+        // જો LocalStorage નો ઉપયોગ કરતા હોવ:
+        let savedData = JSON.parse(localStorage.getItem('disaster_pages_data') || '{}');
+        let content = savedData[key] || "<p class='text-gray-500'>હજુ સુધી કોઈ માહિતી ઉમેરવામાં આવી નથી.</p>";
+        
+        /* 
+        // જો Firebase Firestore નો ઉપયોગ કરી રહ્યા હોવ:
+        const docRef = doc(db, "disaster_management", key);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            content = docSnap.data().content;
+        }
+        */
+
+        modalContent.innerHTML = content;
+    } catch (error) {
+        modalContent.innerHTML = "<p class='text-red-500'>માહિતી લોડ કરવામાં ભૂલ આવી.</p>";
+    }
+}
+
+function closeDisasterPage() {
+    const modal = document.getElementById('disaster-modal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+}
+        
