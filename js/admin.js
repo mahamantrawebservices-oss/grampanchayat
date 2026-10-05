@@ -1115,11 +1115,16 @@ document.getElementById("event-form")?.addEventListener("submit", async (e) => {
 loadAdminEvents();
 
 
-// Firestore / LocalStorage માંથી કન્ટેન્ટ મેળવીને Modal માં બતાવવું
-async function openDisasterPage(key, title) {
+// window.openDisasterPage તરીકે વ્યાખ્યાયિત કરો
+window.openDisasterPage = async function(key, title) {
     const modal = document.getElementById('disaster-modal');
     const modalTitle = document.getElementById('disaster-modal-title');
     const modalContent = document.getElementById('disaster-modal-content');
+
+    if (!modal) {
+        console.error("modal element 'disaster-modal' મલ્યો નથી.");
+        return;
+    }
 
     modalTitle.innerText = title;
     modalContent.innerHTML = "<p class='text-gray-500'>લોડ થઈ રહ્યું છે...</p>";
@@ -1127,49 +1132,47 @@ async function openDisasterPage(key, title) {
     modal.classList.add('flex');
 
     try {
-        // જો LocalStorage નો ઉપયોગ કરતા હોવ:
         let savedData = JSON.parse(localStorage.getItem('disaster_pages_data') || '{}');
         let content = savedData[key] || "<p class='text-gray-500'>હજુ સુધી કોઈ માહિતી ઉમેરવામાં આવી નથી.</p>";
-        
-        /* 
-        // જો Firebase Firestore નો ઉપયોગ કરી રહ્યા હોવ:
-        const docRef = doc(db, "disaster_management", key);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-            content = docSnap.data().content;
-        }
-        */
 
         modalContent.innerHTML = content;
     } catch (error) {
         modalContent.innerHTML = "<p class='text-red-500'>માહિતી લોડ કરવામાં ભૂલ આવી.</p>";
     }
-}
+};
 
-function closeDisasterPage() {
+// window.closeDisasterPage તરીકે વ્યાખ્યાયિત કરો
+window.closeDisasterPage = function() {
     const modal = document.getElementById('disaster-modal');
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
-}
-        
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+};
+
 // Dropdown બદલાય ત્યારે તે પેજનો જૂનો ડેટા ટેક્સ્ટએરિયામાં લોડ કરવો
-document.getElementById('disaster-page-key').addEventListener('change', function(e) {
-    const key = e.target.value;
-    let savedData = JSON.parse(localStorage.getItem('disaster_pages_data') || '{}');
-    document.getElementById('disaster-page-content').value = savedData[key] || '';
-});
+const pageKeySelect = document.getElementById('disaster-page-key');
+if (pageKeySelect) {
+    pageKeySelect.addEventListener('change', function(e) {
+        const key = e.target.value;
+        let savedData = JSON.parse(localStorage.getItem('disaster_pages_data') || '{}');
+        document.getElementById('disaster-page-content').value = savedData[key] || '';
+    });
+}
 
 // માહિતી સેવ / અપડેટ કરવા માટે Form Submit Event
-document.getElementById('disaster-management-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const key = document.getElementById('disaster-page-key').value;
-    const content = document.getElementById('disaster-page-content').value;
+const formElem = document.getElementById('disaster-management-form');
+if (formElem) {
+    formElem.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const key = document.getElementById('disaster-page-key').value;
+        const content = document.getElementById('disaster-page-content').value;
 
-    let savedData = JSON.parse(localStorage.getItem('disaster_pages_data') || '{}');
-    savedData[key] = content;
+        let savedData = JSON.parse(localStorage.getItem('disaster_pages_data') || '{}');
+        savedData[key] = content;
 
-    // LocalStorage માં ડેટા સેવ કરવો (અથવા Firestore setDoc અહીં વાપરી શકો)
-    localStorage.setItem('disaster_pages_data', JSON.stringify(savedData));
+        localStorage.setItem('disaster_pages_data', JSON.stringify(savedData));
 
-    alert('આપત્તિ વ્યવસ્થાપન પેજની માહિતી સફળતાપૂર્વક અપડેટ થઈ ગઈ છે!');
-});
+        alert('આપત્તિ વ્યવસ્થાપન પેજની માહિતી સફળતાપૂર્વક અપડેટ થઈ ગઈ છે!');
+    });
+}
