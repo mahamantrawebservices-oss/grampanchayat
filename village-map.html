@@ -39,7 +39,7 @@
 
         </div>
 
-        <!-- કન્ટેનર -->
+        <!-- iframe કન્ટેનર -->
         <div class="flex-1 bg-white rounded-2xl shadow-lg border p-2 min-h-[600px] relative flex flex-col overflow-hidden">
             <iframe id="map-frame" class="w-full h-full min-h-[580px] rounded-xl border-0" src="https://grammanchitra.gov.in/"></iframe>
         </div>
@@ -59,40 +59,44 @@
         let satUrl = "";
         let pdfUrl = "";
 
-        // Firestore માંથી લિંક લોડ કરવી
+        // Firestore માંથી ડેટા રીડ કરવો
         async function loadMapLinks() {
             try {
-                const docRef = doc(doc(db, "village_map_settings", "links"));
+                // સાચો સ્નેપશોટ કોડ: doc(db, collection, document)
+                const docRef = doc(db, "village_map_settings", "links");
                 const docSnap = await getDoc(docRef);
+
                 if (docSnap.exists()) {
                     const data = docSnap.data();
                     satUrl = data.satelliteUrl || "";
                     pdfUrl = data.revenuePdfUrl || "";
+                    console.log("✅ સફળતાપૂર્વક લિંક લોડ થઈ:", { satUrl, pdfUrl });
+                } else {
+                    console.warn("⚠️ Firestore માં 'village_map_settings/links' નામનો ડૉક્યુમેન્ટ મળ્યો નથી. એડમિનમાંથી સેવ કરો.");
                 }
             } catch (err) {
-                console.error("Firebase લિંક લોડિંગ એરર:", err);
+                console.error("❌ Firebase લિંક રીડ કરતી વખતે એરર:", err);
             }
         }
 
-        // લિંક ઓપન કરવાનું ફંક્શન
+        // લિંક ઓપન કરવાનું લોજિક
         function openUrl(url) {
             if (!url || url.trim() === "") {
-                alert("એડમિન પેનલમાંથી આ લિંક હજુ સુધી ઉમેરવામાં આવી નથી. કૃપા કરીને એડમિન પેનલમાં લિંક સેટ કરો.");
+                alert("એડમિન પેનલમાંથી આ લિંક હજુ સુધી ઉમેરવામાં આવી નથી.");
                 return;
             }
 
-            // જો લિંક Embeddable ન હોય (જેમ કે સાદી google maps કે drive લિંક), તો ડાયરેક્ટ નવી ટેબમાં ખોલો
+            // જો સાદી ગૂગલ મેપ લિંક હોય તો નવી ટેબમાં ખોલશે
             if (url.includes('google.com/maps') && !url.includes('embed') && !url.includes('output=embed')) {
                 window.open(url, '_blank');
             } else if (url.includes('drive.google.com') && url.includes('/view')) {
-                // Google drive view લિંકને preview મોડમાં બદલી iframe માં ખોલવી
                 frame.src = url.replace('/view', '/preview');
             } else {
                 frame.src = url;
             }
         }
 
-        // બટન ક્લિક ઇવેન્ટ્સ
+        // બટન ઇવેન્ટ્સ
         btnGram.addEventListener('click', () => {
             frame.src = "https://grammanchitra.gov.in/";
         });
@@ -107,7 +111,7 @@
             openUrl(pdfUrl);
         });
 
-        // પેજ લોડ થાય ત્યારે ડેટા મેળવી લેવો
+        // પેજ લોડ થતાં જ કનેક્શન શરૂ કરવું
         loadMapLinks();
     </script>
 </body>
