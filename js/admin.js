@@ -1176,3 +1176,56 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    const mapForm = document.getElementById('village-map-form');
+    const satInput = document.getElementById('admin-satellite-url');
+    const pdfInput = document.getElementById('admin-revenue-pdf-url');
+
+    if (!mapForm) return;
+
+    // ૧. હાલની લિંક્સ Firestore માંથી લોડ કરવી
+    async function loadMapSettings() {
+        try {
+            const docRef = doc(db, "village_map_settings", "links");
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                satInput.value = data.satelliteUrl || '';
+                pdfInput.value = data.revenuePdfUrl || '';
+            }
+        } catch (error) {
+            console.error("નક્શા સેટિંગ્સ મેળવવામાં ભૂલ:", error);
+        }
+    }
+
+    loadMapSettings();
+
+    // ૨. નવી લિંક્સ સાચવવી
+    mapForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const submitBtn = mapForm.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.innerText = "સેવ થઈ રહ્યું છે...";
+
+        try {
+            await setDoc(doc(db, "village_map_settings", "links"), {
+                satelliteUrl: satInput.value,
+                revenuePdfUrl: pdfInput.value,
+                updatedAt: new Date()
+            }, { merge: true });
+
+            alert('✅ નક્શાની લિંક્સ સફળતાપૂર્વક અપડેટ થઈ ગઈ!');
+        } catch (error) {
+            console.error("લિંક સેવ કરવામાં ભૂલ:", error);
+            alert('❌ વિગત સાચવવામાં સમસ્યા આવી!');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerText = "લિંક્સ સાચવો / અપડેટ કરો";
+        }
+    });
+});
