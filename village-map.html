@@ -39,22 +39,9 @@
 
         </div>
 
-        <!-- સમાન ટેબમાં માહિતી / મેપ / PDF દર્શાવવા માટેનું Container -->
+        <!-- કન્ટેનર -->
         <div class="flex-1 bg-white rounded-2xl shadow-lg border p-2 min-h-[600px] relative flex flex-col overflow-hidden">
-            
-            <!-- દર્શાવવા માટેનું Iframe -->
             <iframe id="map-frame" class="w-full h-full min-h-[580px] rounded-xl border-0" src="https://grammanchitra.gov.in/"></iframe>
-
-            <!-- લિંક બ્લોક થાય ત્યારે બતાવવા માટેનો વિકલ્પ -->
-            <div id="fallback-box" class="hidden absolute inset-0 bg-white flex flex-col items-center justify-center p-6 text-center space-y-4">
-                <div class="text-4xl">🔗</div>
-                <h3 class="text-lg font-bold text-gray-800">આ પેજ સુરક્ષા કારણોસર સમાન ફ્રેમમાં લોડ થઈ શકતું નથી.</h3>
-                <p class="text-xs text-gray-500 max-w-md">મેપ અથવા PDF જોવા માટે નીચે આપેલા બટન પર ક્લિક કરો:</p>
-                <a id="fallback-link" href="#" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg text-sm font-bold shadow-md transition">
-                    અહીં ક્લિક કરીને ડાયરેક્ટ ખોલો ↗
-                </a>
-            </div>
-
         </div>
 
     </main>
@@ -65,9 +52,6 @@
         import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const frame = document.getElementById('map-frame');
-        const fallbackBox = document.getElementById('fallback-box');
-        const fallbackLink = document.getElementById('fallback-link');
-
         const btnGram = document.getElementById('btn-gram');
         const btnSat = document.getElementById('btn-satellite');
         const btnPdf = document.getElementById('btn-revenue-pdf');
@@ -75,10 +59,10 @@
         let satUrl = "";
         let pdfUrl = "";
 
-        // Firestore માંથી એડમિન દ્વારા સેવ કરાયેલી લિંક્સ લોડ કરવી
+        // Firestore માંથી લિંક લોડ કરવી
         async function loadMapLinks() {
             try {
-                const docRef = doc(db, "village_map_settings", "links");
+                const docRef = doc(doc(db, "village_map_settings", "links"));
                 const docSnap = await getDoc(docRef);
                 if (docSnap.exists()) {
                     const data = docSnap.data();
@@ -86,60 +70,44 @@
                     pdfUrl = data.revenuePdfUrl || "";
                 }
             } catch (err) {
-                console.error("લિંક લોડ કરવામાં ભૂલ:", err);
+                console.error("Firebase લિંક લોડિંગ એરર:", err);
             }
         }
 
-        // ફ્રેમ અપડેટ કરવાનું ફંક્શન
-        function updateDisplay(url, isOpenDirect = false) {
+        // લિંક ઓપન કરવાનું ફંક્શન
+        function openUrl(url) {
             if (!url || url.trim() === "") {
-                alert("એડમિન પેનલમાંથી આ લિંક હજુ સુધી ઉમેરવામાં આવી નથી.");
+                alert("એડમિન પેનલમાંથી આ લિંક હજુ સુધી ઉમેરવામાં આવી નથી. કૃપા કરીને એડમિન પેનલમાં લિંક સેટ કરો.");
                 return;
             }
 
-            if (isOpenDirect) {
-                // Google Maps કે અન્ય સિક્યોર લિંક્સ માટે વિકલ્પ બતાવવો
-                frame.classList.add('hidden');
-                fallbackBox.classList.remove('hidden');
-                fallbackLink.href = url;
+            // જો લિંક Embeddable ન હોય (જેમ કે સાદી google maps કે drive લિંક), તો ડાયરેક્ટ નવી ટેબમાં ખોલો
+            if (url.includes('google.com/maps') && !url.includes('embed') && !url.includes('output=embed')) {
+                window.open(url, '_blank');
+            } else if (url.includes('drive.google.com') && url.includes('/view')) {
+                // Google drive view લિંકને preview મોડમાં બદલી iframe માં ખોલવી
+                frame.src = url.replace('/view', '/preview');
             } else {
-                fallbackBox.classList.add('hidden');
-                frame.classList.remove('hidden');
                 frame.src = url;
             }
         }
 
-        // ૧. ગ્રામ મંચિત્ર બટન
+        // બટન ક્લિક ઇવેન્ટ્સ
         btnGram.addEventListener('click', () => {
-            updateDisplay("https://grammanchitra.gov.in/");
+            frame.src = "https://grammanchitra.gov.in/";
         });
 
-        // ૨. સેટેલાઇટ મેપ બટન
         btnSat.addEventListener('click', async () => {
             if (!satUrl) await loadMapLinks();
-            
-            // જો લિંક Embeddable ન હોય (જેમ કે સાદી maps.google.com લિંક), તો ડાયરેક્ટ ઓપન વિકલ્પ બતાવો
-            if (satUrl.includes('google.com/maps') && !satUrl.includes('embed')) {
-                updateDisplay(satUrl, true);
-            } else {
-                updateDisplay(satUrl, false);
-            }
+            openUrl(satUrl);
         });
 
-        // ૩. રેવન્યુ સર્વે નંબર PDF બટન
         btnPdf.addEventListener('click', async () => {
             if (!pdfUrl) await loadMapLinks();
-
-            // Google Drive વાળી PDF હોય તો તેને પણ યોગ્ય રીતે બતાવવી
-            if (pdfUrl.includes('drive.google.com') && pdfUrl.includes('/view')) {
-                let embedPdf = pdfUrl.replace('/view', '/preview');
-                updateDisplay(embedPdf, false);
-            } else {
-                updateDisplay(pdfUrl, false);
-            }
+            openUrl(pdfUrl);
         });
 
-        // શરૂઆતમાં લિંક્સ લોડ કરો
+        // પેજ લોડ થાય ત્યારે ડેટા મેળવી લેવો
         loadMapLinks();
     </script>
 </body>
