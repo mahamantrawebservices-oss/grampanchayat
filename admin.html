@@ -323,9 +323,50 @@
                 </div>
             </div>
 
+
+<!-- સેક્શન ૧૨: આપત્તિ વ્યવસ્થાપન (Disaster Management) મેનેજર -->
+<div class="bg-slate-50 border border-slate-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[500px] overflow-y-auto">
+    <h3 class="font-bold text-gray-800 border-b pb-2 flex items-center gap-2">
+        🚨 ૧૨. આપત્તિ વ્યવસ્થાપન (Disaster Management) મેનેજર
+    </h3>
+    
+    <form id="disaster-management-form" class="space-y-3">
+        <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">પેજ પસંદ કરો:</label>
+            <select id="disaster-page-key" required class="w-full text-xs p-2 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 outline-none bg-white">
+                <option value="important_contacts">૧. Important Contacts (અગત્યના સંપર્ક નંબરો)</option>
+                <option value="mock_drills">૨. Mock Drills (મોક ડ્રિલ)</option>
+                <option value="vdrmp">૩. VDRMP (ગામ આપત્તિ વ્યવસ્થાપન યોજના)</option>
+                <option value="disaster_gallery">૪. વ્યવસ્થાપન ગેલેરી</option>
+            </select>
+        </div>
+
+        <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">પેજ કન્ટેન્ટ (HTML અથવા સાદો ટેક્સ્ટ લખો):</label>
+            <textarea id="disaster-page-content" rows="6" placeholder="અહીં HTML કોડ અથવા સાદુ લખાણ ઉમેરો..." required
+                class="w-full text-xs p-2 border border-gray-300 rounded font-mono focus:ring-1 focus:ring-blue-500 outline-none bg-white"></textarea>
+        </div>
+
+        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2 rounded transition shadow">
+            માહિતી સાચવો / અપડેટ કરો
+        </button>
+    </form>
+</div>
+
+
+
+
+
+            
         </main>
     </div>
 
+
+
+
+
+
+    
     <!-- html2pdf.js Bundle -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
