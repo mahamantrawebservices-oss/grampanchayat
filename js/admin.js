@@ -1152,3 +1152,24 @@ function closeDisasterPage() {
     modal.classList.remove('flex');
 }
         
+// Dropdown બદલાય ત્યારે તે પેજનો જૂનો ડેટા ટેક્સ્ટએરિયામાં લોડ કરવો
+document.getElementById('disaster-page-key').addEventListener('change', function(e) {
+    const key = e.target.value;
+    let savedData = JSON.parse(localStorage.getItem('disaster_pages_data') || '{}');
+    document.getElementById('disaster-page-content').value = savedData[key] || '';
+});
+
+// માહિતી સેવ / અપડેટ કરવા માટે Form Submit Event
+document.getElementById('disaster-management-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const key = document.getElementById('disaster-page-key').value;
+    const content = document.getElementById('disaster-page-content').value;
+
+    let savedData = JSON.parse(localStorage.getItem('disaster_pages_data') || '{}');
+    savedData[key] = content;
+
+    // LocalStorage માં ડેટા સેવ કરવો (અથવા Firestore setDoc અહીં વાપરી શકો)
+    localStorage.setItem('disaster_pages_data', JSON.stringify(savedData));
+
+    alert('આપત્તિ વ્યવસ્થાપન પેજની માહિતી સફળતાપૂર્વક અપડેટ થઈ ગઈ છે!');
+});
