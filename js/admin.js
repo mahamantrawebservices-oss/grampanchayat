@@ -1,6 +1,6 @@
 import { db, storage, auth } from "./firebase-config.js";
 import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { collection, addDoc, getDocs, doc, setDoc, getDoc, deleteDoc, query, where, Timestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { collection, onSnapshot, addDoc, updateDoc, getDocs, doc, setDoc, getDoc, deleteDoc, query, where, Timestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
 // Check Authentication
@@ -723,39 +723,62 @@ document.getElementById("add-schedule-form")?.addEventListener("submit", async (
 
 
 // કાર્યરત સમિતિઓ
-// Dynamic Row Add karvano handler
+// Global Cache object
+let committeesCache = {};
+
+// Helper: Single Member Row HTML Generator
+function createMemberRowHtml(name = '', mainRole = '', commRole = '') {
+    return `
+        <div class="member-row flex items-center gap-2 border p-2 rounded bg-gray-50">
+            <input type="text" placeholder="સભ્યનું નામ" value="${name}" class="member-name w-1/3 border p-1.5 rounded text-xs" required>
+            <input type="text" placeholder="મૂળ હોદ્દો" value="${mainRole}" class="member-main-role w-1/3 border p-1.5 rounded text-xs" required>
+            <input type="text" placeholder="સમિતિ હોદ્દો" value="${commRole}" class="member-comm-role w-1/3 border p-1.5 rounded text-xs" required>
+            <button type="button" class="remove-member-btn text-red-500 hover:text-red-700 font-bold px-1 text-sm">&times;</button>
+        </div>
+    `;
+}
+
+// 1. Add Row Button Handler
 document.getElementById('add-member-row-btn')?.addEventListener('click', () => {
     const container = document.getElementById('committee-members-container');
-    const newRow = document.createElement('div');
-    newRow.className = 'member-row flex items-center gap-2 border p-2 rounded bg-gray-50';
-    newRow.innerHTML = `
-        <input type="text" placeholder="સભ્યનું નામ" class="member-name w-1/3 border p-1.5 rounded text-xs" required>
-        <input type="text" placeholder="મૂળ હોદ્દો (દા.ત. સરપંચ)" class="member-main-role w-1/3 border p-1.5 rounded text-xs" required>
-        <input type="text" placeholder="સમિતિ હોદ્દો (દા.ત. અધ્યક્ષ)" class="member-comm-role w-1/3 border p-1.5 rounded text-xs" required>
-        <button type="button" class="remove-member-btn text-red-500 hover:text-red-700 font-bold px-1 text-sm" title="દૂર કરો">&times;</button>
-    `;
-    container.appendChild(newRow);
+    container.insertAdjacentHTML('beforeend', createMemberRowHtml());
 });
 
-// Row Remove karvano handler
+// 2. Remove Row Handler
 document.getElementById('committee-members-container')?.addEventListener('click', (e) => {
     if (e.target.classList.contains('remove-member-btn')) {
         const rows = document.querySelectorAll('.member-row');
         if (rows.length > 1) {
             e.target.closest('.member-row').remove();
         } else {
-            alert('ઓછામાં ઓછો એક સભ્ય રાખવો જરૂરી છે.');
+            alert('ઓછામાં ઓછો એક સભ્ય ઉમેરવો જરૂરી છે.');
         }
     }
 });
 
-// Form Submit Handler (Tamara existing code ne dynamic fields sathe replace karel chhe)
+// 3. Reset Form & UI State
+function resetCommitteeForm() {
+    const form = document.getElementById('add-committee-group-form');
+    if (!form) return;
+    
+    form.reset();
+    document.getElementById('edit-committee-id').value = "";
+    document.getElementById('submit-comm-btn').textContent = "સમિતિ સાચવો";
+    document.getElementById('cancel-comm-edit-btn').classList.add('hidden');
+    
+    document.getElementById('committee-members-container').innerHTML = createMemberRowHtml();
+}
+
+document.getElementById('cancel-comm-edit-btn')?.addEventListener('click', resetCommitteeForm);
+
+// 4. Form Submit (ADD or UPDATE) Handler
 document.getElementById("add-committee-group-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
-    
+
+    const editId = document.getElementById("edit-committee-id").value;
     const title = document.getElementById("cg-title").value.trim();
 
-    // Badha dynamic rows mathi members no data extract karo
+    // Extract Member Details from Inputs
     const memberRows = document.querySelectorAll('.member-row');
     const members = [];
 
@@ -765,38 +788,148 @@ document.getElementById("add-committee-group-form")?.addEventListener("submit", 
         const committeeRole = row.querySelector('.member-comm-role').value.trim();
 
         if (name) {
-            members.push({
-                name: name,
-                originalDesignation: originalDesignation,
-                committeeRole: committeeRole
-            });
+            members.push({ name, originalDesignation, committeeRole });
         }
     });
 
-    try {
-        await addDoc(collection(db, "active_committees"), {
-            committeeName: title,
-            members: members,
-            createdAt: new Date()
-        });
-        
-        alert("નવી સમિતિ ઉમેરાઈ ગઈ!");
-        e.target.reset();
+    if (members.length === 0) {
+        alert("મહેરબાની કરીને ઓછામાં ઓછા એક સભ્યની વિગત ભરો.");
+        return;
+    }
 
-        // Form reset thaya pachhi container ma keval 1 empty row paachhi muko
-        document.getElementById('committee-members-container').innerHTML = `
-            <div class="member-row flex items-center gap-2 border p-2 rounded bg-gray-50">
-                <input type="text" placeholder="સભ્યનું નામ" class="member-name w-1/3 border p-1.5 rounded text-xs" required>
-                <input type="text" placeholder="મૂળ હોદ્દો (દા.ત. સરપંચ)" class="member-main-role w-1/3 border p-1.5 rounded text-xs" required>
-                <input type="text" placeholder="સમિતિ હોદ્દો (દા.ત. અધ્યક્ષ)" class="member-comm-role w-1/3 border p-1.5 rounded text-xs" required>
-                <button type="button" class="remove-member-btn text-red-500 hover:text-red-700 font-bold px-1 text-sm" title="દૂર કરો">&times;</button>
-            </div>
-        `;
+    try {
+        if (editId) {
+            // UPDATE existing document
+            await updateDoc(doc(db, "active_committees", editId), {
+                committeeName: title,
+                members: members,
+                updatedAt: new Date()
+            });
+            alert("સમિતિ સફળતાપૂર્વક અપડેટ થઈ ગઈ!");
+        } else {
+            // ADD new document
+            await addDoc(collection(db, "active_committees"), {
+                committeeName: title,
+                members: members,
+                createdAt: new Date()
+            });
+            alert("નવી સમિતિ સફળતાપૂર્વક ઉમેરાઈ ગઈ!");
+        }
+
+        resetCommitteeForm();
     } catch (error) {
-        console.error("Error adding committee: ", error);
-        alert("સમિતિ ઉમેરવામાં ભૂલ આવી, ફરી પ્રયત્ન કરો.");
+        console.error("Error saving committee:", error);
+        alert("સાચવવામાં ભૂલ આવી, ફરી પ્રયત્ન કરો.");
     }
 });
+
+// 5. Load Real-time Active Committees List
+function loadActiveCommittees() {
+    const container = document.getElementById("admin-committees-list");
+    if (!container) return;
+
+    onSnapshot(collection(db, "active_committees"), (snapshot) => {
+        container.innerHTML = "";
+        committeesCache = {};
+
+        if (snapshot.empty) {
+            container.innerHTML = `<p class="text-xs text-gray-500">કોઈ સમિતિ મળેલી નથી.</p>`;
+            return;
+        }
+
+        snapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            const id = docSnap.id;
+            committeesCache[id] = data;
+
+            const committeeName = data.committeeName || data.title || "અનામી સમિતિ";
+            
+            // Format Member List
+            let membersHtml = "";
+            if (Array.isArray(data.members)) {
+                membersHtml = data.members.map(m => {
+                    if (typeof m === 'object') {
+                        return `<li>• <b>${m.name || ''}</b> ${m.originalDesignation ? `(${m.originalDesignation})` : ''} - <i>${m.committeeRole || ''}</i></li>`;
+                    }
+                    return `<li>• ${m}</li>`;
+                }).join("");
+            } else if (typeof data.members === 'string') {
+                membersHtml = data.members.split('\n').map(l => `<li>• ${l}</li>`).join("");
+            }
+
+            const card = document.createElement("div");
+            card.className = "bg-gray-50 border p-3 rounded-lg space-y-1.5 text-xs";
+            card.innerHTML = `
+                <div class="flex justify-between items-center border-b pb-1">
+                    <h4 class="font-bold text-emerald-800 text-sm">${committeeName}</h4>
+                    <div class="flex gap-2">
+                        <button onclick="editCommittee('${id}')" class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-[10px] font-bold">
+                            એડિટ
+                        </button>
+                        <button onclick="deleteCommittee('${id}')" class="bg-red-500 hover:bg-red-700 text-white px-2 py-1 rounded text-[10px] font-bold">
+                            ડિલીટ
+                        </button>
+                    </div>
+                </div>
+                <ul class="text-gray-700 space-y-0.5 text-[11px] mt-1">
+                    ${membersHtml || "<li class='text-gray-400'>સભ્યોની વિગત નથી</li>"}
+                </ul>
+            `;
+            container.appendChild(card);
+        });
+    });
+}
+
+// 6. EDIT Action Handler
+window.editCommittee = (id) => {
+    const data = committeesCache[id];
+    if (!data) return;
+
+    document.getElementById('edit-committee-id').value = id;
+    document.getElementById('cg-title').value = data.committeeName || data.title || "";
+
+    const container = document.getElementById('committee-members-container');
+    container.innerHTML = "";
+
+    if (Array.isArray(data.members) && data.members.length > 0) {
+        data.members.forEach(m => {
+            if (typeof m === 'object') {
+                container.insertAdjacentHTML('beforeend', createMemberRowHtml(m.name || '', m.originalDesignation || '', m.committeeRole || ''));
+            } else {
+                container.insertAdjacentHTML('beforeend', createMemberRowHtml(m, '', ''));
+            }
+        });
+    } else {
+        container.innerHTML = createMemberRowHtml();
+    }
+
+    document.getElementById('submit-comm-btn').textContent = "અપડેટ કરો";
+    document.getElementById('cancel-comm-edit-btn').classList.remove('hidden');
+
+    // Form wahi scroll thaay aamaate
+    document.getElementById('add-committee-group-form').scrollIntoView({ behavior: 'smooth' });
+};
+
+// 7. DELETE Action Handler
+window.deleteCommittee = async (id) => {
+    if (confirm("શું તમે આ સમિતિ અને તેના તમામ સભ્યોની માહિતી ડિલીટ કરવા માંગો છો?")) {
+        try {
+            await deleteDoc(doc(db, "active_committees", id));
+            alert("સમિતિ ડિલીટ થઈ ગઈ!");
+            
+            // Edit chale chhe ane te j delete thaay to form reset karo
+            if (document.getElementById('edit-committee-id').value === id) {
+                resetCommitteeForm();
+            }
+        } catch (err) {
+            console.error("Delete error:", err);
+            alert("ડિલીટ કરવામાં ભૂલ આવી.");
+        }
+    }
+};
+
+// Page load par execute karo
+loadActiveCommittees();
 
 
 
