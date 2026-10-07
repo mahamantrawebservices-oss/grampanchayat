@@ -57,32 +57,35 @@
             <!-- સેક્શન ૨: નવી પોસ્ટ / નોટિસ મૂકો -->
             <div class="bg-blue-50/70 border border-blue-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[500px] overflow-y-auto">
                 <h3 class="font-bold border-b border-blue-300 pb-2 text-blue-900">૨. નવી પોસ્ટ / નોટિસ મૂકો</h3>
-<!-- Posts Form -->
-<form id="post-form" class="space-y-3">
-    <input type="hidden" id="edit-post-id" value="">
+<!-- Notice / Post Form -->
+<form id="add-notice-form" class="space-y-3 bg-white p-4 rounded-xl border shadow-sm">
+    <!-- Edit Mode માટે Hidden Input -->
+    <input type="hidden" id="edit-notice-id" value="">
+
     <div>
-        <label class="block text-xs font-medium text-gray-700">પ્રકાર</label>
-        <select id="post-type" class="w-full border p-2 rounded text-xs">
-            <option value="નોટીસ બોર્ડ">નોટીસ બોર્ડ</option>
-            <option value="નવી યોજના">નવી યોજના</option>
-            <option value="સમાચાર">સમાચાર</option>
-        </select>
+        <label class="block text-xs font-medium text-gray-700 mb-1">નોટિસ / પોસ્ટનું શીર્ષક (Title)</label>
+        <input type="text" id="notice-title" placeholder="દા.ત. ગ્રામસભા અંગે અગત્યની સૂચના" class="w-full border p-2 rounded text-xs" required>
     </div>
+
     <div>
-        <label class="block text-xs font-medium text-gray-700">શીર્ષક</label>
-        <input type="text" id="post-title" class="w-full border p-2 rounded text-xs" required>
+        <label class="block text-xs font-medium text-gray-700 mb-1">વિગત (Description)</label>
+        <textarea id="notice-desc" rows="3" placeholder="નોટિસ અંગેની સંપૂર્ણ માહિતી અહીં લખો..." class="w-full border p-2 rounded text-xs"></textarea>
     </div>
-    <div>
-        <label class="block text-xs font-medium text-gray-700">વિગત</label>
-        <textarea id="post-desc" rows="3" class="w-full border p-2 rounded text-xs" required></textarea>
+
+    <div class="flex gap-2">
+        <button type="submit" id="submit-notice-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-xs font-semibold">
+            નોટિસ પોસ્ટ કરો
+        </button>
+        <button type="button" id="cancel-notice-edit-btn" class="hidden bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded text-xs font-semibold">
+            રદ કરો
+        </button>
     </div>
-    <button type="submit" class="bg-blue-600 text-white px-3 py-1.5 rounded text-xs font-semibold">પોસ્ટ મુકો</button>
 </form>
 
-<!-- Aa container jaruri chhe jya badhi juni ane navi posts edit-delete maatelist thashe -->
+<!-- Notices List Container -->
 <div class="mt-4">
-    <h3 class="font-bold text-xs text-gray-700 mb-2">તમામ પોસ્ટ્સ / નોટિસની યાદી:</h3>
-    <div id="admin-posts-list" class="space-y-2 max-h-60 overflow-y-auto"></div>
+    <h3 class="font-bold text-xs text-gray-700 mb-2">હાલની તમામ નોટિસો / પોસ્ટ્સ:</h3>
+    <div id="admin-notices-list" class="space-y-2 max-h-80 overflow-y-auto"></div>
 </div>
             </div>
 
