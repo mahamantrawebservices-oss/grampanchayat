@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ગામનો નક્શો અને વિગતો</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="shortcut icon" href="#">
 </head>
 <body class="bg-slate-100 min-h-screen flex flex-col font-sans">
 
@@ -18,28 +19,20 @@
         
         <!-- ૩ મુખ્ય બટનો -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            
-            <!-- બટન ૧: ગ્રામ મંચિત્ર -->
-            <button id="btn-gram" 
-               class="bg-blue-600 hover:bg-blue-800 text-white font-bold py-3 px-4 rounded-xl shadow transition text-center flex items-center justify-center gap-2">
+            <button id="btn-gram" class="bg-blue-600 hover:bg-blue-800 text-white font-bold py-3 px-4 rounded-xl shadow transition text-center flex items-center justify-center gap-2">
                 🏛️ ગામની માહિતી મેપ (Gram Manchitra)
             </button>
 
-            <!-- બટન ૨: સેટેલાઇટ મેપ -->
-            <button id="btn-satellite" 
-               class="bg-emerald-600 hover:bg-emerald-800 text-white font-bold py-3 px-4 rounded-xl shadow transition text-center flex items-center justify-center gap-2">
+            <button id="btn-satellite" class="bg-emerald-600 hover:bg-emerald-800 text-white font-bold py-3 px-4 rounded-xl shadow transition text-center flex items-center justify-center gap-2">
                 🛰️ સેટેલાઇટ મેપ (Google Map)
             </button>
 
-            <!-- બટન ૩: રેવન્યુ સર્વે નંબર PDF -->
-            <button id="btn-revenue-pdf" 
-               class="bg-purple-600 hover:bg-purple-800 text-white font-bold py-3 px-4 rounded-xl shadow transition text-center flex items-center justify-center gap-2">
+            <button id="btn-revenue-pdf" class="bg-purple-600 hover:bg-purple-800 text-white font-bold py-3 px-4 rounded-xl shadow transition text-center flex items-center justify-center gap-2">
                 📄 રેવન્યુ સર્વે નંબર મેપ (PDF)
             </button>
-
         </div>
 
-        <!-- iframe કન્ટેનર -->
+        <!-- કન્ટેનર -->
         <div class="flex-1 bg-white rounded-2xl shadow-lg border p-2 min-h-[600px] relative flex flex-col overflow-hidden">
             <iframe id="map-frame" class="w-full h-full min-h-[580px] rounded-xl border-0" src="https://grammanchitra.gov.in/"></iframe>
         </div>
@@ -48,8 +41,21 @@
 
     <!-- Firebase Script -->
     <script type="module">
-        import { db } from './js/firebase-config.js';
-        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+       // તમારી Firebase Details અહીં મૂકો
+const firebaseConfig = {
+  apiKey: "AIzaSyCMhWWI_6oxPIVEQEVlq2SIBf72EI2o8NI",
+  authDomain: "gram-panchayat-33c86.firebaseapp.com",
+  projectId: "gram-panchayat-33c86",
+  storageBucket: "gram-panchayat-33c86.firebasestorage.app",
+  messagingSenderId: "1025176315779",
+  appId: "1:1025176315779:web:a24ca10a06c55edcc8f8b6",
+  measurementId: "G-TQBSXCWNBV"
+};
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
         const frame = document.getElementById('map-frame');
         const btnGram = document.getElementById('btn-gram');
@@ -59,10 +65,9 @@
         let satUrl = "";
         let pdfUrl = "";
 
-        // Firestore માંથી ડેટા રીડ કરવો
+        // Firestore માંથી લિંક્સ મેળવવી
         async function loadMapLinks() {
             try {
-                // સાચો સ્નેપશોટ કોડ: doc(db, collection, document)
                 const docRef = doc(db, "village_map_settings", "links");
                 const docSnap = await getDoc(docRef);
 
@@ -70,23 +75,23 @@
                     const data = docSnap.data();
                     satUrl = data.satelliteUrl || "";
                     pdfUrl = data.revenuePdfUrl || "";
-                    console.log("✅ સફળતાપૂર્વક લિંક લોડ થઈ:", { satUrl, pdfUrl });
+                    console.log("✅ લિંક સફળતાપૂર્વક લોડ થઈ ગઈ:", { satUrl, pdfUrl });
                 } else {
-                    console.warn("⚠️ Firestore માં 'village_map_settings/links' નામનો ડૉક્યુમેન્ટ મળ્યો નથી. એડમિનમાંથી સેવ કરો.");
+                    console.warn("⚠️ એડમિન પેનલમાંથી લિંક હજુ સેવ કરવામાં આવી નથી.");
                 }
             } catch (err) {
-                console.error("❌ Firebase લિંક રીડ કરતી વખતે એરર:", err);
+                console.error("❌ લિંક લોડ કરવામાં ભૂલ:", err);
             }
         }
 
-        // લિંક ઓપન કરવાનું લોજિક
+        // લિંક ઓપન લોજિક
         function openUrl(url) {
             if (!url || url.trim() === "") {
                 alert("એડમિન પેનલમાંથી આ લિંક હજુ સુધી ઉમેરવામાં આવી નથી.");
                 return;
             }
 
-            // જો સાદી ગૂગલ મેપ લિંક હોય તો નવી ટેબમાં ખોલશે
+            // જો સાદી ગૂગલ મેપ લિંક હોય તો નવી ટેબમાં ઓપન કરો
             if (url.includes('google.com/maps') && !url.includes('embed') && !url.includes('output=embed')) {
                 window.open(url, '_blank');
             } else if (url.includes('drive.google.com') && url.includes('/view')) {
@@ -96,22 +101,21 @@
             }
         }
 
-        // બટન ઇવેન્ટ્સ
-        btnGram.addEventListener('click', () => {
-            frame.src = "https://grammanchitra.gov.in/";
+        btnGram.addEventListener('click', () => { 
+            frame.src = "https://grammanchitra.gov.in/"; 
         });
 
-        btnSat.addEventListener('click', async () => {
-            if (!satUrl) await loadMapLinks();
-            openUrl(satUrl);
+        btnSat.addEventListener('click', async () => { 
+            if (!satUrl) await loadMapLinks(); 
+            openUrl(satUrl); 
         });
 
-        btnPdf.addEventListener('click', async () => {
-            if (!pdfUrl) await loadMapLinks();
-            openUrl(pdfUrl);
+        btnPdf.addEventListener('click', async () => { 
+            if (!pdfUrl) await loadMapLinks(); 
+            openUrl(pdfUrl); 
         });
 
-        // પેજ લોડ થતાં જ કનેક્શન શરૂ કરવું
+        // પેજ લોડ થતાં જ લિંક્સ ફેચ કરી લેવી
         loadMapLinks();
     </script>
 </body>
