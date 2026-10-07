@@ -1182,54 +1182,71 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-// એડમિન પેનલ લોડ થાય ત્યારે અને સેવ વખતે આ ફંક્શન ચાલશે
-document.addEventListener('DOMContentLoaded', () => {
-    const mapForm = document.getElementById('village-map-form');
-    const satInput = document.getElementById('admin-satellite-url');
-    const pdfInput = document.getElementById('admin-revenue-pdf-url');
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    if (!mapForm) return;
+   // તમારી Firebase Details અહીં મૂકો
+const firebaseConfig = {
+  apiKey: "AIzaSyCMhWWI_6oxPIVEQEVlq2SIBf72EI2o8NI",
+  authDomain: "gram-panchayat-33c86.firebaseapp.com",
+  projectId: "gram-panchayat-33c86",
+  storageBucket: "gram-panchayat-33c86.firebasestorage.app",
+  messagingSenderId: "1025176315779",
+  appId: "1:1025176315779:web:a24ca10a06c55edcc8f8b6",
+  measurementId: "G-TQBSXCWNBV"
+};
 
-    // ૧. પહેલાં સેવ થયેલી લિંક્સ એડમિન પેનલમાં લાવવી
-    async function fetchMapSettings() {
-        try {
-            const docRef = doc(db, "village_map_settings", "links");
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                if (satInput) satInput.value = data.satelliteUrl || "";
-                if (pdfInput) pdfInput.value = data.revenuePdfUrl || "";
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const mapForm = document.getElementById('village-map-form');
+        const satInput = document.getElementById('admin-satellite-url');
+        const pdfInput = document.getElementById('admin-revenue-pdf-url');
+
+        if (!mapForm) return;
+
+        // જૂની સેવ થયેલી લિંક્સ એડમિન પેનલના ઇનપુટ બોક્સમાં દર્શાવવી
+        async function fetchExistingLinks() {
+            try {
+                const docRef = doc(db, "village_map_settings", "links");
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if (satInput) satInput.value = data.satelliteUrl || "";
+                    if (pdfInput) pdfInput.value = data.revenuePdfUrl || "";
+                }
+            } catch (err) {
+                console.error("એડમિન ડેટા લોડ ભૂલ:", err);
             }
-        } catch (err) {
-            console.error("એડમિનમાં ડેટા લોડિંગ એરર:", err);
         }
-    }
 
-    fetchMapSettings();
+        fetchExistingLinks();
 
-    // ૨. ફોર્મ સબમિટ વખતે Firebase માં સાચવવું
-    mapForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
+        // સેવ બટન પર ક્લિક થતાં ડેટા Firestore માં સેવ કરવો
+        mapForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
 
-        const submitBtn = mapForm.querySelector('button[type="submit"]');
-        submitBtn.disabled = true;
-        submitBtn.innerText = "સેવ થઈ રહ્યું છે...";
+            const btn = mapForm.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.innerText = "સેવ થઈ રહ્યું છે...";
 
-        try {
-            // Firestore Collection: village_map_settings | Document: links
-            await setDoc(doc(db, "village_map_settings", "links"), {
-                satelliteUrl: satInput.value.trim(),
-                revenuePdfUrl: pdfInput.value.trim(),
-                updatedAt: new Date()
-            }, { merge: true });
+            try {
+                await setDoc(doc(db, "village_map_settings", "links"), {
+                    satelliteUrl: satInput.value.trim(),
+                    revenuePdfUrl: pdfInput.value.trim(),
+                    updatedAt: new Date()
+                }, { merge: true });
 
-            alert('✅ નક્શાની લિંક્સ સફળતાપૂર્વક અપડેટ થઈ ગઈ!');
-        } catch (error) {
-            console.error("Firebase Save Error:", error);
-            alert('❌ સેવ કરવામાં ભૂલ આવી: ' + error.message);
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.innerText = "લિંક્સ સાચવો / અપડેટ કરો";
-        }
+                alert("✅ નક્શાની લિંક્સ સફળતાપૂર્વક સાચવવામાં આવી!");
+            } catch (err) {
+                console.error("Firebase સેવ ભૂલ:", err);
+                alert("❌ સેવ ન થઈ શક્યું: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "💾 લિંક્સ સાચવો / અપડેટ કરો";
+            }
+        });
     });
-});
+</script>
