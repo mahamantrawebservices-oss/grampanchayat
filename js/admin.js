@@ -720,28 +720,85 @@ document.getElementById("add-schedule-form")?.addEventListener("submit", async (
     }
 });
 
+
+
 // કાર્યરત સમિતિઓ
+// Dynamic Row Add karvano handler
+document.getElementById('add-member-row-btn')?.addEventListener('click', () => {
+    const container = document.getElementById('committee-members-container');
+    const newRow = document.createElement('div');
+    newRow.className = 'member-row flex items-center gap-2 border p-2 rounded bg-gray-50';
+    newRow.innerHTML = `
+        <input type="text" placeholder="સભ્યનું નામ" class="member-name w-1/3 border p-1.5 rounded text-xs" required>
+        <input type="text" placeholder="મૂળ હોદ્દો (દા.ત. સરપંચ)" class="member-main-role w-1/3 border p-1.5 rounded text-xs" required>
+        <input type="text" placeholder="સમિતિ હોદ્દો (દા.ત. અધ્યક્ષ)" class="member-comm-role w-1/3 border p-1.5 rounded text-xs" required>
+        <button type="button" class="remove-member-btn text-red-500 hover:text-red-700 font-bold px-1 text-sm" title="દૂર કરો">&times;</button>
+    `;
+    container.appendChild(newRow);
+});
+
+// Row Remove karvano handler
+document.getElementById('committee-members-container')?.addEventListener('click', (e) => {
+    if (e.target.classList.contains('remove-member-btn')) {
+        const rows = document.querySelectorAll('.member-row');
+        if (rows.length > 1) {
+            e.target.closest('.member-row').remove();
+        } else {
+            alert('ઓછામાં ઓછો એક સભ્ય રાખવો જરૂરી છે.');
+        }
+    }
+});
+
+// Form Submit Handler (Tamara existing code ne dynamic fields sathe replace karel chhe)
 document.getElementById("add-committee-group-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const title = document.getElementById("cg-title").value;
-    const rawMembers = document.getElementById("cg-members-raw").value.split("\n");
+    
+    const title = document.getElementById("cg-title").value.trim();
 
-    const members = rawMembers.map(row => {
-        const parts = row.split(",");
-        return {
-            name: parts[0]?.trim() || '',
-            originalDesignation: parts[1]?.trim() || '',
-            committeeRole: parts[2]?.trim() || ''
-        };
-    }).filter(m => m.name !== '');
+    // Badha dynamic rows mathi members no data extract karo
+    const memberRows = document.querySelectorAll('.member-row');
+    const members = [];
 
-    await addDoc(collection(db, "active_committees"), {
-        committeeName: title,
-        members: members
+    memberRows.forEach(row => {
+        const name = row.querySelector('.member-name').value.trim();
+        const originalDesignation = row.querySelector('.member-main-role').value.trim();
+        const committeeRole = row.querySelector('.member-comm-role').value.trim();
+
+        if (name) {
+            members.push({
+                name: name,
+                originalDesignation: originalDesignation,
+                committeeRole: committeeRole
+            });
+        }
     });
-    alert("નવી સમિતિ ઉમેરાઈ ગઈ!");
-    e.target.reset();
+
+    try {
+        await addDoc(collection(db, "active_committees"), {
+            committeeName: title,
+            members: members,
+            createdAt: new Date()
+        });
+        
+        alert("નવી સમિતિ ઉમેરાઈ ગઈ!");
+        e.target.reset();
+
+        // Form reset thaya pachhi container ma keval 1 empty row paachhi muko
+        document.getElementById('committee-members-container').innerHTML = `
+            <div class="member-row flex items-center gap-2 border p-2 rounded bg-gray-50">
+                <input type="text" placeholder="સભ્યનું નામ" class="member-name w-1/3 border p-1.5 rounded text-xs" required>
+                <input type="text" placeholder="મૂળ હોદ્દો (દા.ત. સરપંચ)" class="member-main-role w-1/3 border p-1.5 rounded text-xs" required>
+                <input type="text" placeholder="સમિતિ હોદ્દો (દા.ત. અધ્યક્ષ)" class="member-comm-role w-1/3 border p-1.5 rounded text-xs" required>
+                <button type="button" class="remove-member-btn text-red-500 hover:text-red-700 font-bold px-1 text-sm" title="દૂર કરો">&times;</button>
+            </div>
+        `;
+    } catch (error) {
+        console.error("Error adding committee: ", error);
+        alert("સમિતિ ઉમેરવામાં ભૂલ આવી, ફરી પ્રયત્ન કરો.");
+    }
 });
+
+
 
 // મિલકત વેરા લિંક
 async function loadAdminTaxLink() {
