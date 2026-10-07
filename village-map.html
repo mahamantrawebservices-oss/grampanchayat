@@ -150,12 +150,16 @@
         }
 
         // Button Event Listeners
-        btnGram.addEventListener('click', () => { 
-            setActiveButton(btnGram);
-            // Gram Manchitra blocks iframe embedding in many browsers, open directly or in iframe if supported
-            window.open("https://grammanchitra.gov.in/", "_blank");
-            showPlaceholder("Gram Manchitra પોર્ટલ નવી ટેબમાં ઓપન થઈ ગયું છે.", "https://grammanchitra.gov.in/");
-        });
+// Gram Manchitra બટન ક્લિક લોજિક
+btnGram.addEventListener('click', () => { 
+    setActiveButton(btnGram);
+    
+    // iframe ની બદલે નવી ટેબમાં લિંક ખોલવી
+    window.open("https://grammanchitra.gov.in/", "_blank");
+    
+    // પ્લેસહોલ્ડર મેસેજ બતાવવો
+    showPlaceholder("Gram Manchitra પોર્ટલ નવી ટેબમાં સફળતાપૂર્વક ખુલી ગયું છે.", "https://grammanchitra.gov.in/");
+});
 
         btnSat.addEventListener('click', async () => { 
             setActiveButton(btnSat);
