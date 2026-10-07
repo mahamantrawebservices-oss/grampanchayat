@@ -57,24 +57,33 @@
             <!-- સેક્શન ૨: નવી પોસ્ટ / નોટિસ મૂકો -->
             <div class="bg-blue-50/70 border border-blue-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[500px] overflow-y-auto">
                 <h3 class="font-bold border-b border-blue-300 pb-2 text-blue-900">૨. નવી પોસ્ટ / નોટિસ મૂકો</h3>
-                <form id="post-form" class="space-y-3">
-                    <div>
-                        <label class="text-xs font-semibold text-blue-950">ટાઇપ પસંદ કરો:</label>
-                        <select id="post-type" class="w-full border border-blue-300 p-2 rounded text-sm bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
-                            <option value="post">સામાન્ય પોસ્ટ (સ્ક્રોલિંગ)</option>
-                            <option value="notice">અગત્યની નોટિસ</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="text-xs font-semibold text-blue-950">ટાઇટલ / વિષય:</label>
-                        <input type="text" id="post-title" required class="w-full border border-blue-300 p-2 rounded text-sm bg-white focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="ટાઇટલ લખો...">
-                    </div>
-                    <div>
-                        <label class="text-xs font-semibold text-blue-950">વિગત:</label>
-                        <textarea id="post-desc" rows="3" required class="w-full border border-blue-300 p-2 rounded text-sm bg-white focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="વિગતવાર લખો..."></textarea>
-                    </div>
-                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs px-4 py-2 rounded font-bold shadow transition">પોસ્ટ કરો</button>
-                </form>
+<!-- Posts Form -->
+<form id="post-form" class="space-y-3">
+    <input type="hidden" id="edit-post-id" value="">
+    <div>
+        <label class="block text-xs font-medium text-gray-700">પ્રકાર</label>
+        <select id="post-type" class="w-full border p-2 rounded text-xs">
+            <option value="નોટીસ બોર્ડ">નોટીસ બોર્ડ</option>
+            <option value="નવી યોજના">નવી યોજના</option>
+            <option value="સમાચાર">સમાચાર</option>
+        </select>
+    </div>
+    <div>
+        <label class="block text-xs font-medium text-gray-700">શીર્ષક</label>
+        <input type="text" id="post-title" class="w-full border p-2 rounded text-xs" required>
+    </div>
+    <div>
+        <label class="block text-xs font-medium text-gray-700">વિગત</label>
+        <textarea id="post-desc" rows="3" class="w-full border p-2 rounded text-xs" required></textarea>
+    </div>
+    <button type="submit" class="bg-blue-600 text-white px-3 py-1.5 rounded text-xs font-semibold">પોસ્ટ મુકો</button>
+</form>
+
+<!-- Aa container jaruri chhe jya badhi juni ane navi posts edit-delete maatelist thashe -->
+<div class="mt-4">
+    <h3 class="font-bold text-xs text-gray-700 mb-2">તમામ પોસ્ટ્સ / નોટિસની યાદી:</h3>
+    <div id="admin-posts-list" class="space-y-2 max-h-60 overflow-y-auto"></div>
+</div>
             </div>
 
             <!-- સેક્શન ૩: Blogger ફોટો ગેલેરી મેનેજર -->
@@ -217,12 +226,25 @@
             <!-- સેક્શન ૮: કાર્યરત સમિતિઓ મેનેજર -->
             <div class="bg-purple-50/80 border border-purple-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[500px] overflow-y-auto">
                 <h3 class="font-bold border-b border-purple-300 pb-2 text-purple-950">૮. કાર્યરત સમિતિઓ મેનેજર</h3>
-                <form id="add-committee-group-form" class="space-y-3">
-                    <input type="text" id="cg-title" placeholder="સમિતિનું નામ (દા.ત. સામાજિક ન્યાય સમિતિ)" required class="border border-purple-300 p-1.5 rounded text-xs bg-white w-full">
-                    <p class="text-xs text-purple-900 font-semibold">સભ્યોની વિગત (અલ્પવિરામ `,` થી અલગ કરો):</p>
-                    <textarea id="cg-members-raw" rows="3" placeholder="નામ, મૂળ હોદ્દો, સમિતિમાં હોદ્દો (દરેક નવી લાઈનમાં એક સભ્ય)" class="border border-purple-300 p-1.5 rounded text-xs bg-white w-full"></textarea>
-                    <button type="submit" class="bg-purple-700 hover:bg-purple-800 text-white font-bold px-4 py-2 rounded text-xs w-full shadow">નવી સમિતિ ઉમેરો</button>
-                </form>
+                <!-- Committee Form -->
+<form id="add-committee-group-form" class="space-y-3">
+    <input type="hidden" id="edit-committee-id" value="">
+    <div>
+        <label class="block text-xs font-medium text-gray-700">સમિતિનું નામ</label>
+        <input type="text" id="cg-title" placeholder="દા.ત. કારોબારી સમિતિ" class="w-full border p-2 rounded text-xs" required>
+    </div>
+    <div>
+        <label class="block text-xs font-medium text-gray-700">સભ્યોની વિગત (એક લાઈનમાં એક સભ્ય: નામ, મૂળ હોદ્દો, સમિતિ હોદ્દો)</label>
+        <textarea id="cg-members-raw" rows="4" placeholder="રમેશભાઈ પટેલ, સરપંચ, અધ્યક્ષ&#10;મહેશભાઈ શાહ, સભ્ય, ઉપાધ્યક્ષ" class="w-full border p-2 rounded text-xs" required></textarea>
+    </div>
+    <button type="submit" class="bg-emerald-600 text-white px-3 py-1.5 rounded text-xs font-semibold">કાર્યરત સમિતિ ઉમેરો</button>
+</form>
+
+<!-- Aa container jaruri chhe jya badhi samitio dekhashe -->
+<div class="mt-4">
+    <h3 class="font-bold text-xs text-gray-700 mb-2">હાલની તમામ સમિતિઓ:</h3>
+    <div id="admin-committees-list" class="space-y-2 max-h-60 overflow-y-auto"></div>
+</div>
             </div>
 
             <!-- સેક્શન ૯: મિલકત વેરો લિંક મેનેજર -->
