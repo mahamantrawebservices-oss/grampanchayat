@@ -48,19 +48,150 @@ document.getElementById("settings-form")?.addEventListener("submit", async (e) =
     alert("સેટિંગ્સ સફળતાપૂર્વક સેવ થઈ ગયા!");
 });
 
+
+
+
 // Add Post/Notice
-document.getElementById("post-form")?.addEventListener("submit", async (e) => {
+// Global Cache object
+let noticesCache = {};
+
+// 1. Reset Notice Form UI State
+function resetNoticeForm() {
+    const form = document.getElementById('add-notice-form');
+    if (!form) return;
+
+    form.reset();
+    document.getElementById('edit-notice-id').value = "";
+    document.getElementById('submit-notice-btn').textContent = "નોટિસ પોસ્ટ કરો";
+    document.getElementById('cancel-notice-edit-btn').classList.add('hidden');
+}
+
+document.getElementById('cancel-notice-edit-btn')?.addEventListener('click', resetNoticeForm);
+
+// 2. Form Submit (ADD or UPDATE) Handler
+document.getElementById("add-notice-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
-    await addDoc(collection(db, "posts"), {
-        type: document.getElementById("post-type").value,
-        title: document.getElementById("post-title").value,
-        desc: document.getElementById("post-desc").value,
-        createdAt: new Date()
-    });
-    alert("પોસ્ટ ઉમેરાઈ ગઈ!");
-    e.target.reset();
+
+    const editId = document.getElementById("edit-notice-id").value;
+    const title = document.getElementById("notice-title").value.trim();
+    const desc = document.getElementById("notice-desc").value.trim();
+
+    try {
+        if (editId) {
+            // UPDATE Existing Notice
+            await updateDoc(doc(db, "notices", editId), {
+                title: title,
+                desc: desc,
+                updatedAt: new Date()
+            });
+            alert("નોટિસ સફળતાપૂર્વક અપડેટ થઈ ગઈ!");
+        } else {
+            // ADD New Notice
+            await addDoc(collection(db, "notices"), {
+                title: title,
+                desc: desc,
+                createdAt: new Date()
+            });
+            alert("નવી નોટિસ સફળતાપૂર્વક સાચવાઈ ગઈ!");
+        }
+
+        resetNoticeForm();
+    } catch (error) {
+        console.error("Error saving notice:", error);
+        alert("સાચવવામાં ભૂલ આવી, ફરી પ્રયત્ન કરો.");
+    }
 });
 
+// 3. Real-time Load Notices List (With Fallback for Old Data)
+function loadNotices() {
+    const container = document.getElementById("admin-notices-list");
+    if (!container) return;
+
+    onSnapshot(collection(db, "notices"), (snapshot) => {
+        container.innerHTML = "";
+        noticesCache = {};
+
+        if (snapshot.empty) {
+            container.innerHTML = `<p class="text-xs text-gray-500">કોઈ નોટિસ કે પોસ્ટ મળેલી નથી.</p>`;
+            return;
+        }
+
+        snapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            const id = docSnap.id;
+            noticesCache[id] = data;
+
+            // જૂના અને નવા ડેટા બંને માટે ફેલબેક (Fallback logic)
+            const title = data.title || data.noticeTitle || data.subject || "અનામી નોટિસ";
+            const desc = data.desc || data.description || data.details || "";
+            
+            let dateStr = "તારીખ ઉપલબ્ધ નથી";
+            if (data.createdAt?.toDate) {
+                dateStr = data.createdAt.toDate().toLocaleDateString('gu-IN');
+            } else if (data.date) {
+                dateStr = data.date;
+            }
+
+            const card = document.createElement("div");
+            card.className = "bg-gray-50 border p-3 rounded-lg flex justify-between items-start gap-2 text-xs";
+            card.innerHTML = `
+                <div class="space-y-1 flex-1">
+                    <div class="flex items-center gap-2">
+                        <h4 class="font-bold text-gray-800 text-sm">${title}</h4>
+                        <span class="text-[10px] text-gray-400 bg-gray-200 px-1.5 py-0.5 rounded">${dateStr}</span>
+                    </div>
+                    ${desc ? `<p class="text-gray-600 text-[11px] whitespace-pre-line">${desc}</p>` : ''}
+                </div>
+                <div class="flex gap-1.5 shrink-0">
+                    <button onclick="editNotice('${id}')" class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-[10px] font-bold">
+                        એડિટ
+                    </button>
+                    <button onclick="deleteNotice('${id}')" class="bg-red-500 hover:bg-red-700 text-white px-2 py-1 rounded text-[10px] font-bold">
+                        ડિલીટ
+                    </button>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    });
+}
+
+// 4. EDIT Action Handler
+window.editNotice = (id) => {
+    const data = noticesCache[id];
+    if (!data) return;
+
+    document.getElementById('edit-notice-id').value = id;
+    document.getElementById('notice-title').value = data.title || data.noticeTitle || data.subject || "";
+    document.getElementById('notice-desc').value = data.desc || data.description || data.details || "";
+
+    document.getElementById('submit-notice-btn').textContent = "અપડેટ કરો";
+    document.getElementById('cancel-notice-edit-btn').classList.remove('hidden');
+
+    // Smooth Scroll to form
+    document.getElementById('add-notice-form').scrollIntoView({ behavior: 'smooth' });
+};
+
+// 5. DELETE Action Handler
+window.deleteNotice = async (id) => {
+    if (confirm("શું તમે ખરેખર આ નોટિસ ડિલીટ કરવા માંગો છો?")) {
+        try {
+            await deleteDoc(doc(db, "notices", id));
+            alert("નોટિસ ડિલીટ થઈ ગઈ!");
+
+            // જો એડિટ ચાલુ હોય અને તે જ નોટિસ ડિલીટ થાય તો ફોર્મ રિસેટ કરો
+            if (document.getElementById('edit-notice-id').value === id) {
+                resetNoticeForm();
+            }
+        } catch (err) {
+            console.error("Delete error:", err);
+            alert("ડિલીટ કરવામાં ભૂલ આવી.");
+        }
+    }
+};
+
+// Page load પર કોલ કરો
+loadNotices();
 // Blogger ફોટો ગેલેરી સેવ કરવી
 document.getElementById("gallery-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
