@@ -227,20 +227,42 @@
             <div class="bg-purple-50/80 border border-purple-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[500px] overflow-y-auto">
                 <h3 class="font-bold border-b border-purple-300 pb-2 text-purple-950">૮. કાર્યરત સમિતિઓ મેનેજર</h3>
                 <!-- Committee Form -->
+<!-- Committee Form -->
 <form id="add-committee-group-form" class="space-y-3">
     <input type="hidden" id="edit-committee-id" value="">
+    
     <div>
         <label class="block text-xs font-medium text-gray-700">સમિતિનું નામ</label>
         <input type="text" id="cg-title" placeholder="દા.ત. કારોબારી સમિતિ" class="w-full border p-2 rounded text-xs" required>
     </div>
+
+    <!-- Dynamic Members Section -->
     <div>
-        <label class="block text-xs font-medium text-gray-700">સભ્યોની વિગત (એક લાઈનમાં એક સભ્ય: નામ, મૂળ હોદ્દો, સમિતિ હોદ્દો)</label>
-        <textarea id="cg-members-raw" rows="4" placeholder="રમેશભાઈ પટેલ, સરપંચ, અધ્યક્ષ&#10;મહેશભાઈ શાહ, સભ્ય, ઉપાધ્યક્ષ" class="w-full border p-2 rounded text-xs" required></textarea>
+        <div class="flex justify-between items-center mb-1">
+            <label class="block text-xs font-medium text-gray-700">સમિતિના સભ્યો</label>
+            <button type="button" id="add-member-row-btn" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 py-1 rounded border">
+                + સભ્ય ઉમેરો
+            </button>
+        </div>
+        
+        <!-- Members Fields Container -->
+        <div id="committee-members-container" class="space-y-2">
+            <!-- First Row (Default) -->
+            <div class="member-row flex items-center gap-2 border p-2 rounded bg-gray-50">
+                <input type="text" placeholder="નામ (દા.ત. રમેશભાઈ)" class="member-name w-1/3 border p-1.5 rounded text-xs" required>
+                <input type="text" placeholder="મૂળ હોદ્દો (દા.ત. સરપંચ)" class="member-main-role w-1/3 border p-1.5 rounded text-xs" required>
+                <input type="text" placeholder="સમિતિ હોદ્દો (દા.ત. અધ્યક્ષ)" class="member-comm-role w-1/3 border p-1.5 rounded text-xs" required>
+                <button type="button" class="remove-member-btn text-red-500 font-bold px-1 hover:text-red-700 text-sm" title="દૂર કરો">&times;</button>
+            </div>
+        </div>
     </div>
-    <button type="submit" class="bg-emerald-600 text-white px-3 py-1.5 rounded text-xs font-semibold">કાર્યરત સમિતિ ઉમેરો</button>
+
+    <button type="submit" class="bg-emerald-600 text-white px-3 py-1.5 rounded text-xs font-semibold w-full sm:w-auto">
+        કાર્યરત સમિતિ સાચવો
+    </button>
 </form>
 
-<!-- Aa container jaruri chhe jya badhi samitio dekhashe -->
+<!-- Active Committees List -->
 <div class="mt-4">
     <h3 class="font-bold text-xs text-gray-700 mb-2">હાલની તમામ સમિતિઓ:</h3>
     <div id="admin-committees-list" class="space-y-2 max-h-60 overflow-y-auto"></div>
