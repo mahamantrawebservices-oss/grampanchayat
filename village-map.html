@@ -19,21 +19,29 @@
         
         <!-- ૩ મુખ્ય બટનો -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <button id="btn-gram" class="bg-blue-600 hover:bg-blue-800 text-white font-bold py-3 px-4 rounded-xl shadow transition text-center flex items-center justify-center gap-2">
+            <button id="btn-gram" class="map-btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl shadow transition text-center flex items-center justify-center gap-2 border-2 border-transparent">
                 🏛️ ગામની માહિતી મેપ (Gram Manchitra)
             </button>
 
-            <button id="btn-satellite" class="bg-emerald-600 hover:bg-emerald-800 text-white font-bold py-3 px-4 rounded-xl shadow transition text-center flex items-center justify-center gap-2">
+            <button id="btn-satellite" class="map-btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl shadow transition text-center flex items-center justify-center gap-2 border-2 border-transparent">
                 🛰️ સેટેલાઇટ મેપ (Google Map)
             </button>
 
-            <button id="btn-revenue-pdf" class="bg-purple-600 hover:bg-purple-800 text-white font-bold py-3 px-4 rounded-xl shadow transition text-center flex items-center justify-center gap-2">
+            <button id="btn-revenue-pdf" class="map-btn bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-xl shadow transition text-center flex items-center justify-center gap-2 border-2 border-transparent">
                 📄 રેવન્યુ સર્વે નંબર મેપ (PDF)
             </button>
         </div>
 
         <!-- કન્ટેનર -->
         <div class="flex-1 bg-white rounded-2xl shadow-lg border p-2 min-h-[600px] relative flex flex-col overflow-hidden">
+            <!-- Default Placeholder / Message View -->
+            <div id="map-placeholder" class="hidden absolute inset-0 flex-col items-center justify-center bg-gray-50 p-6 text-center z-10">
+                <p class="text-gray-600 font-semibold mb-3" id="placeholder-text">મહેરબાની કરીને ઉપરના વિકલ્પોમાંથી એક પસંદ કરો.</p>
+                <a id="external-link-btn" href="#" target="_blank" class="hidden bg-blue-600 text-white text-xs px-4 py-2 rounded-lg font-bold shadow hover:bg-blue-700">
+                    નવી ટેબમાં ખોલો ↗
+                </a>
+            </div>
+            
             <iframe id="map-frame" class="w-full h-full min-h-[580px] rounded-xl border-0" src="https://grammanchitra.gov.in/"></iframe>
         </div>
 
@@ -44,22 +52,25 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// તમારી Firebase Details અહીં મૂકો
-const firebaseConfig = {
-  apiKey: "AIzaSyCMhWWI_6oxPIVEQEVlq2SIBf72EI2o8NI",
-  authDomain: "gram-panchayat-33c86.firebaseapp.com",
-  projectId: "gram-panchayat-33c86",
-  storageBucket: "gram-panchayat-33c86.firebasestorage.app",
-  messagingSenderId: "1025176315779",
-  appId: "1:1025176315779:web:a24ca10a06c55edcc8f8b6",
-  measurementId: "G-TQBSXCWNBV"
-};
-
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCMhWWI_6oxPIVEQEVlq2SIBf72EI2o8NI",
+            authDomain: "gram-panchayat-33c86.firebaseapp.com",
+            projectId: "gram-panchayat-33c86",
+            storageBucket: "gram-panchayat-33c86.firebasestorage.app",
+            messagingSenderId: "1025176315779",
+            appId: "1:1025176315779:web:a24ca10a06c55edcc8f8b6",
+            measurementId: "G-TQBSXCWNBV"
+        };
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
         const frame = document.getElementById('map-frame');
+        const placeholder = document.getElementById('map-placeholder');
+        const placeholderText = document.getElementById('placeholder-text');
+        const externalBtn = document.getElementById('external-link-btn');
+
         const btnGram = document.getElementById('btn-gram');
         const btnSat = document.getElementById('btn-satellite');
         const btnPdf = document.getElementById('btn-revenue-pdf');
@@ -77,47 +88,88 @@ const firebaseConfig = {
                     const data = docSnap.data();
                     satUrl = data.satelliteUrl || "";
                     pdfUrl = data.revenuePdfUrl || "";
-                    console.log("✅ લિંક સફળતાપૂર્વક લોડ થઈ ગઈ:", { satUrl, pdfUrl });
+                    console.log("✅ લિંક્સ લોડ થઈ ગઈ:", { satUrl, pdfUrl });
                 } else {
-                    console.warn("⚠️ એડમિન પેનલમાંથી લિંક હજુ સેવ કરવામાં આવી નથી.");
+                    console.warn("⚠️ Firestore માં 'village_map_settings/links' નો ડેટા મળ્યો નથી.");
                 }
             } catch (err) {
                 console.error("❌ લિંક લોડ કરવામાં ભૂલ:", err);
             }
         }
 
-        // લિંક ઓપન લોજિક
+        // Display update helper
+        function showFrame(url) {
+            placeholder.classList.add('hidden');
+            frame.classList.remove('hidden');
+            frame.src = url;
+        }
+
+        function showPlaceholder(message, link = null) {
+            frame.classList.add('hidden');
+            placeholder.classList.remove('hidden');
+            placeholder.classList.add('flex');
+            placeholderText.textContent = message;
+            
+            if (link) {
+                externalBtn.href = link;
+                externalBtn.classList.remove('hidden');
+            } else {
+                externalBtn.classList.add('hidden');
+            }
+        }
+
+        // Active Button styling handler
+        function setActiveButton(activeBtn) {
+            [btnGram, btnSat, btnPdf].forEach(btn => {
+                btn.classList.remove('ring-4', 'ring-offset-2', 'ring-gray-400');
+            });
+            activeBtn.classList.add('ring-4', 'ring-offset-2', 'ring-gray-400');
+        }
+
+        // Open URL logic
         function openUrl(url) {
             if (!url || url.trim() === "") {
                 alert("એડમિન પેનલમાંથી આ લિંક હજુ સુધી ઉમેરવામાં આવી નથી.");
                 return;
             }
 
-            // જો સાદી ગૂગલ મેપ લિંક હોય તો નવી ટેબમાં ઓપન કરો
-            if (url.includes('google.com/maps') && !url.includes('embed') && !url.includes('output=embed')) {
-                window.open(url, '_blank');
-            } else if (url.includes('drive.google.com') && url.includes('/view')) {
-                frame.src = url.replace('/view', '/preview');
+            let finalUrl = url.trim();
+
+            // Google Drive preview logic
+            if (finalUrl.includes('drive.google.com') && finalUrl.includes('/view')) {
+                finalUrl = finalUrl.replace('/view', '/preview');
+            }
+
+            // External Maps (Google Maps non-embed)
+            if (finalUrl.includes('google.com/maps') && !finalUrl.includes('embed')) {
+                window.open(finalUrl, '_blank');
+                showPlaceholder("ગૂગલ મેપ નવી ટેબમાં ઓપન થઈ ગયો છે.", finalUrl);
             } else {
-                frame.src = url;
+                showFrame(finalUrl);
             }
         }
 
+        // Button Event Listeners
         btnGram.addEventListener('click', () => { 
-            frame.src = "https://grammanchitra.gov.in/"; 
+            setActiveButton(btnGram);
+            // Gram Manchitra blocks iframe embedding in many browsers, open directly or in iframe if supported
+            window.open("https://grammanchitra.gov.in/", "_blank");
+            showPlaceholder("Gram Manchitra પોર્ટલ નવી ટેબમાં ઓપન થઈ ગયું છે.", "https://grammanchitra.gov.in/");
         });
 
         btnSat.addEventListener('click', async () => { 
+            setActiveButton(btnSat);
             if (!satUrl) await loadMapLinks(); 
             openUrl(satUrl); 
         });
 
         btnPdf.addEventListener('click', async () => { 
+            setActiveButton(btnPdf);
             if (!pdfUrl) await loadMapLinks(); 
             openUrl(pdfUrl); 
         });
 
-        // પેજ લોડ થતાં જ લિંક્સ ફેચ કરી લેવી
+        // Initial Load
         loadMapLinks();
     </script>
 </body>
