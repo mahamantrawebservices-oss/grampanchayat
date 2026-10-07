@@ -356,74 +356,22 @@
 
 
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+<!-- ગામના નક્શાની લિંક્સ માટેનું સેક્શન -->
+<form id="village-map-form" class="space-y-4">
+    <div>
+        <label class="block text-sm font-bold text-gray-700 mb-1">🛰️ સેટેલાઇટ મેપ લિંક (Google Maps):</label>
+        <input type="url" id="admin-satellite-url" placeholder="https://maps.google.com/..." class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
+    </div>
 
-   // તમારી Firebase Details અહીં મૂકો
-const firebaseConfig = {
-  apiKey: "AIzaSyCMhWWI_6oxPIVEQEVlq2SIBf72EI2o8NI",
-  authDomain: "gram-panchayat-33c86.firebaseapp.com",
-  projectId: "gram-panchayat-33c86",
-  storageBucket: "gram-panchayat-33c86.firebasestorage.app",
-  messagingSenderId: "1025176315779",
-  appId: "1:1025176315779:web:a24ca10a06c55edcc8f8b6",
-  measurementId: "G-TQBSXCWNBV"
-};
+    <div>
+        <label class="block text-sm font-bold text-gray-700 mb-1">📄 રેવન્યુ સર્વે નંબર મેપ PDF લિંક (Google Drive / Direct PDF):</label>
+        <input type="url" id="admin-revenue-pdf-url" placeholder="https://drive.google.com/..." class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
+    </div>
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    document.addEventListener('DOMContentLoaded', () => {
-        const mapForm = document.getElementById('village-map-form');
-        const satInput = document.getElementById('admin-satellite-url');
-        const pdfInput = document.getElementById('admin-revenue-pdf-url');
-
-        if (!mapForm) return;
-
-        // જૂની સેવ થયેલી લિંક્સ એડમિન પેનલના ઇનપુટ બોક્સમાં દર્શાવવી
-        async function fetchExistingLinks() {
-            try {
-                const docRef = doc(db, "village_map_settings", "links");
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    if (satInput) satInput.value = data.satelliteUrl || "";
-                    if (pdfInput) pdfInput.value = data.revenuePdfUrl || "";
-                }
-            } catch (err) {
-                console.error("એડમિન ડેટા લોડ ભૂલ:", err);
-            }
-        }
-
-        fetchExistingLinks();
-
-        // સેવ બટન પર ક્લિક થતાં ડેટા Firestore માં સેવ કરવો
-        mapForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const btn = mapForm.querySelector('button[type="submit"]');
-            btn.disabled = true;
-            btn.innerText = "સેવ થઈ રહ્યું છે...";
-
-            try {
-                await setDoc(doc(db, "village_map_settings", "links"), {
-                    satelliteUrl: satInput.value.trim(),
-                    revenuePdfUrl: pdfInput.value.trim(),
-                    updatedAt: new Date()
-                }, { merge: true });
-
-                alert("✅ નક્શાની લિંક્સ સફળતાપૂર્વક સાચવવામાં આવી!");
-            } catch (err) {
-                console.error("Firebase સેવ ભૂલ:", err);
-                alert("❌ સેવ ન થઈ શક્યું: " + err.message);
-            } finally {
-                btn.disabled = false;
-                btn.innerText = "💾 લિંક્સ સાચવો / અપડેટ કરો";
-            }
-        });
-    });
-</script>
+    <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-lg transition">
+        💾 લિંક્સ સાચવો / અપડેટ કરો
+    </button>
+</form>
 
 
 
