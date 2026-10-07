@@ -12,7 +12,11 @@ onAuthStateChanged(auth, (user) => {
         loadAdminGallery();
         loadAdminMeta();               // મુદત અને નોંધ બોક્સમાં લોડ કરશે
         loadAdminStaffAndCommittee();  // કમિટી સભ્યો અને સ્ટાફની યાદી લોડ કરશે
-        loadAdminSchedule(); // 👈 કર્મચારી સમય પત્રક
+        loadAdminSchedule();           // કર્મચારી સમય પત્રક
+        loadAdminMenuList();
+        loadAdminTaxLink();
+        loadAdminCustomButtons();
+        loadAdminEvents();
     } else {
         document.getElementById("login-modal")?.classList.remove("hidden");
         document.getElementById("admin-dashboard")?.classList.add("hidden");
@@ -22,8 +26,8 @@ onAuthStateChanged(auth, (user) => {
 // Admin Login
 document.getElementById("admin-login-form")?.addEventListener("submit", (e) => {
     e.preventDefault();
-    const email = document.getElementById("login-email").value;
-    const pass = document.getElementById("login-password").value;
+    const email = document.getElementById("login-email")?.value;
+    const pass = document.getElementById("login-password")?.value;
     signInWithEmailAndPassword(auth, email, pass).catch(err => alert("લોગિન નિષ્ફળ: " + err.message));
 });
 
@@ -33,8 +37,8 @@ document.getElementById("logout-btn")?.addEventListener("click", () => signOut(a
 // Save Customization
 document.getElementById("settings-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const name = document.getElementById("set-gp-name").value;
-    const tagline = document.getElementById("set-gp-tagline").value;
+    const name = document.getElementById("set-gp-name")?.value;
+    const tagline = document.getElementById("set-gp-tagline")?.value;
 
     await setDoc(doc(db, "settings", "general"), {
         ...(name && { name }),
@@ -56,8 +60,6 @@ document.getElementById("post-form")?.addEventListener("submit", async (e) => {
     alert("પોસ્ટ ઉમેરાઈ ગઈ!");
     e.target.reset();
 });
-
-
 
 // Blogger ફોટો ગેલેરી સેવ કરવી
 document.getElementById("gallery-form")?.addEventListener("submit", async (e) => {
@@ -117,29 +119,31 @@ async function loadAdminGallery() {
 }
 
 // ૧. વિગત મેનેજર માટે Quill Word Editor
-var menuQuill = new Quill('#menu-editor-container', {
-    theme: 'snow',
-    modules: {
-        toolbar: [
-            [{ 'header': [1, 2, 3, false] }],
-            ['bold', 'italic', 'underline'],
-            [{ 'indent': '-1'}, { 'indent': '+1' }], // 👈 (+1 સ્પેસ આપશે)
-            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-            [{ 'color': [] }, { 'background': [] }],
-            ['clean']
-        ]
-    }
-});
+let menuQuill = null;
+if (document.getElementById('menu-editor-container')) {
+    menuQuill = new Quill('#menu-editor-container', {
+        theme: 'snow',
+        modules: {
+            toolbar: [
+                [{ 'header': [1, 2, 3, false] }],
+                ['bold', 'italic', 'underline'],
+                [{ 'indent': '-1'}, { 'indent': '+1' }],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                [{ 'color': [] }, { 'background': [] }],
+                ['clean']
+            ]
+        }
+    });
+}
 
 // ૨. નવું મેનૂ ઉમેરવું તથા જૂનું મેનૂ એડિટ (અપડેટ) કરવું
 document.getElementById("add-menu-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const editId = document.getElementById("edit-menu-id").value;
     const title = document.getElementById("menu-title").value;
-    const content = menuQuill.root.innerHTML;
+    const content = menuQuill ? menuQuill.root.innerHTML : "";
 
     if (editId) {
-        // ૧. જો એડિટ મોડ હોય તો અપડેટ કરશે
         await setDoc(doc(db, "village_details", editId), {
             title: title,
             content: content,
@@ -148,7 +152,6 @@ document.getElementById("add-menu-form")?.addEventListener("submit", async (e) =
 
         alert("મેનૂ સફળતાપૂર્વક અપડેટ થઈ ગયું!");
     } else {
-        // ૨. નવું મેનૂ એડ કરશે
         await addDoc(collection(db, "village_details"), {
             title: title,
             content: content,
@@ -163,19 +166,16 @@ document.getElementById("add-menu-form")?.addEventListener("submit", async (e) =
     loadAdminMenuList();
 });
 
-// ફોર્મ રીસેટ કરવા માટેનું ફંક્શન
 function resetMenuForm() {
-    document.getElementById("add-menu-form").reset();
-    document.getElementById("edit-menu-id").value = "";
-    menuQuill.root.innerHTML = "";
-    document.getElementById("save-menu-btn").innerText = "મેનૂ સેવ કરો";
-    document.getElementById("cancel-edit-btn").classList.add("hidden");
+    document.getElementById("add-menu-form")?.reset();
+    if (document.getElementById("edit-menu-id")) document.getElementById("edit-menu-id").value = "";
+    if (menuQuill) menuQuill.root.innerHTML = "";
+    if (document.getElementById("save-menu-btn")) document.getElementById("save-menu-btn").innerText = "મેનૂ સેવ કરો";
+    document.getElementById("cancel-edit-btn")?.classList.add("hidden");
 }
 
-// કેન્સલ બટન પર કિલક કરવાથી એડિટ મોડ બંધ થશે
 document.getElementById("cancel-edit-btn")?.addEventListener("click", resetMenuForm);
 
-// ૩. એડમિન લિસ્ટ લોડ કરવું (Edit, Show/Hide & Delete સાથે)
 async function loadAdminMenuList() {
     const snap = await getDocs(collection(db, "village_details"));
     const container = document.getElementById("admin-menu-list");
@@ -210,7 +210,6 @@ async function loadAdminMenuList() {
         `;
     });
 
-    // ✏️ એડિટ બટન ઈવેન્ટ
     document.querySelectorAll(".edit-menu-btn").forEach(btn => {
         btn.addEventListener("click", async (e) => {
             const id = e.target.getAttribute("data-id");
@@ -220,18 +219,16 @@ async function loadAdminMenuList() {
                 const data = docSnap.data();
                 document.getElementById("edit-menu-id").value = id;
                 document.getElementById("menu-title").value = data.title;
-                menuQuill.root.innerHTML = data.content || "";
+                if (menuQuill) menuQuill.root.innerHTML = data.content || "";
                 
                 document.getElementById("save-menu-btn").innerText = "અપડેટ કરો";
                 document.getElementById("cancel-edit-btn").classList.remove("hidden");
                 
-                // સ્ક્રોલ કરીને ફોર્મ સુધી લઈ જશે
-                document.getElementById("add-menu-form").scrollIntoView({ behavior: 'smooth' });
+                document.getElementById("add-menu-form")?.scrollIntoView({ behavior: 'smooth' });
             }
         });
     });
 
-    // 👁️ Show/Hide ઈવેન્ટ
     document.querySelectorAll(".toggle-show-btn").forEach(btn => {
         btn.addEventListener("click", async (e) => {
             const id = e.target.getAttribute("data-id");
@@ -241,7 +238,6 @@ async function loadAdminMenuList() {
         });
     });
 
-    // 🗑️ ડિલીટ ઈવેન્ટ
     document.querySelectorAll(".delete-menu-btn").forEach(btn => {
         btn.addEventListener("click", async (e) => {
             const id = e.target.getAttribute("data-id");
@@ -252,14 +248,8 @@ async function loadAdminMenuList() {
         });
     });
 }
-// Check Auth માં લોડ કરવા માટે ઉમેરો
-loadAdminMenuList();
 
-
-
-// ==========================================
-// ૧. ૬ મહિના જૂનો ડેટા ઓટો ડિલીટ (Async Safe)
-// ==========================================
+// ૬ મહિના જૂનો ડેટા ઓટો ડિલીટ
 async function cleanOldComplaints() {
     try {
         const sixMonthsAgo = Timestamp.fromDate(new Date(Date.now() - 180 * 24 * 60 * 60 * 1000));
@@ -274,7 +264,6 @@ async function cleanOldComplaints() {
 }
 cleanOldComplaints();
 
-// Helper Function: તારીખ અને સમય ફોર્મેટ કરવા માટે
 function formatDateTime(timestamp) {
     if (!timestamp) return "N/A";
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
@@ -288,9 +277,6 @@ function formatDateTime(timestamp) {
     });
 }
 
-// ==========================================
-// ૨. આવેલ ફરિયાદો અને સ્ટેટસ મેનેજર (તારીખ/સમય સાથે)
-// ==========================================
 async function loadAdminComplaints() {
     const filter = document.getElementById("admin-complaint-filter")?.value || "ALL";
     const snap = await getDocs(collection(db, "complaints"));
@@ -330,7 +316,6 @@ async function loadAdminComplaints() {
         `;
     });
 
-    // સ્ટેટસ અપડેટ લિશનર
     document.querySelectorAll(".update-status-select").forEach(sel => {
         sel.addEventListener("change", async (e) => {
             const id = e.target.getAttribute("data-id");
@@ -342,15 +327,10 @@ async function loadAdminComplaints() {
 }
 
 document.getElementById("admin-complaint-filter")?.addEventListener("change", loadAdminComplaints);
-loadAdminComplaints();
 
-
-
-// ==========================================
-// ૩. માસિક સિલેક્શન પ્રમાણે PDF રિપોર્ટ જનરેટર (FIXED)
-// ==========================================
+// PDF રિપોર્ટ જનરેટર
 document.getElementById("download-pdf-btn")?.addEventListener("click", async () => {
-    const selectedMonth = document.getElementById("report-month-select")?.value; // YYYY-MM
+    const selectedMonth = document.getElementById("report-month-select")?.value;
     if (!selectedMonth) {
         alert("મહેરબાની કરીને રિપોર્ટ માટે મહિનો સિલેક્ટ કરો!");
         return;
@@ -364,16 +344,14 @@ document.getElementById("download-pdf-btn")?.addEventListener("click", async () 
 
     const snap = await getDocs(collection(db, "complaints"));
     
-    // ૧. ટેમ્પરરી કન્ટેનર બનાવો (ગુજરાતી ફોન્ટ સપોર્ટ સાથે)
     const reportContainer = document.createElement("div");
     reportContainer.id = "temp-pdf-container";
-    reportContainer.style.width = "1000px"; // ફિક્સ્ડ પહોળાઈ આપવી જરૂરી છે
+    reportContainer.style.width = "1000px";
     reportContainer.style.padding = "20px";
     reportContainer.style.backgroundColor = "#ffffff";
     reportContainer.style.color = "#000000";
     reportContainer.style.fontFamily = "'Noto Sans Gujarati', 'Shruti', 'Gujarati', sans-serif";
 
-    // ૨. હેડર અને ટેબલ સ્ટ્રક્ચર
     let reportHTML = `
         <div style="text-align: center; margin-bottom: 20px;">
             <h2 style="color: #1e3a8a; font-size: 20px; font-weight: bold; margin: 0;">
@@ -407,7 +385,6 @@ document.getElementById("download-pdf-btn")?.addEventListener("click", async () 
 
         if (!itemDate || isNaN(itemDate.getTime())) return;
 
-        // માસિક ચેક
         if (itemDate.getFullYear() == year && (itemDate.getMonth() + 1) == month) {
             count++;
             reportHTML += `
@@ -433,17 +410,11 @@ document.getElementById("download-pdf-btn")?.addEventListener("click", async () 
     reportContainer.innerHTML = reportHTML;
     document.body.appendChild(reportContainer);
 
-    // ૩. html2pdf ઓપ્શન્સ (scale અને useCORS ઉમેર્યું જેથી ઈમેજ તરીકે પરફેક્ટ ટેક્સ્ટ રેન્ડર થાય)
     const opt = {
         margin:       0.3,
         filename:     `Complaint_Report_${monthGujarati}_${year}.pdf`,
         image:        { type: 'jpeg', quality: 1.0 },
-        html2canvas:  { 
-            scale: 2, 
-            useCORS: true, 
-            logging: false,
-            letterRendering: true
-        },
+        html2canvas:  { scale: 2, useCORS: true, logging: false, letterRendering: true },
         jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' }
     };
 
@@ -453,17 +424,11 @@ document.getElementById("download-pdf-btn")?.addEventListener("click", async () 
         console.error("PDF જનરેટ કરવામાં ભૂલ:", err);
         alert("PDF ડાઉનલોડ કરવામાં સમસ્યા આવી!");
     } finally {
-        document.body.removeChild(reportContainer); // DOM સફાઈ
+        document.body.removeChild(reportContainer);
     }
 });
 
-
-
-// ==========================================
-// ૨. કમિટી / સ્ટાફ લોજિક (Add, Edit, Delete & Load)
-// ==========================================
-
-// ૧. સેવ થયેલી મુદત અને નોંધ Admin માં લોડ કરવી
+// Meta details load
 async function loadAdminMeta() {
     try {
         const snap = await getDoc(doc(db, "panchayat_meta", "staff_page"));
@@ -481,7 +446,6 @@ async function loadAdminMeta() {
     }
 }
 
-// મુદત અને નોંધ સાચવવાની ઈવેન્ટ
 document.getElementById("save-meta-btn")?.addEventListener("click", async () => {
     const term = document.getElementById("admin-term-input").value;
     const note = document.getElementById("admin-note-input").value;
@@ -489,12 +453,11 @@ document.getElementById("save-meta-btn")?.addEventListener("click", async () => 
     alert("મુદત અને નોંધ સાચવી લેવાયેલ છે!");
 });
 
-// ૨. કમિટી સભ્યો અને સ્ટાફની યાદી એડમિન પેનલમાં લોડ કરવી
+// Staff & Committee
 async function loadAdminStaffAndCommittee() {
     const committeeContainer = document.getElementById("admin-committee-list");
     const staffContainer = document.getElementById("admin-staff-list");
 
-    // A. કમિટી સભ્યો લોડ કરો
     if (committeeContainer) {
         const committeeSnap = await getDocs(collection(db, "panchayat_committee"));
         committeeContainer.innerHTML = "";
@@ -519,7 +482,6 @@ async function loadAdminStaffAndCommittee() {
         }
     }
 
-    // B. સ્ટાફ કર્મચારીઓ લોડ કરો
     if (staffContainer) {
         const staffSnap = await getDocs(collection(db, "panchayat_staff"));
         staffContainer.innerHTML = "";
@@ -544,7 +506,6 @@ async function loadAdminStaffAndCommittee() {
         }
     }
 
-    // 🗑️ ડિલીટ ઈવેન્ટ
     document.querySelectorAll(".delete-ms-btn").forEach(btn => {
         btn.addEventListener("click", async (e) => {
             const id = e.target.getAttribute("data-id");
@@ -557,7 +518,6 @@ async function loadAdminStaffAndCommittee() {
         });
     });
 
-    // ✏️ એડિટ ઈવેન્ટ (ફોર્મમાં ડેટા પાછો લાવવો)
     document.querySelectorAll(".edit-ms-btn").forEach(btn => {
         btn.addEventListener("click", async (e) => {
             const id = e.target.getAttribute("data-id");
@@ -572,13 +532,12 @@ async function loadAdminStaffAndCommittee() {
                 document.getElementById("ms-mobile").value = data.mobile || '';
                 document.getElementById("ms-ward").value = data.ward || '';
 
-                // એડિટ મોડ માટે Hidden Inputs સેટ કરવા
                 let editInput = document.getElementById("edit-ms-id");
                 if (!editInput) {
                     editInput = document.createElement("input");
                     editInput.type = "hidden";
                     editInput.id = "edit-ms-id";
-                    document.getElementById("add-member-staff-form").appendChild(editInput);
+                    document.getElementById("add-member-staff-form")?.appendChild(editInput);
                 }
                 editInput.value = id;
 
@@ -587,20 +546,19 @@ async function loadAdminStaffAndCommittee() {
                     colInput = document.createElement("input");
                     colInput.type = "hidden";
                     colInput.id = "edit-ms-col";
-                    document.getElementById("add-member-staff-form").appendChild(colInput);
+                    document.getElementById("add-member-staff-form")?.appendChild(colInput);
                 }
                 colInput.value = col;
 
                 const submitBtn = document.querySelector("#add-member-staff-form button[type='submit']");
                 if (submitBtn) submitBtn.innerText = "અપડેટ કરો";
 
-                document.getElementById("add-member-staff-form").scrollIntoView({ behavior: 'smooth' });
+                document.getElementById("add-member-staff-form")?.scrollIntoView({ behavior: 'smooth' });
             }
         });
     });
 }
 
-// ૩. સભ્ય / સ્ટાફ સબ્મિટ (ઉમેરવા અને અપડેટ કરવા માટે)
 document.getElementById("add-member-staff-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const type = document.getElementById("ms-category").value;
@@ -618,7 +576,6 @@ document.getElementById("add-member-staff-form")?.addEventListener("submit", asy
     };
 
     if (editId) {
-        // જો Category બદલાઈ હોય તો જૂના Collection માંથી ડિલીટ કરીને નવામાં ઉમેરો
         if (oldCol && oldCol !== targetCol) {
             await deleteDoc(doc(db, oldCol, editId));
             await addDoc(collection(db, targetCol), payload);
@@ -631,7 +588,6 @@ document.getElementById("add-member-staff-form")?.addEventListener("submit", asy
         alert("સફળતાપૂર્વક ઉમેરાઈ ગયું!");
     }
 
-    // Reset Form & Clear Edit States
     if (document.getElementById("edit-ms-id")) document.getElementById("edit-ms-id").value = "";
     if (document.getElementById("edit-ms-col")) document.getElementById("edit-ms-col").value = "";
     
@@ -642,14 +598,7 @@ document.getElementById("add-member-staff-form")?.addEventListener("submit", asy
     loadAdminStaffAndCommittee();
 });
 
-
-
-
-// ==========================================
-// ૩. સમય પત્રક લોજિક (Add, Edit, Delete & Load)
-// ==========================================
-
-// ૧. એડમિન પેનલમાં સમય પત્રકની યાદી લોડ કરવી
+// સમય પત્રક
 async function loadAdminSchedule() {
     const container = document.getElementById("admin-schedule-list");
     if (!container) return;
@@ -665,8 +614,6 @@ async function loadAdminSchedule() {
 
         snap.forEach(docSnap => {
             const item = docSnap.data();
-            
-            // જો જૂના કે નવા ડેટામાં કી-નામ અલગ હોય તો પણ ડેટા લોડ થઈ જશે
             const name = item.name || item.officerName || "-";
             const designation = item.designation || item.post || item.role || "-";
             const timing = item.timing || item.time || "-";
@@ -688,7 +635,6 @@ async function loadAdminSchedule() {
             `;
         });
 
-        // 🗑️ ડિલીટ કરવાની ઈવેન્ટ
         document.querySelectorAll(".delete-sch-btn").forEach(btn => {
             btn.addEventListener("click", async (e) => {
                 const id = e.target.getAttribute("data-id");
@@ -700,7 +646,6 @@ async function loadAdminSchedule() {
             });
         });
 
-        // ✏️ એડિટ કરવાની ઈવેન્ટ
         document.querySelectorAll(".edit-sch-btn").forEach(btn => {
             btn.addEventListener("click", async (e) => {
                 const id = e.target.getAttribute("data-id");
@@ -709,7 +654,6 @@ async function loadAdminSchedule() {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
                     
-                    // HTML Input Element ની સાચી ID મુજબ ડેટા ભરવો
                     const nameEl = document.getElementById("sch-officer-name") || document.getElementById("sch-name");
                     const desigEl = document.getElementById("sch-officer-post") || document.getElementById("sch-desig");
                     const timingEl = document.getElementById("sch-officer-time") || document.getElementById("sch-timing");
@@ -722,7 +666,7 @@ async function loadAdminSchedule() {
                     if (daysEl) daysEl.value = data.days || data.workDays || '';
                     if (noteEl) noteEl.value = data.note || data.extraNote || '';
                     
-                    document.getElementById("edit-schedule-id").value = id;
+                    if (document.getElementById("edit-schedule-id")) document.getElementById("edit-schedule-id").value = id;
 
                     const submitBtn = document.getElementById("sch-submit-btn");
                     if (submitBtn) submitBtn.innerText = "સમય પત્રક અપડેટ કરો";
@@ -737,12 +681,10 @@ async function loadAdminSchedule() {
     }
 }
 
-// ૨. સમય પત્રક ઉમેરવું / અપડેટ કરવું
 document.getElementById("add-schedule-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const editId = document.getElementById("edit-schedule-id")?.value;
 
-    // સાચા Elements માંથી જ Value મેળવવી
     const nameVal = (document.getElementById("sch-officer-name") || document.getElementById("sch-name"))?.value;
     const desigVal = (document.getElementById("sch-officer-post") || document.getElementById("sch-desig"))?.value;
     const timingVal = (document.getElementById("sch-officer-time") || document.getElementById("sch-timing"))?.value;
@@ -762,7 +704,7 @@ document.getElementById("add-schedule-form")?.addEventListener("submit", async (
         if (editId) {
             await setDoc(doc(db, "panchayat_schedule", editId), payload, { merge: true });
             alert("સમય પત્રક અપડેટ થઈ ગયું!");
-            document.getElementById("edit-schedule-id").value = "";
+            if (document.getElementById("edit-schedule-id")) document.getElementById("edit-schedule-id").value = "";
         } else {
             await addDoc(collection(db, "panchayat_schedule"), payload);
             alert("સમય પત્રક ઉમેરાઈ ગયું!");
@@ -778,11 +720,7 @@ document.getElementById("add-schedule-form")?.addEventListener("submit", async (
     }
 });
 
-// શરૂઆતમાં જ ડેટા લોડ કરવો
-loadAdminSchedule();
-// ==========================================
-// ૪. કાર્યરત સમિતિઓ લોજિક
-// ==========================================
+// કાર્યરત સમિતિઓ
 document.getElementById("add-committee-group-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const title = document.getElementById("cg-title").value;
@@ -805,12 +743,7 @@ document.getElementById("add-committee-group-form")?.addEventListener("submit", 
     e.target.reset();
 });
 
-loadAdminComplaints();
-
-
-
-
-// ૧. એડમિન પેનલમાં હાલની લિંક લોડ કરવી
+// મિલકત વેરા લિંક
 async function loadAdminTaxLink() {
     const inputEl = document.getElementById("tax-payment-url");
     if (!inputEl) return;
@@ -825,7 +758,6 @@ async function loadAdminTaxLink() {
     }
 }
 
-// ૨. ફોર્મ સબમિટ થતાં લિંક સેવ કરવી
 document.getElementById("tax-link-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const urlValue = document.getElementById("tax-payment-url").value;
@@ -842,11 +774,7 @@ document.getElementById("tax-link-form")?.addEventListener("submit", async (e) =
     }
 });
 
-loadAdminTaxLink();
-
-
-
-// ૧. એડમિનમાં ઉમેરેલા બટન્સનું લિસ્ટ લોડ કરવું
+// કસ્ટમ બટન્સ
 async function loadAdminCustomButtons() {
     const listDiv = document.getElementById("admin-custom-buttons-list");
     if (!listDiv) return;
@@ -873,7 +801,6 @@ async function loadAdminCustomButtons() {
             `;
         });
 
-        // 🗑️ ડિલીટ કરવાની ઇવેન્ટ
         document.querySelectorAll(".delete-page-btn").forEach(btn => {
             btn.addEventListener("click", async (e) => {
                 const id = e.target.getAttribute("data-id");
@@ -886,7 +813,6 @@ async function loadAdminCustomButtons() {
             });
         });
 
-        // ✏️ એડિટ કરવાની ઇવેન્ટ
         document.querySelectorAll(".edit-page-btn").forEach(btn => {
             btn.addEventListener("click", async (e) => {
                 const id = e.target.getAttribute("data-id");
@@ -895,18 +821,15 @@ async function loadAdminCustomButtons() {
                     if (docSnap.exists()) {
                         const data = docSnap.data();
                         
-                        // ફોર્મમાં ડેટા ભરવો
                         document.getElementById("edit-custom-page-id").value = id;
                         document.getElementById("custom-btn-title").value = data.buttonTitle || '';
                         document.getElementById("custom-page-html").value = data.htmlContent || '';
 
-                        // બટનનું લખાણ બદલવું
                         const submitBtn = document.getElementById("custom-page-submit-btn");
                         const cancelBtn = document.getElementById("custom-page-cancel-btn");
                         if (submitBtn) submitBtn.innerText = "બટન અને પેજ અપડેટ કરો";
                         if (cancelBtn) cancelBtn.classList.remove("hidden");
 
-                        // સ્ક્રોલ કરીને ફોર્મ પર જવું
                         document.getElementById("add-page-button-form")?.scrollIntoView({ behavior: 'smooth' });
                     }
                 } catch (err) {
@@ -920,12 +843,11 @@ async function loadAdminCustomButtons() {
     }
 }
 
-// ૨. ફોર્મ રિસેટ કરવા માટેનું ફંક્શન
 function resetCustomPageForm() {
     const form = document.getElementById("add-page-button-form");
     if (form) form.reset();
     
-    document.getElementById("edit-custom-page-id").value = "";
+    if (document.getElementById("edit-custom-page-id")) document.getElementById("edit-custom-page-id").value = "";
     const submitBtn = document.getElementById("custom-page-submit-btn");
     const cancelBtn = document.getElementById("custom-page-cancel-btn");
     
@@ -933,16 +855,12 @@ function resetCustomPageForm() {
     if (cancelBtn) cancelBtn.classList.add("hidden");
 }
 
-// ૩. કેન્સલ બટન માટે ઇવેન્ટ
-document.getElementById("custom-page-cancel-btn")?.addEventListener("click", () => {
-    resetCustomPageForm();
-});
+document.getElementById("custom-page-cancel-btn")?.addEventListener("click", resetCustomPageForm);
 
-// ૪. નવું બટન ઉમેરવું અથવા જૂનું અપડેટ કરવું
 document.getElementById("add-page-button-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     
-    const editId = document.getElementById("edit-custom-page-id").value;
+    const editId = document.getElementById("edit-custom-page-id")?.value;
     const title = document.getElementById("custom-btn-title").value;
     const htmlContent = document.getElementById("custom-page-html").value;
 
@@ -954,11 +872,9 @@ document.getElementById("add-page-button-form")?.addEventListener("submit", asyn
 
     try {
         if (editId) {
-            // જો એડિટ આઈડી હોય તો અપડેટ કરો
             await setDoc(doc(db, "custom_pages", editId), payload, { merge: true });
             alert("બટન અને પેજ સફળતાપૂર્વક અપડેટ થઈ ગયું!");
         } else {
-            // નવું એડ કરો
             payload.createdAt = Date.now();
             await addDoc(collection(db, "custom_pages"), payload);
             alert("નવું બટન અને પેજ ઉમેરાઈ ગયું!");
@@ -971,13 +887,7 @@ document.getElementById("add-page-button-form")?.addEventListener("submit", asyn
     }
 });
 
-// શરૂઆતમાં ડેટા લોડ કરવો
-loadAdminCustomButtons();
-
-
-
-
-// ૧. એડમિનમાં ઇવેન્ટ્સનું લિસ્ટ લોડ કરવું
+// ઇવેન્ટ્સ લોડિંગ
 async function loadAdminEvents() {
     const listDiv = document.getElementById("admin-events-list");
     if (!listDiv) return;
@@ -996,7 +906,6 @@ async function loadAdminEvents() {
         for (const docSnap of snap.docs) {
             const data = docSnap.data();
 
-            // જૂની ઇવેન્ટ્સ આપોઆપ ડિલીટ કરવી
             if (data.eventDate < today) {
                 await deleteDoc(doc(docSnap.ref));
                 continue;
@@ -1016,7 +925,6 @@ async function loadAdminEvents() {
             `;
         }
 
-        // 🗑️ ડિલીટ ઇવેન્ટ
         document.querySelectorAll(".delete-event-btn").forEach(btn => {
             btn.addEventListener("click", async (e) => {
                 const id = e.target.getAttribute("data-id");
@@ -1029,7 +937,6 @@ async function loadAdminEvents() {
             });
         });
 
-        // ✏️ એડિટ ઇવેન્ટ
         document.querySelectorAll(".edit-event-btn").forEach(btn => {
             btn.addEventListener("click", async (e) => {
                 const id = e.target.getAttribute("data-id");
@@ -1061,12 +968,11 @@ async function loadAdminEvents() {
     }
 }
 
-// ૨. ફોર્મ રિસેટ ફંક્શન
 function resetEventForm() {
     const form = document.getElementById("event-form");
     if (form) form.reset();
     
-    document.getElementById("edit-event-id").value = "";
+    if (document.getElementById("edit-event-id")) document.getElementById("edit-event-id").value = "";
     const submitBtn = document.getElementById("event-submit-btn");
     const cancelBtn = document.getElementById("event-cancel-btn");
     
@@ -1074,16 +980,12 @@ function resetEventForm() {
     if (cancelBtn) cancelBtn.classList.add("hidden");
 }
 
-// ૩. કેન્સલ બટન ઇવેન્ટ
-document.getElementById("event-cancel-btn")?.addEventListener("click", () => {
-    resetEventForm();
-});
+document.getElementById("event-cancel-btn")?.addEventListener("click", resetEventForm);
 
-// ૪. ઇવેન્ટ સેવ અથવા અપડેટ કરવી
 document.getElementById("event-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     
-    const editId = document.getElementById("edit-event-id").value;
+    const editId = document.getElementById("edit-event-id")?.value;
     const name = document.getElementById("event-name").value;
     const date = document.getElementById("event-date").value;
     const location = document.getElementById("event-location").value;
@@ -1112,19 +1014,12 @@ document.getElementById("event-form")?.addEventListener("submit", async (e) => {
     }
 });
 
-loadAdminEvents();
+// ડિઝાસ્ટર મેનેજમેન્ટ
+const disasterSelect = document.getElementById('disaster-page-key');
+const disasterTextarea = document.getElementById('disaster-page-content');
+const disasterForm = document.getElementById('disaster-management-form');
 
-
-
-
-document.addEventListener('DOMContentLoaded', function() {
-    const disasterSelect = document.getElementById('disaster-page-key');
-    const disasterTextarea = document.getElementById('disaster-page-content');
-    const disasterForm = document.getElementById('disaster-management-form');
-
-    if (!disasterForm) return;
-
-    // ફંક્શન: Firestore માંથી જૂનો ડેટા મેળવી ટેક્સ્ટએરિયામાં દર્શાવવો
+if (disasterForm && disasterSelect && disasterTextarea) {
     async function fetchDisasterContent() {
         const key = disasterSelect.value;
         disasterTextarea.value = "લોડ થઈ રહ્યું છે...";
@@ -1144,11 +1039,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // શરૂઆતમાં અને ડ્રોપડાઉન બદલાય ત્યારે Firestore માંથી ડેટા લોડ કરવો
     fetchDisasterContent();
     disasterSelect.addEventListener('change', fetchDisasterContent);
 
-    // ફોર્મ સબમિટ વખતે Firestore માં ડેટા Save / Update કરવો
     disasterForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         
@@ -1160,7 +1053,6 @@ document.addEventListener('DOMContentLoaded', function() {
         submitBtn.innerText = "સેવ થઈ રહ્યું છે...";
 
         try {
-            // Firestore માં "disaster_management" નામનું કલેક્શન અને "key" નામનો ડૉક્યુમેન્ટ
             await setDoc(doc(db, "disaster_management", key), {
                 content: content,
                 updatedAt: new Date()
@@ -1175,78 +1067,51 @@ document.addEventListener('DOMContentLoaded', function() {
             submitBtn.innerText = "માહિતી સાચવો / અપડેટ કરો";
         }
     });
-});
+}
 
+// ગામના નક્શાની લિંક્સ
+const mapForm = document.getElementById('village-map-form');
+const satInput = document.getElementById('admin-satellite-url');
+const pdfInput = document.getElementById('admin-revenue-pdf-url');
 
-
-
-
-
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-   // તમારી Firebase Details અહીં મૂકો
-const firebaseConfig = {
-  apiKey: "AIzaSyCMhWWI_6oxPIVEQEVlq2SIBf72EI2o8NI",
-  authDomain: "gram-panchayat-33c86.firebaseapp.com",
-  projectId: "gram-panchayat-33c86",
-  storageBucket: "gram-panchayat-33c86.firebasestorage.app",
-  messagingSenderId: "1025176315779",
-  appId: "1:1025176315779:web:a24ca10a06c55edcc8f8b6",
-  measurementId: "G-TQBSXCWNBV"
-};
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    document.addEventListener('DOMContentLoaded', () => {
-        const mapForm = document.getElementById('village-map-form');
-        const satInput = document.getElementById('admin-satellite-url');
-        const pdfInput = document.getElementById('admin-revenue-pdf-url');
-
-        if (!mapForm) return;
-
-        // જૂની સેવ થયેલી લિંક્સ એડમિન પેનલના ઇનપુટ બોક્સમાં દર્શાવવી
-        async function fetchExistingLinks() {
-            try {
-                const docRef = doc(db, "village_map_settings", "links");
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    if (satInput) satInput.value = data.satelliteUrl || "";
-                    if (pdfInput) pdfInput.value = data.revenuePdfUrl || "";
-                }
-            } catch (err) {
-                console.error("એડમિન ડેટા લોડ ભૂલ:", err);
+if (mapForm) {
+    async function fetchExistingLinks() {
+        try {
+            const docRef = doc(db, "village_map_settings", "links");
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                if (satInput) satInput.value = data.satelliteUrl || "";
+                if (pdfInput) pdfInput.value = data.revenuePdfUrl || "";
             }
+        } catch (err) {
+            console.error("એડમિન ડેટા લોડ ભૂલ:", err);
         }
+    }
 
-        fetchExistingLinks();
+    fetchExistingLinks();
 
-        // સેવ બટન પર ક્લિક થતાં ડેટા Firestore માં સેવ કરવો
-        mapForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
+    mapForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-            const btn = mapForm.querySelector('button[type="submit"]');
-            btn.disabled = true;
-            btn.innerText = "સેવ થઈ રહ્યું છે...";
+        const btn = mapForm.querySelector('button[type="submit"]');
+        btn.disabled = true;
+        btn.innerText = "સેવ થઈ રહ્યું છે...";
 
-            try {
-                await setDoc(doc(db, "village_map_settings", "links"), {
-                    satelliteUrl: satInput.value.trim(),
-                    revenuePdfUrl: pdfInput.value.trim(),
-                    updatedAt: new Date()
-                }, { merge: true });
+        try {
+            await setDoc(doc(db, "village_map_settings", "links"), {
+                satelliteUrl: satInput.value.trim(),
+                revenuePdfUrl: pdfInput.value.trim(),
+                updatedAt: new Date()
+            }, { merge: true });
 
-                alert("✅ નક્શાની લિંક્સ સફળતાપૂર્વક સાચવવામાં આવી!");
-            } catch (err) {
-                console.error("Firebase સેવ ભૂલ:", err);
-                alert("❌ સેવ ન થઈ શક્યું: " + err.message);
-            } finally {
-                btn.disabled = false;
-                btn.innerText = "💾 લિંક્સ સાચવો / અપડેટ કરો";
-            }
-        });
+            alert("✅ નક્શાની લિંક્સ સફળતાપૂર્વક સાચવવામાં આવી!");
+        } catch (err) {
+            console.error("Firebase સેવ ભૂલ:", err);
+            alert("❌ સેવ ન થઈ શક્યું: " + err.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "💾 લિંક્સ સાચવો / અપડેટ કરો";
+        }
     });
-</script>
+}
