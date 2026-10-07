@@ -103,16 +103,23 @@ document.getElementById("add-notice-form")?.addEventListener("submit", async (e)
 });
 
 // 3. Real-time Load Notices List (With Fallback for Old Data)
+// Global Cache
+let noticesCache = {};
+
+// Real-time Load Notices List (જૂના અને નવા તમામ ડેટા માટે)
 function loadNotices() {
     const container = document.getElementById("admin-notices-list");
     if (!container) return;
 
+    // નોંધ: જો Firestore માં Collection નું નામ 'posts' હોય તો અહીં "notices" બદલીને "posts" કરવું
     onSnapshot(collection(db, "notices"), (snapshot) => {
         container.innerHTML = "";
         noticesCache = {};
 
+        console.log("🔥 Firestore snapshot length:", snapshot.size); // Debugging માટે Console માં તપાસવું
+
         if (snapshot.empty) {
-            container.innerHTML = `<p class="text-xs text-gray-500">કોઈ નોટિસ કે પોસ્ટ મળેલી નથી.</p>`;
+            container.innerHTML = `<p class="text-xs text-gray-500 p-2">કોઈ નોટિસ કે પોસ્ટ મળેલી નથી.</p>`;
             return;
         }
 
@@ -121,26 +128,29 @@ function loadNotices() {
             const id = docSnap.id;
             noticesCache[id] = data;
 
-            // જૂના અને નવા ડેટા બંને માટે ફેલબેક (Fallback logic)
-            const title = data.title || data.noticeTitle || data.subject || "અનામી નોટિસ";
-            const desc = data.desc || data.description || data.details || "";
+            // જૂના અને નવા ડેટાના તમામ ફોર્મેટ માટે Fallback Logic
+            const title = data.title || data.noticeTitle || data.subject || data.heading || "અનામી પોસ્ટ / નોટિસ";
+            const desc = data.desc || data.description || data.details || data.message || data.content || "";
             
+            // તારીખ મેળવવાનું લોજિક
             let dateStr = "તારીખ ઉપલબ્ધ નથી";
             if (data.createdAt?.toDate) {
                 dateStr = data.createdAt.toDate().toLocaleDateString('gu-IN');
             } else if (data.date) {
                 dateStr = data.date;
+            } else if (data.timestamp) {
+                dateStr = new Date(data.timestamp).toLocaleDateString('gu-IN');
             }
 
             const card = document.createElement("div");
-            card.className = "bg-gray-50 border p-3 rounded-lg flex justify-between items-start gap-2 text-xs";
+            card.className = "bg-gray-50 border p-3 rounded-lg flex justify-between items-start gap-2 text-xs mb-2";
             card.innerHTML = `
                 <div class="space-y-1 flex-1">
                     <div class="flex items-center gap-2">
                         <h4 class="font-bold text-gray-800 text-sm">${title}</h4>
                         <span class="text-[10px] text-gray-400 bg-gray-200 px-1.5 py-0.5 rounded">${dateStr}</span>
                     </div>
-                    ${desc ? `<p class="text-gray-600 text-[11px] whitespace-pre-line">${desc}</p>` : ''}
+                    ${desc ? `<p class="text-gray-600 text-[11px] whitespace-pre-line">${desc}</p>` : '<p class="text-gray-400 text-[10px] italic">કોઈ વિગત નથી</p>'}
                 </div>
                 <div class="flex gap-1.5 shrink-0">
                     <button onclick="editNotice('${id}')" class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-[10px] font-bold">
@@ -153,9 +163,14 @@ function loadNotices() {
             `;
             container.appendChild(card);
         });
+    }, (error) => {
+        console.error("❌ Firestore ડેટા ફેચ કરવામાં એરર:", error);
+        container.innerHTML = `<p class="text-xs text-red-500 p-2">ડેટા લોડ કરવામાં ભૂલ આવી: ${error.message}</p>`;
     });
 }
 
+// Page load થતાં ફંક્શન કોલ કરો
+loadNotices();
 // 4. EDIT Action Handler
 window.editNotice = (id) => {
     const data = noticesCache[id];
