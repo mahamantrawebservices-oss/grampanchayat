@@ -52,6 +52,8 @@ document.getElementById("settings-form")?.addEventListener("submit", async (e) =
 
 
 // Add Post/Notice
+
+
 // Global Cache object
 let noticesCache = {};
 
@@ -103,20 +105,15 @@ document.getElementById("add-notice-form")?.addEventListener("submit", async (e)
 });
 
 // 3. Real-time Load Notices List (With Fallback for Old Data)
-// Global Cache
-let noticesCache = {};
-
-// Real-time Load Notices List (જૂના અને નવા તમામ ડેટા માટે)
 function loadNotices() {
     const container = document.getElementById("admin-notices-list");
     if (!container) return;
 
-    // નોંધ: જો Firestore માં Collection નું નામ 'posts' હોય તો અહીં "notices" બદલીને "posts" કરવું
     onSnapshot(collection(db, "notices"), (snapshot) => {
         container.innerHTML = "";
         noticesCache = {};
 
-        console.log("🔥 Firestore snapshot length:", snapshot.size); // Debugging માટે Console માં તપાસવું
+        console.log("🔥 Firestore snapshot length:", snapshot.size);
 
         if (snapshot.empty) {
             container.innerHTML = `<p class="text-xs text-gray-500 p-2">કોઈ નોટિસ કે પોસ્ટ મળેલી નથી.</p>`;
@@ -128,11 +125,11 @@ function loadNotices() {
             const id = docSnap.id;
             noticesCache[id] = data;
 
-            // જૂના અને નવા ડેટાના તમામ ફોર્મેટ માટે Fallback Logic
+            // Fallback logic for various titles & descriptions
             const title = data.title || data.noticeTitle || data.subject || data.heading || "અનામી પોસ્ટ / નોટિસ";
             const desc = data.desc || data.description || data.details || data.message || data.content || "";
             
-            // તારીખ મેળવવાનું લોજિક
+            // Date parsing fallback
             let dateStr = "તારીખ ઉપલબ્ધ નથી";
             if (data.createdAt?.toDate) {
                 dateStr = data.createdAt.toDate().toLocaleDateString('gu-IN');
@@ -169,8 +166,6 @@ function loadNotices() {
     });
 }
 
-// Page load થતાં ફંક્શન કોલ કરો
-loadNotices();
 // 4. EDIT Action Handler
 window.editNotice = (id) => {
     const data = noticesCache[id];
@@ -183,7 +178,6 @@ window.editNotice = (id) => {
     document.getElementById('submit-notice-btn').textContent = "અપડેટ કરો";
     document.getElementById('cancel-notice-edit-btn').classList.remove('hidden');
 
-    // Smooth Scroll to form
     document.getElementById('add-notice-form').scrollIntoView({ behavior: 'smooth' });
 };
 
@@ -194,7 +188,6 @@ window.deleteNotice = async (id) => {
             await deleteDoc(doc(db, "notices", id));
             alert("નોટિસ ડિલીટ થઈ ગઈ!");
 
-            // જો એડિટ ચાલુ હોય અને તે જ નોટિસ ડિલીટ થાય તો ફોર્મ રિસેટ કરો
             if (document.getElementById('edit-notice-id').value === id) {
                 resetNoticeForm();
             }
@@ -205,8 +198,10 @@ window.deleteNotice = async (id) => {
     }
 };
 
-// Page load પર કોલ કરો
+// Page load par execute karo
 loadNotices();
+
+
 // Blogger ફોટો ગેલેરી સેવ કરવી
 document.getElementById("gallery-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
