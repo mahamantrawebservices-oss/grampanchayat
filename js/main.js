@@ -42,31 +42,57 @@ async function loadPosts() {
 }
 
 // ૩. નોટિસ લોડ કરવી
-async function loadNotices() {
-    const querySnapshot = await getDocs(collection(db, "posts"));
+function loadFrontendNotices() {
     const noticeList = document.getElementById("notice-list");
     if (!noticeList) return;
-    
-    noticeList.innerHTML = "";
-    let hasNotice = false;
 
-    querySnapshot.forEach((docSnap) => {
-        const item = docSnap.data();
-        if (item.type === 'notice') {
-            hasNotice = true;
-            noticeList.innerHTML += `
-                <div class="border-b border-red-400/40 pb-2 mb-2 last:border-b-0">
-                    <h5 class="font-bold text-white text-sm md:text-base leading-snug">• ${item.title}</h5>
-                    <p class="text-xs text-red-100 mt-1 leading-relaxed pl-3">${item.desc}</p>
-                </div>
-            `;
+    // Real-time updates માટે onSnapshot
+    onSnapshot(collection(db, "notices"), (snapshot) => {
+        noticeList.innerHTML = ""; // લોડિંગ મેસેજ સાફ કરવો
+
+        if (snapshot.empty) {
+            noticeList.innerHTML = `<p class="text-white/80 text-xs italic">હાલમાં કોઈ નવી નોટિસ નથી.</p>`;
+            return;
         }
-    });
 
-    if (!hasNotice) {
-        noticeList.innerHTML = "<p class='text-xs text-red-200'>હાલ કોઈ નવી નોટિસ નથી.</p>";
-    }
+        snapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+
+            // જૂના અને નવા ડેટા માટે ફેલબેક (Fallback logic)
+            const title = data.title || data.noticeTitle || data.subject || data.heading || "અગત્યની સૂચના";
+            const desc = data.desc || data.description || data.details || data.message || data.content || "";
+            
+            // તારીખ મેળવવી
+            let dateStr = "";
+            if (data.createdAt?.toDate) {
+                dateStr = data.createdAt.toDate().toLocaleDateString('gu-IN');
+            } else if (data.date) {
+                dateStr = data.date;
+            }
+
+            // Red Box સાથે મેચ થાય એવું Clean White Text Card
+            const card = document.createElement("div");
+            card.className = "bg-red-700/60 backdrop-blur-sm p-3 rounded-lg border border-red-400/40 space-y-1 shadow-sm";
+            card.innerHTML = `
+                <div class="flex justify-between items-start gap-2">
+                    <h5 class="font-bold text-white text-base flex items-center gap-1.5">
+                        <span class="text-amber-300">📌</span> ${title}
+                    </h5>
+                    ${dateStr ? `<span class="text-[11px] bg-red-900/80 text-amber-200 px-2 py-0.5 rounded-full font-sans border border-amber-300/30 shrink-0">${dateStr}</span>` : ''}
+                </div>
+                ${desc ? `<p class="text-white/95 text-xs whitespace-pre-line leading-relaxed pl-5">${desc}</p>` : ''}
+            `;
+
+            noticeList.appendChild(card);
+        });
+    }, (error) => {
+        console.error("Error loading notices:", error);
+        noticeList.innerHTML = `<p class="text-white/80 text-xs">નોટિસ લોડ કરવામાં ભૂલ આવી.</p>`;
+    });
 }
+
+// પેજ લોડ થતાં જ કોલ કરો
+loadFrontendNotices();
 
 // ૪. ઇતિહાસ બતાવવો
 async function displayHistory() {
