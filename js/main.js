@@ -64,6 +64,66 @@ loadPosts();
 
 
 
+
+
+
+// અગત્યની નોટિસ ફ્રન્ટએન્ડ પર લોડ કરવા માટેનું ફંક્શન(વધારનું)
+function loadNotices() {
+    const noticeList = document.getElementById("notice-list");
+    if (!noticeList) return;
+
+    // Real-time listener
+    onSnapshot(collection(db, "notices"), (snapshot) => {
+        noticeList.innerHTML = "";
+
+        if (snapshot.empty) {
+            noticeList.innerHTML = `<p class="text-white/80 text-xs italic">હાલમાં કોઈ નવી નોટિસ નથી.</p>`;
+            return;
+        }
+
+        snapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+
+            // જૂના અને નવા ડેટા માટે ફેલબેક
+            const title = data.title || data.noticeTitle || data.subject || "અગત્યની સૂચના";
+            const desc = data.desc || data.description || data.details || "";
+            
+            let dateStr = "";
+            if (data.createdAt?.toDate) {
+                dateStr = data.createdAt.toDate().toLocaleDateString('gu-IN');
+            } else if (data.date) {
+                dateStr = data.date;
+            }
+
+            const card = document.createElement("div");
+            card.className = "bg-red-700/60 backdrop-blur-sm p-3 rounded-lg border border-red-400/40 space-y-1 shadow-sm mb-2";
+            card.innerHTML = `
+                <div class="flex justify-between items-start gap-2">
+                    <h5 class="font-bold text-white text-base flex items-center gap-1.5">
+                        <span class="text-amber-300">📌</span> ${title}
+                    </h5>
+                    ${dateStr ? `<span class="text-[11px] bg-red-900/80 text-amber-200 px-2 py-0.5 rounded-full font-sans border border-amber-300/30 shrink-0">${dateStr}</span>` : ''}
+                </div>
+                ${desc ? `<p class="text-white/95 text-xs whitespace-pre-line leading-relaxed pl-5">${desc}</p>` : ''}
+            `;
+
+            noticeList.appendChild(card);
+        });
+    }, (error) => {
+        console.error("Error loading notices:", error);
+        noticeList.innerHTML = `<p class="text-white/80 text-xs">નોટિસ લોડ કરવામાં ભૂલ આવી.</p>`;
+    });
+}
+
+// જો તમે લાઇન 490 પર આ ફંક્શન કોલ કર્યું જ હોય, તો ઉપરનું ફંક્શન ઉમેરવાથી તે ઓટોમેટિક કામ કરવા લાગશે!
+
+
+
+
+
+
+
+
 // ૩. નોટિસ લોડ કરવી
 function loadFrontendNotices() {
     const noticeList = document.getElementById("notice-list");
