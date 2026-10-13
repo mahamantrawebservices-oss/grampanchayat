@@ -272,7 +272,7 @@ async function loadFrontendSchedule() {
     });
 }
 
-// ૧૦. પબ્લિક ડ્રોપડાઉન મેન્યૂ
+// ૧૦. ગામ અને પંચાયત વિગત પબ્લિક ડ્રોપડાઉન મેન્યૂ
 async function loadVillageDetailsMenu() {
     const snap = await getDocs(collection(db, "village_details"));
     const container = document.getElementById("village-details-menu-list");
