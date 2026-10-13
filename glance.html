@@ -29,14 +29,27 @@
         </div>
     </div>
 
-    <!-- Firebase Logic with correct path -->
+    <!-- Firebase Direct Config (404 Error ની કોઈ શક્યતા નહીં) -->
     <script type="module">
-        import { db } from "./js/firebase-config.js";
-        import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // તમારી ફાયરબેઝ કોન્ફિગ કી (જે તમારી firebase-config.js માં છે તે જ અહીં મૂકો)
+const firebaseConfig = {
+  apiKey: "AIzaSyCMhWWI_6oxPIVEQEVlq2SIBf72EI2o8NI",
+  authDomain: "gram-panchayat-33c86.firebaseapp.com",
+  projectId: "gram-panchayat-33c86",
+  storageBucket: "gram-panchayat-33c86.firebasestorage.app",
+  messagingSenderId: "1025176315779",
+  appId: "1:1025176315779:web:a24ca10a06c55edcc8f8b6",
+  measurementId: "G-TQBSXCWNBV"
+};
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
         const container = document.getElementById("public-glance-container");
 
-        // Real-time listener for village glance collection
+        // Real-time Data Fetching
         onSnapshot(collection(db, "village_glance"), (snapshot) => {
             container.innerHTML = "";
 
