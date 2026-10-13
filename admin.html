@@ -54,6 +54,57 @@
                 </form>
             </div>
 
+
+
+
+<!-- ૧. તાજી પોસ્ટ્સ અને ન્યૂઝ મેનેજર -->
+<div class="bg-white p-5 rounded-2xl shadow-md border space-y-4">
+    <h3 class="font-bold text-sm text-emerald-800 flex items-center gap-2 border-b pb-2">
+        📢 તાજી પોસ્ટ્સ અને ન્યૂઝ મેનેજ કરો
+    </h3>
+
+    <!-- Post Form -->
+    <form id="add-post-form" class="space-y-3 bg-gray-50 p-4 rounded-xl border">
+        <!-- Hidden input edit mode માટે -->
+        <input type="hidden" id="edit-post-id" value="">
+
+        <div>
+            <label class="block text-xs font-medium text-gray-700 mb-1">પોસ્ટ / ન્યૂઝનું શીર્ષક (Title)</label>
+            <input type="text" id="post-title" placeholder="દા.ત. ગામમાં નવું પ્રાથમિક આરોગ્ય કેન્દ્ર મંજૂર" class="w-full border p-2 rounded text-xs bg-white" required>
+        </div>
+
+        <div>
+            <label class="block text-xs font-medium text-gray-700 mb-1">વિગત (Description)</label>
+            <textarea id="post-desc" rows="3" placeholder="પોસ્ટ અંગેની સંપૂર્ણ માહિતી લખો..." class="w-full border p-2 rounded text-xs bg-white" required></textarea>
+        </div>
+
+        <div class="flex gap-2">
+            <button type="submit" id="submit-post-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded text-xs font-semibold">
+                પોસ્ટ ઉમેરો
+            </button>
+            <button type="button" id="cancel-post-edit-btn" class="hidden bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded text-xs font-semibold">
+                રદ કરો
+            </button>
+        </div>
+    </form>
+
+    <!-- Posts List Container -->
+    <div class="mt-4">
+        <h4 class="font-bold text-xs text-gray-700 mb-2">હાલની તમામ પોસ્ટ્સ અને ન્યૂઝ:</h4>
+        <div id="admin-posts-list" class="space-y-2 max-h-72 overflow-y-auto">
+            <p class="text-xs text-gray-500">પોસ્ટ્સ લોડ થઈ રહી છે...</p>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+            
             <!-- સેક્શન ૨: નવી પોસ્ટ / નોટિસ મૂકો -->
             <div class="bg-blue-50/70 border border-blue-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[500px] overflow-y-auto">
                 <h3 class="font-bold border-b border-blue-300 pb-2 text-blue-900">૨. નવી પોસ્ટ / નોટિસ મૂકો</h3>
