@@ -22,24 +22,47 @@ async function loadSettings() {
     }
 }
 
-// ૨. પોસ્ટ્સ લોડ કરવી
-async function loadPosts() {
-    const querySnapshot = await getDocs(collection(db, "posts"));
+
+
+// ૨. તાજી પોસ્ટ્સ અને ન્યૂઝ લોડ કરવા (Real-time Live Sync)
+function loadPosts() {
     const container = document.getElementById("posts-container");
-    if(!container) return;
-    container.innerHTML = "";
-    querySnapshot.forEach((docSnap) => {
-        const item = docSnap.data();
-        if(item.type === 'post') {
-            container.innerHTML += `
-                <div class="p-2 border-b bg-white rounded shadow-sm">
-                    <h4 class="font-bold text-emerald-700">${item.title}</h4>
-                    <p class="text-xs text-gray-600">${item.desc}</p>
-                </div>
-            `;
+    if (!container) return;
+
+    onSnapshot(collection(db, "posts"), (querySnapshot) => {
+        container.innerHTML = "";
+
+        if (querySnapshot.empty) {
+            container.innerHTML = `<p class="text-gray-500 text-center text-xs p-2">હાલમાં કોઈ પોસ્ટ ઉપલબ્ધ નથી.</p>`;
+            return;
         }
+
+        querySnapshot.forEach((docSnap) => {
+            const item = docSnap.data();
+            
+            // જો type 'post' હોય અથવા type સેટ જ ન કર્યો હોય તો પણ દેખાડવા માટે
+            if (!item.type || item.type === 'post') {
+                const title = item.title || "અનામી પોસ્ટ";
+                const desc = item.desc || "";
+
+                container.innerHTML += `
+                    <div class="p-3 border-b bg-white rounded shadow-sm hover:shadow transition space-y-1">
+                        <h4 class="font-bold text-emerald-700 text-sm">${title}</h4>
+                        ${desc ? `<p class="text-xs text-gray-600 whitespace-pre-line leading-relaxed">${desc}</p>` : ''}
+                    </div>
+                `;
+            }
+        });
+    }, (err) => {
+        console.error("Posts Load Error:", err);
+        container.innerHTML = `<p class="text-xs text-red-500 text-center">પોસ્ટ લોડ થવામાં ભૂલ આવી.</p>`;
     });
 }
+
+// પેજ લોડ પર રન કરો
+loadPosts();
+
+
 
 // ૩. નોટિસ લોડ કરવી
 function loadFrontendNotices() {
