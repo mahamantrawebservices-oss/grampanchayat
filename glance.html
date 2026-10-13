@@ -29,75 +29,65 @@
         </div>
     </div>
 
-    <!-- Firebase & Frontend Script -->
+    <!-- Firebase Logic with correct path -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { db } from "./firebase-config.js";
+        import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // નોંધ: તમારા એડમિન પેનલ કે main.js માં જે firebaseConfig વાપરો છો તે જ અહીં મૂકેલ છે
-        // જો તમારી પાસે પ્રોજેક્ટમાં અલગ કી હોય તો નીચે તમારી કી મૂકી શકો છો
-       
+        const container = document.getElementById("public-glance-container");
 
-        // જો તમારી main.js માં db પહેલેથી exported હોય તો આ લાઈન વાપરવી:
-        import { db } from "./firebase-config.js"; // જો આ પાથ ખોટો હોય તો નીચેની વૈકલ્પિક રીત કામ કરશે
+        // Real-time listener for village glance collection
+        onSnapshot(collection(db, "village_glance"), (snapshot) => {
+            container.innerHTML = "";
 
-        try {
-            const container = document.getElementById("public-glance-container");
+            if (snapshot.empty) {
+                container.innerHTML = `<div class="bg-white p-6 rounded-xl shadow text-center text-gray-500 text-xs">હાલમાં કોઈ માહિતી ઉપલબ્ધ નથી.</div>`;
+                return;
+            }
 
-            onSnapshot(collection(db, "village_glance"), (snapshot) => {
-                container.innerHTML = "";
-
-                if (snapshot.empty) {
-                    container.innerHTML = `<div class="bg-white p-6 rounded-xl shadow text-center text-gray-500 text-xs">હાલમાં કોઈ માહિતી ઉપલબ્ધ નથી.</div>`;
-                    return;
-                }
-
-                let sections = {};
-                snapshot.forEach(docSnap => {
-                    const data = docSnap.data();
-                    const secName = data.sectionName || "અન્ય માહિતી";
-                    if (!sections[secName]) sections[secName] = [];
-                    sections[secName].push(data);
-                });
-
-                for (let sectionName in sections) {
-                    let rowsHtml = sections[sectionName].map(item => `
-                        <tr class="border-b hover:bg-gray-50 text-xs">
-                            <td class="p-3 font-semibold text-gray-800 w-1/3">${item.title || '-'}</td>
-                            <td class="p-3 text-emerald-700 font-bold w-1/3">${item.value || '-'}</td>
-                            <td class="p-3 text-gray-600 text-[11px] w-1/3">${item.extraInfo || '-'}</td>
-                        </tr>
-                    `).join("");
-
-                    container.innerHTML += `
-                        <div class="bg-white rounded-xl shadow-md border overflow-hidden mb-4">
-                            <div class="bg-emerald-800 text-white px-4 py-3 font-bold text-sm flex items-center gap-2">
-                                <i class="fa-solid fa-folder-open text-amber-300"></i> ${sectionName}
-                            </div>
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-left border-collapse">
-                                    <thead>
-                                        <tr class="bg-emerald-50 text-emerald-900 text-xs border-b">
-                                            <th class="p-3">વિગત / સુવિધા</th>
-                                            <th class="p-3">આંકડો / મુખ્ય માહિતી</th>
-                                            <th class="p-3">વધારાની વિગત (શિક્ષક/બાળકો વગેરે)</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${rowsHtml}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    `;
-                }
-            }, (error) => {
-                console.error("Glance Load Error:", error);
-                container.innerHTML = `<div class="bg-white p-6 rounded-xl shadow text-center text-red-500 text-xs">માહિતી લોડ કરવામાં એરર આવી: ${error.message}</div>`;
+            let sections = {};
+            snapshot.forEach(docSnap => {
+                const data = docSnap.data();
+                const secName = data.sectionName || "અન્ય માહિતી";
+                if (!sections[secName]) sections[secName] = [];
+                sections[secName].push(data);
             });
-        } catch (e) {
-            console.error("Initialization Error:", e);
-        }
+
+            for (let sectionName in sections) {
+                let rowsHtml = sections[sectionName].map(item => `
+                    <tr class="border-b hover:bg-gray-50 text-xs">
+                        <td class="p-3 font-semibold text-gray-800 w-1/3">${item.title || '-'}</td>
+                        <td class="p-3 text-emerald-700 font-bold w-1/3">${item.value || '-'}</td>
+                        <td class="p-3 text-gray-600 text-[11px] w-1/3">${item.extraInfo || '-'}</td>
+                    </tr>
+                `).join("");
+
+                container.innerHTML += `
+                    <div class="bg-white rounded-xl shadow-md border overflow-hidden mb-4">
+                        <div class="bg-emerald-800 text-white px-4 py-3 font-bold text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-folder-open text-amber-300"></i> ${sectionName}
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-emerald-50 text-emerald-900 text-xs border-b">
+                                        <th class="p-3">વિગત / સુવિધા</th>
+                                        <th class="p-3">આંકડો / મુખ્ય માહિતી</th>
+                                        <th class="p-3">વધારાની વિગત (શિક્ષક/બાળકો વગેરે)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${rowsHtml}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            }
+        }, (error) => {
+            console.error("Glance Load Error:", error);
+            container.innerHTML = `<div class="bg-white p-6 rounded-xl shadow text-center text-red-500 text-xs">માહિતી લોડ કરવામાં એરર આવી: ${error.message}</div>`;
+        });
     </script>
 </body>
 </html>
