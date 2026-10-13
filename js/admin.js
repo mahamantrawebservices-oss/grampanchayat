@@ -1659,3 +1659,120 @@ if (mapForm) {
         }
     });
 }
+
+
+
+
+
+
+
+
+let glanceCache = {};
+
+// Reset Form
+function resetGlanceForm() {
+    const form = document.getElementById('add-glance-form');
+    if (!form) return;
+    form.reset();
+    document.getElementById('edit-glance-id').value = "";
+    document.getElementById('submit-glance-btn').textContent = "માહિતી સાચવો";
+    document.getElementById('cancel-glance-edit-btn').classList.add('hidden');
+}
+
+document.getElementById('cancel-glance-edit-btn')?.addEventListener('click', resetGlanceForm);
+
+// Submit (Add or Update)
+document.getElementById("add-glance-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const editId = document.getElementById("edit-glance-id").value;
+    const sectionName = document.getElementById("glance-section").value;
+    const title = document.getElementById("glance-title").value.trim();
+    const value = document.getElementById("glance-value").value.trim();
+    const extraInfo = document.getElementById("glance-extra").value.trim();
+
+    try {
+        if (editId) {
+            await updateDoc(doc(db, "village_glance", editId), {
+                sectionName, title, value, extraInfo, updatedAt: new Date()
+            });
+            alert("માહિતી સફળતાપૂર્વક અપડેટ થઈ ગઈ!");
+        } else {
+            await addDoc(collection(db, "village_glance"), {
+                sectionName, title, value, extraInfo, createdAt: new Date()
+            });
+            alert("નવી માહિતી સફળતાપૂર્વક ઉમેરાઈ ગઈ!");
+        }
+        resetGlanceForm();
+    } catch (error) {
+        console.error("Error saving glance info:", error);
+        alert("સાચવવામાં ભૂલ આવી.");
+    }
+});
+
+// Load Admin List
+function loadAdminGlanceList() {
+    const container = document.getElementById("admin-glance-list");
+    if (!container) return;
+
+    onSnapshot(collection(db, "village_glance"), (snapshot) => {
+        container.innerHTML = "";
+        glanceCache = {};
+
+        if (snapshot.empty) {
+            container.innerHTML = `<p class="text-xs text-gray-500 p-2">કોઈ માહિતી ઉપલબ્ધ નથી.</p>`;
+            return;
+        }
+
+        snapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            const id = docSnap.id;
+            glanceCache[id] = data;
+
+            container.innerHTML += `
+                <div class="bg-gray-50 border p-3 rounded-lg flex justify-between items-center text-xs mb-2">
+                    <div>
+                        <span class="bg-emerald-100 text-emerald-800 text-[10px] px-2 py-0.5 rounded font-bold">${data.sectionName}</span>
+                        <h5 class="font-bold text-gray-800 text-sm mt-1">${data.title}: <span class="text-emerald-700">${data.value}</span></h5>
+                        ${data.extraInfo ? `<p class="text-gray-500 text-[11px]">${data.extraInfo}</p>` : ''}
+                    </div>
+                    <div class="flex gap-1.5 shrink-0">
+                        <button onclick="editGlance('${id}')" class="bg-blue-600 text-white px-2 py-1 rounded text-[10px] font-bold">એડિટ</button>
+                        <button onclick="deleteGlance('${id}')" class="bg-red-500 text-white px-2 py-1 rounded text-[10px] font-bold">ડિલીટ</button>
+                    </div>
+                </div>
+            `;
+        });
+    });
+}
+
+// Edit Function
+window.editGlance = (id) => {
+    const data = glanceCache[id];
+    if (!data) return;
+
+    document.getElementById('edit-glance-id').value = id;
+    document.getElementById('glance-section').value = data.sectionName || "";
+    document.getElementById('glance-title').value = data.title || "";
+    document.getElementById('glance-value').value = data.value || "";
+    document.getElementById('glance-extra').value = data.extraInfo || "";
+
+    document.getElementById('submit-glance-btn').textContent = "અપડેટ કરો";
+    document.getElementById('cancel-glance-edit-btn').classList.remove('hidden');
+    document.getElementById('add-glance-form').scrollIntoView({ behavior: 'smooth' });
+};
+
+// Delete Function
+window.deleteGlance = async (id) => {
+    if (confirm("શું તમે આ માહિતી ડિલીટ કરવા માંગો છો?")) {
+        try {
+            await deleteDoc(doc(db, "village_glance", id));
+            alert("માહિતી ડિલીટ થઈ ગઈ!");
+        } catch (err) {
+            console.error("Delete error:", err);
+            alert("ડિલીટ કરવામાં ભૂલ આવી.");
+        }
+    }
+};
+
+loadAdminGlanceList();
