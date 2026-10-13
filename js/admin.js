@@ -1667,6 +1667,16 @@ if (mapForm) {
 
 
 
+import { db } from "./firebase-config.js";
+import { 
+    collection, 
+    onSnapshot, 
+    addDoc, 
+    updateDoc, 
+    deleteDoc, 
+    doc 
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
 let glanceCache = {};
 
 // Reset Form
@@ -1737,8 +1747,8 @@ function loadAdminGlanceList() {
                         ${data.extraInfo ? `<p class="text-gray-500 text-[11px]">${data.extraInfo}</p>` : ''}
                     </div>
                     <div class="flex gap-1.5 shrink-0">
-                        <button onclick="editGlance('${id}')" class="bg-blue-600 text-white px-2 py-1 rounded text-[10px] font-bold">એડિટ</button>
-                        <button onclick="deleteGlance('${id}')" class="bg-red-500 text-white px-2 py-1 rounded text-[10px] font-bold">ડિલીટ</button>
+                        <button type="button" onclick="editGlance('${id}')" class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-[10px] font-bold">એડિટ</button>
+                        <button type="button" onclick="deleteGlance('${id}')" class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-[10px] font-bold">ડિલીટ</button>
                     </div>
                 </div>
             `;
@@ -1775,4 +1785,5 @@ window.deleteGlance = async (id) => {
     }
 };
 
+loadAdminGlanceList();
 loadAdminGlanceList();
