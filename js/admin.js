@@ -51,9 +51,165 @@ document.getElementById("settings-form")?.addEventListener("submit", async (e) =
 
 
 
+
+
+
+// Global Cache object for Posts
+let postsCache = {};
+
+// 1. Reset Post Form UI State
+function resetPostForm() {
+    const form = document.getElementById('add-post-form');
+    if (!form) return;
+
+    form.reset();
+    document.getElementById('edit-post-id').value = "";
+    document.getElementById('submit-post-btn').textContent = "પોસ્ટ ઉમેરો";
+    document.getElementById('cancel-post-edit-btn').classList.add('hidden');
+}
+
+document.getElementById('cancel-post-edit-btn')?.addEventListener('click', resetPostForm);
+
+// 2. Form Submit (ADD or UPDATE) Handler
+document.getElementById("add-post-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const editId = document.getElementById("edit-post-id").value;
+    const title = document.getElementById("post-title").value.trim();
+    const desc = document.getElementById("post-desc").value.trim();
+
+    try {
+        if (editId) {
+            // UPDATE Existing Post
+            await updateDoc(doc(db, "posts", editId), {
+                title: title,
+                desc: desc,
+                type: 'post',
+                updatedAt: new Date()
+            });
+            alert("પોસ્ટ સફળતાપૂર્વક અપડેટ થઈ ગઈ!");
+        } else {
+            // ADD New Post
+            await addDoc(collection(db, "posts"), {
+                title: title,
+                desc: desc,
+                type: 'post',
+                createdAt: new Date()
+            });
+            alert("નવી પોસ્ટ સફળતાપૂર્વક ઉમેરાઈ ગઈ!");
+        }
+
+        resetPostForm();
+    } catch (error) {
+        console.error("Error saving post:", error);
+        alert("સાચવવામાં ભૂલ આવી, ફરી પ્રયત્ન કરો.");
+    }
+});
+
+// 3. Real-time Load Posts List in Admin
+function loadAdminPosts() {
+    const container = document.getElementById("admin-posts-list");
+    if (!container) return;
+
+    onSnapshot(collection(db, "posts"), (snapshot) => {
+        container.innerHTML = "";
+        postsCache = {};
+
+        if (snapshot.empty) {
+            container.innerHTML = `<p class="text-xs text-gray-500 p-2">કોઈ પોસ્ટ કે ન્યૂઝ મળેલી નથી.</p>`;
+            return;
+        }
+
+        snapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            const id = docSnap.id;
+            postsCache[id] = data;
+
+            // Fallback parameters for safety
+            const title = data.title || data.heading || "અનામી પોસ્ટ";
+            const desc = data.desc || data.description || "";
+            
+            let dateStr = "તારીખ ઉપલબ્ધ નથી";
+            if (data.createdAt?.toDate) {
+                dateStr = data.createdAt.toDate().toLocaleDateString('gu-IN');
+            } else if (data.date) {
+                dateStr = data.date;
+            }
+
+            const card = document.createElement("div");
+            card.className = "bg-gray-50 border p-3 rounded-lg flex justify-between items-start gap-2 text-xs mb-2";
+            card.innerHTML = `
+                <div class="space-y-1 flex-1">
+                    <div class="flex items-center gap-2">
+                        <h5 class="font-bold text-emerald-800 text-sm">${title}</h5>
+                        <span class="text-[10px] text-gray-400 bg-gray-200 px-1.5 py-0.5 rounded">${dateStr}</span>
+                    </div>
+                    ${desc ? `<p class="text-gray-600 text-[11px] whitespace-pre-line">${desc}</p>` : ''}
+                </div>
+                <div class="flex gap-1.5 shrink-0">
+                    <button onclick="editPost('${id}')" class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-[10px] font-bold">
+                        એડિટ
+                    </button>
+                    <button onclick="deletePost('${id}')" class="bg-red-500 hover:bg-red-700 text-white px-2 py-1 rounded text-[10px] font-bold">
+                        ડિલીટ
+                    </button>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }, (error) => {
+        console.error("❌ Firestore Posts Fetch Error:", error);
+        container.innerHTML = `<p class="text-xs text-red-500 p-2">ડેટા લોડ કરવામાં ભૂલ આવી: ${error.message}</p>`;
+    });
+}
+
+// 4. EDIT Action Handler
+window.editPost = (id) => {
+    const data = postsCache[id];
+    if (!data) return;
+
+    document.getElementById('edit-post-id').value = id;
+    document.getElementById('post-title').value = data.title || "";
+    document.getElementById('post-desc').value = data.desc || "";
+
+    document.getElementById('submit-post-btn').textContent = "અપડેટ કરો";
+    document.getElementById('cancel-post-edit-btn').classList.remove('hidden');
+
+    document.getElementById('add-post-form').scrollIntoView({ behavior: 'smooth' });
+};
+
+// 5. DELETE Action Handler
+window.deletePost = async (id) => {
+    if (confirm("શું તમે ખરેખર આ પોસ્ટ ડિલીટ કરવા માંગો છો?")) {
+        try {
+            await deleteDoc(doc(db, "posts", id));
+            alert("પોસ્ટ ડિલીટ થઈ ગઈ!");
+
+            if (document.getElementById('edit-post-id').value === id) {
+                resetPostForm();
+            }
+        } catch (err) {
+            console.error("Delete error:", err);
+            alert("ડિલીટ કરવામાં ભૂલ આવી.");
+        }
+    }
+};
+
+// Execute on page load
+loadAdminPosts();
+
+
+
+
+
+
+
+
+
+
+
+
 // Add Post/Notice
-
-
 // Global Cache object
 let noticesCache = {};
 
