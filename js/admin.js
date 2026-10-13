@@ -433,118 +433,154 @@ if (document.getElementById('menu-editor-container')) {
     });
 }
 
+
+
+
+
+
+
 // ૨. નવું મેનૂ ઉમેરવું તથા જૂનું મેનૂ એડિટ (અપડેટ) કરવું
 document.getElementById("add-menu-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const editId = document.getElementById("edit-menu-id").value;
-    const title = document.getElementById("menu-title").value;
-    const content = menuQuill ? menuQuill.root.innerHTML : "";
+    const title = document.getElementById("menu-title").value.trim();
+    const content = typeof menuQuill !== 'undefined' ? menuQuill.root.innerHTML : "";
 
-    if (editId) {
-        await setDoc(doc(db, "village_details", editId), {
-            title: title,
-            content: content,
-            updatedAt: new Date()
-        }, { merge: true });
+    try {
+        if (editId) {
+            // Update existing menu
+            await setDoc(doc(db, "village_details", editId), {
+                title: title,
+                content: content,
+                updatedAt: new Date()
+            }, { merge: true });
 
-        alert("મેનૂ સફળતાપૂર્વક અપડેટ થઈ ગયું!");
-    } else {
-        await addDoc(collection(db, "village_details"), {
-            title: title,
-            content: content,
-            isShow: true,
-            createdAt: new Date()
-        });
+            alert("મેનૂ સફળતાપૂર્વક અપડેટ થઈ ગયું!");
+        } else {
+            // Add new menu
+            await addDoc(collection(db, "village_details"), {
+                title: title,
+                content: content,
+                isShow: true,
+                createdAt: new Date()
+            });
 
-        alert("નવું મેનૂ સફળતાપૂર્વક ઉમેરાઈ ગયું!");
+            alert("નવું મેનૂ સફળતાપૂર્વક ઉમેરાઈ ગયું!");
+        }
+
+        resetMenuForm();
+        loadAdminMenuList();
+    } catch (err) {
+        console.error("Error saving village menu:", err);
+        alert("મેનૂ સાચવવામાં ભૂલ આવી.");
     }
-
-    resetMenuForm();
-    loadAdminMenuList();
 });
 
+// Reset Menu Form
 function resetMenuForm() {
     document.getElementById("add-menu-form")?.reset();
     if (document.getElementById("edit-menu-id")) document.getElementById("edit-menu-id").value = "";
-    if (menuQuill) menuQuill.root.innerHTML = "";
+    if (typeof menuQuill !== 'undefined') menuQuill.root.innerHTML = "";
     if (document.getElementById("save-menu-btn")) document.getElementById("save-menu-btn").innerText = "મેનૂ સેવ કરો";
     document.getElementById("cancel-edit-btn")?.classList.add("hidden");
 }
 
 document.getElementById("cancel-edit-btn")?.addEventListener("click", resetMenuForm);
 
+// Admin Panel માં મેનૂ લિસ્ટ લોડ કરવું (Edit, Show/Hide, Delete સાથે)
 async function loadAdminMenuList() {
-    const snap = await getDocs(collection(db, "village_details"));
     const container = document.getElementById("admin-menu-list");
     if (!container) return;
 
-    container.innerHTML = "";
-    if (snap.empty) {
-        container.innerHTML = "<p class='text-xs text-gray-500'>કોઈ મેનૂ મળે લ નથી.</p>";
-        return;
-    }
+    try {
+        const snap = await getDocs(collection(db, "village_details"));
+        container.innerHTML = "";
 
-    snap.forEach((docSnap) => {
-        const item = docSnap.data();
-        const id = docSnap.id;
-        const isShow = item.isShow !== false;
+        if (snap.empty) {
+            container.innerHTML = "<p class='text-xs text-gray-500'>કોઈ મેનૂ મળેલ નથી.</p>";
+            return;
+        }
 
-        container.innerHTML += `
-            <div class="flex justify-between items-center bg-white p-2 border rounded shadow-sm">
-                <span class="text-xs font-semibold ${isShow ? 'text-gray-800' : 'text-gray-400 line-through'}">${item.title}</span>
-                <div class="flex items-center gap-1.5">
-                    <button data-id="${id}" class="edit-menu-btn bg-blue-600 hover:bg-blue-700 text-white text-[10px] px-2 py-1 rounded">
-                        એડિટ
-                    </button>
-                    <button data-id="${id}" data-status="${isShow}" class="toggle-show-btn text-[10px] px-2 py-1 rounded text-white ${isShow ? 'bg-amber-600 hover:bg-amber-700' : 'bg-gray-500 hover:bg-gray-600'}">
-                        ${isShow ? 'સંતાડો' : 'બતાવો'}
-                    </button>
-                    <button data-id="${id}" class="delete-menu-btn bg-red-600 hover:bg-red-700 text-white text-[10px] px-2 py-1 rounded">
-                        ડિલીટ
-                    </button>
+        snap.forEach((docSnap) => {
+            const item = docSnap.data();
+            const id = docSnap.id;
+            const isShow = item.isShow !== false;
+
+            container.innerHTML += `
+                <div class="flex justify-between items-center bg-white p-2 border rounded shadow-sm">
+                    <span class="text-xs font-semibold ${isShow ? 'text-gray-800' : 'text-gray-400 line-through'}">${item.title}</span>
+                    <div class="flex items-center gap-1.5">
+                        <button data-id="${id}" class="edit-menu-btn bg-blue-600 hover:bg-blue-700 text-white text-[10px] px-2 py-1 rounded font-bold">
+                            એડિટ
+                        </button>
+                        <button data-id="${id}" data-status="${isShow}" class="toggle-show-btn text-[10px] px-2 py-1 rounded text-white ${isShow ? 'bg-amber-600 hover:bg-amber-700' : 'bg-gray-500 hover:bg-gray-600'} font-bold">
+                            ${isShow ? 'સંતાડો' : 'બતાવો'}
+                        </button>
+                        <button data-id="${id}" class="delete-menu-btn bg-red-600 hover:bg-red-700 text-white text-[10px] px-2 py-1 rounded font-bold">
+                            ડિલીટ
+                        </button>
+                    </div>
                 </div>
-            </div>
-        `;
-    });
-
-    document.querySelectorAll(".edit-menu-btn").forEach(btn => {
-        btn.addEventListener("click", async (e) => {
-            const id = e.target.getAttribute("data-id");
-            const docSnap = await getDoc(doc(db, "village_details", id));
-            
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                document.getElementById("edit-menu-id").value = id;
-                document.getElementById("menu-title").value = data.title;
-                if (menuQuill) menuQuill.root.innerHTML = data.content || "";
-                
-                document.getElementById("save-menu-btn").innerText = "અપડેટ કરો";
-                document.getElementById("cancel-edit-btn").classList.remove("hidden");
-                
-                document.getElementById("add-menu-form")?.scrollIntoView({ behavior: 'smooth' });
-            }
+            `;
         });
-    });
 
-    document.querySelectorAll(".toggle-show-btn").forEach(btn => {
-        btn.addEventListener("click", async (e) => {
-            const id = e.target.getAttribute("data-id");
-            const currentStatus = e.target.getAttribute("data-status") === "true";
-            await setDoc(doc(db, "village_details", id), { isShow: !currentStatus }, { merge: true });
-            loadAdminMenuList();
+        // Edit Button Click Event
+        document.querySelectorAll(".edit-menu-btn").forEach(btn => {
+            btn.addEventListener("click", async (e) => {
+                const id = e.target.getAttribute("data-id");
+                const docSnap = await getDoc(doc(db, "village_details", id));
+                
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    document.getElementById("edit-menu-id").value = id;
+                    document.getElementById("menu-title").value = data.title || "";
+                    if (typeof menuQuill !== 'undefined') {
+                        menuQuill.root.innerHTML = data.content || "";
+                    }
+                    
+                    document.getElementById("save-menu-btn").innerText = "અપડેટ કરો";
+                    document.getElementById("cancel-edit-btn").classList.remove("hidden");
+                    
+                    document.getElementById("add-menu-form")?.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
         });
-    });
 
-    document.querySelectorAll(".delete-menu-btn").forEach(btn => {
-        btn.addEventListener("click", async (e) => {
-            const id = e.target.getAttribute("data-id");
-            if (confirm("શું તમે આ મેનૂ ડિલીટ કરવા માંગો છો?")) {
-                await deleteDoc(doc(db, "village_details", id));
+        // Toggle Show/Hide Status Button
+        document.querySelectorAll(".toggle-show-btn").forEach(btn => {
+            btn.addEventListener("click", async (e) => {
+                const id = e.target.getAttribute("data-id");
+                const currentStatus = e.target.getAttribute("data-status") === "true";
+                
+                await setDoc(doc(db, "village_details", id), { isShow: !currentStatus }, { merge: true });
                 loadAdminMenuList();
-            }
+            });
         });
-    });
+
+        // Delete Button Click Event
+        document.querySelectorAll(".delete-menu-btn").forEach(btn => {
+            btn.addEventListener("click", async (e) => {
+                const id = e.target.getAttribute("data-id");
+                if (confirm("શું તમે આ મેનૂ ડિલીટ કરવા માંગો છો?")) {
+                    await deleteDoc(doc(db, "village_details", id));
+                    loadAdminMenuList();
+                }
+            });
+        });
+
+    } catch (err) {
+        console.error("Error loading admin menu list:", err);
+    }
 }
+
+// Page load થતાં એડમિન લિસ્ટ કોલ કરો
+loadAdminMenuList();
+
+
+
+
+
+
 
 // ૬ મહિના જૂનો ડેટા ઓટો ડિલીટ
 async function cleanOldComplaints() {
