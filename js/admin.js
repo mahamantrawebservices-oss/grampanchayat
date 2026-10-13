@@ -488,35 +488,39 @@ function resetMenuForm() {
 document.getElementById("cancel-edit-btn")?.addEventListener("click", resetMenuForm);
 
 // Admin Panel માં મેનૂ લિસ્ટ લોડ કરવું (Edit, Show/Hide, Delete સાથે)
+// Admin Panel માં મેનૂ લિસ્ટ લોડ કરવું
 async function loadAdminMenuList() {
     const container = document.getElementById("admin-menu-list");
     if (!container) return;
 
     try {
-        const snap = await getDocs(collection(db, "village_details"));
+        container.innerHTML = "<p class='text-xs text-gray-500'>મેનૂ લોડ થઈ રહ્યા છે...</p>";
+        
+        // Firestore માંથી ડેટા ફેચ કરો
+        const querySnapshot = await getDocs(collection(db, "village_details"));
         container.innerHTML = "";
 
-        if (snap.empty) {
+        if (querySnapshot.empty) {
             container.innerHTML = "<p class='text-xs text-gray-500'>કોઈ મેનૂ મળેલ નથી.</p>";
             return;
         }
 
-        snap.forEach((docSnap) => {
+        querySnapshot.forEach((docSnap) => {
             const item = docSnap.data();
             const id = docSnap.id;
             const isShow = item.isShow !== false;
 
             container.innerHTML += `
-                <div class="flex justify-between items-center bg-white p-2 border rounded shadow-sm">
-                    <span class="text-xs font-semibold ${isShow ? 'text-gray-800' : 'text-gray-400 line-through'}">${item.title}</span>
+                <div class="flex justify-between items-center bg-white p-2 border rounded shadow-sm mb-1">
+                    <span class="text-xs font-semibold ${isShow ? 'text-gray-800' : 'text-gray-400 line-through'}">${item.title || 'નામ વગરનું મેનૂ'}</span>
                     <div class="flex items-center gap-1.5">
-                        <button data-id="${id}" class="edit-menu-btn bg-blue-600 hover:bg-blue-700 text-white text-[10px] px-2 py-1 rounded font-bold">
+                        <button type="button" data-id="${id}" class="edit-menu-btn bg-blue-600 hover:bg-blue-700 text-white text-[10px] px-2 py-1 rounded font-bold">
                             એડિટ
                         </button>
-                        <button data-id="${id}" data-status="${isShow}" class="toggle-show-btn text-[10px] px-2 py-1 rounded text-white ${isShow ? 'bg-amber-600 hover:bg-amber-700' : 'bg-gray-500 hover:bg-gray-600'} font-bold">
+                        <button type="button" data-id="${id}" data-status="${isShow}" class="toggle-show-btn text-[10px] px-2 py-1 rounded text-white ${isShow ? 'bg-amber-600 hover:bg-amber-700' : 'bg-gray-500 hover:bg-gray-600'} font-bold">
                             ${isShow ? 'સંતાડો' : 'બતાવો'}
                         </button>
-                        <button data-id="${id}" class="delete-menu-btn bg-red-600 hover:bg-red-700 text-white text-[10px] px-2 py-1 rounded font-bold">
+                        <button type="button" data-id="${id}" class="delete-menu-btn bg-red-600 hover:bg-red-700 text-white text-[10px] px-2 py-1 rounded font-bold">
                             ડિલીટ
                         </button>
                     </div>
@@ -524,17 +528,28 @@ async function loadAdminMenuList() {
             `;
         });
 
-        // Edit Button Click Event
-        document.querySelectorAll(".edit-menu-btn").forEach(btn => {
-            btn.addEventListener("click", async (e) => {
-                const id = e.target.getAttribute("data-id");
+        // Event Listeners જોડવા
+        attachMenuEventListeners();
+
+    } catch (err) {
+        console.error("❌ Menu Load Error:", err);
+        container.innerHTML = `<p class='text-xs text-red-500'>મેનૂ લોડ કરવામાં ભૂલ: ${err.message}</p>`;
+    }
+}
+
+// અલગથી Event Listeners ફંક્શન
+function attachMenuEventListeners() {
+    // Edit Button
+    document.querySelectorAll(".edit-menu-btn").forEach(btn => {
+        btn.addEventListener("click", async (e) => {
+            const id = e.target.getAttribute("data-id");
+            try {
                 const docSnap = await getDoc(doc(db, "village_details", id));
-                
                 if (docSnap.exists()) {
                     const data = docSnap.data();
                     document.getElementById("edit-menu-id").value = id;
                     document.getElementById("menu-title").value = data.title || "";
-                    if (typeof menuQuill !== 'undefined') {
+                    if (typeof menuQuill !== 'undefined' && menuQuill) {
                         menuQuill.root.innerHTML = data.content || "";
                     }
                     
@@ -543,39 +558,45 @@ async function loadAdminMenuList() {
                     
                     document.getElementById("add-menu-form")?.scrollIntoView({ behavior: 'smooth' });
                 }
-            });
+            } catch (err) {
+                console.error("Error fetching menu for edit:", err);
+            }
         });
+    });
 
-        // Toggle Show/Hide Status Button
-        document.querySelectorAll(".toggle-show-btn").forEach(btn => {
-            btn.addEventListener("click", async (e) => {
-                const id = e.target.getAttribute("data-id");
-                const currentStatus = e.target.getAttribute("data-status") === "true";
-                
+    // Toggle Show/Hide Button
+    document.querySelectorAll(".toggle-show-btn").forEach(btn => {
+        btn.addEventListener("click", async (e) => {
+            const id = e.target.getAttribute("data-id");
+            const currentStatus = e.target.getAttribute("data-status") === "true";
+            try {
                 await setDoc(doc(db, "village_details", id), { isShow: !currentStatus }, { merge: true });
                 loadAdminMenuList();
-            });
+            } catch (err) {
+                console.error("Error toggling status:", err);
+            }
         });
+    });
 
-        // Delete Button Click Event
-        document.querySelectorAll(".delete-menu-btn").forEach(btn => {
-            btn.addEventListener("click", async (e) => {
-                const id = e.target.getAttribute("data-id");
-                if (confirm("શું તમે આ મેનૂ ડિલીટ કરવા માંગો છો?")) {
+    // Delete Button
+    document.querySelectorAll(".delete-menu-btn").forEach(btn => {
+        btn.addEventListener("click", async (e) => {
+            const id = e.target.getAttribute("data-id");
+            if (confirm("શું તમે આ મેનૂ ડિલીટ કરવા માંગો છો?")) {
+                try {
                     await deleteDoc(doc(db, "village_details", id));
                     loadAdminMenuList();
+                } catch (err) {
+                    console.error("Error deleting menu:", err);
+                    alert("ડિલીટ કરવામાં ભૂલ આવી.");
                 }
-            });
+            }
         });
-
-    } catch (err) {
-        console.error("Error loading admin menu list:", err);
-    }
+    });
 }
 
-// Page load થતાં એડમિન લિસ્ટ કોલ કરો
+// પેજ લોડ થતાં ફંક્શન કોલ કરવું
 loadAdminMenuList();
-
 
 
 
