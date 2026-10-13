@@ -67,7 +67,7 @@ loadPosts();
 
 
 
-// અગત્યની નોટિસ ફ્રન્ટએન્ડ પર લોડ કરવા માટેનું ફંક્શન(વધારનું)
+// અગત્યની નોટિસ ફ્રન્ટએન્ડ પર લોડ કરવા માટેનું ફંક્શન(ગામ અને પંચાયત વિગત માટે )
 function loadNotices() {
     const noticeList = document.getElementById("notice-list");
     if (!noticeList) return;
