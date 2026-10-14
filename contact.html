@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>સંપર્ક કરો - ગ્રામ પંચાયત</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="shortcut icon" href="#">
+</head>
+<body class="bg-slate-50 min-h-screen py-8 px-4 font-sans">
+
+    <div class="max-w-3xl mx-auto space-y-6">
+        
+        <!-- Welcoming & Intro Section -->
+        <div id="contact-intro-card" class="bg-emerald-700 text-white p-6 rounded-2xl shadow-lg text-center space-y-3">
+            <h1 class="text-2xl font-bold flex items-center justify-center gap-2">
+                <i class="fa-solid fa-envelope-open-text text-amber-300"></i> સંપર્ક કરો
+            </h1>
+            <p id="welcome-msg" class="text-xs md:text-sm text-emerald-100 leading-relaxed font-medium">
+                નમસ્કાર, ગ્રામ પંચાયત આપનું હાર્દિક સ્વાગત કરે છે. આપ અમારી વેબસાઇટ અને સેવાઓ માટે પ્રતિસાદ આપવા માંગતા હોય તો અમને લખી શકો છો.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <!-- Details Card (Dynamic from Admin) -->
+            <div class="bg-white p-6 rounded-2xl shadow-md border space-y-4">
+                <h3 class="font-bold text-emerald-800 text-sm border-b pb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-address-book text-emerald-600"></i> પંચાયતની વિગતો
+                </h3>
+                
+                <div id="pension-details-box" class="space-y-3 text-xs text-gray-700">
+                    <div class="flex items-start gap-3">
+                        <i class="fa-solid fa-landmark text-emerald-600 mt-0.5"></i>
+                        <div>
+                            <span class="font-bold block text-gray-900">ગ્રામ પંચાયત:</span>
+                            <span id="lbl-panchayat-name" class="text-gray-600">લોડ થઈ રહ્યું છે...</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-3">
+                        <i class="fa-solid fa-location-dot text-emerald-600 mt-0.5"></i>
+                        <div>
+                            <span class="font-bold block text-gray-900">સરનામું:</span>
+                            <span id="lbl-address" class="text-gray-600">લોડ થઈ રહ્યું છે...</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-3">
+                        <i class="fa-solid fa-envelope text-emerald-600 mt-0.5"></i>
+                        <div>
+                            <span class="font-bold block text-gray-900">ઈમેલ આઈડી:</span>
+                            <span id="lbl-email" class="text-gray-600">લોડ થઈ રહ્યું છે...</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-3">
+                        <i class="fa-solid fa-phone text-emerald-600 mt-0.5"></i>
+                        <div>
+                            <span class="font-bold block text-gray-900">સંપર્ક નંબર:</span>
+                            <span id="lbl-phone" class="text-gray-600">લોડ થઈ રહ્યું છે...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Extra Dynamic Info from Admin -->
+                <div id="extra-info-container" class="mt-4 pt-3 border-t hidden">
+                    <h4 class="font-bold text-gray-800 text-xs mb-1">વધારાની માહિતી:</h4>
+                    <p id="lbl-extra" class="text-gray-600 text-xs whitespace-pre-line"></p>
+                </div>
+            </div>
+
+            <!-- Feedback / Message Form -->
+            <div class="bg-white p-6 rounded-2xl shadow-md border space-y-4">
+                <h3 class="font-bold text-emerald-800 text-sm border-b pb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-comment-dots text-emerald-600"></i> પ્રતિસાદ / સંદેશો મોકલો
+                </h3>
+
+                <form id="feedback-form" class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">આપનું નામ</label>
+                        <input type="text" id="fb-name" placeholder="તમારું પૂરું નામ લખો" class="w-full border p-2 rounded text-xs bg-white" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">મોબાઈલ નંબર</label>
+                        <input type="tel" id="fb-phone" placeholder="૧૦ અંકનો મોબાઈલ નંબર" class="w-full border p-2 rounded text-xs bg-white" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">પ્રતિસાદ / સંદેશો</label>
+                        <textarea id="fb-msg" rows="3" placeholder="તમારો સૂચન કે પ્રતિસાદ અહીં લખો..." class="w-full border p-2 rounded text-xs bg-white" required></textarea>
+                    </div>
+                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded text-xs shadow transition">
+                        સંદેશો મોકલો
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Firebase Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, onSnapshot, addDoc, collection } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // જો તમારી પાસે firebase-config.js હોય તો ઉપરથી import કરી શકો છો અથવા ડાયરેક્ટ કોન્ફિગ વાપરી શકો
+        import { db } from "./firebase-config.js";
+
+        // ૧. એડમિન દ્વારા નાખેલી સંપર્ક વિગતો લાઈવ લોડ કરવી
+        onSnapshot(doc(db, "contact_info", "main_contact"), (docSnap) => {
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                
+                document.getElementById("welcome-msg").innerHTML = `નમસકાર, ગ્રામ પંચાયત <b>${data.panchayatName || '..........'}</b> આપનું હાર્દિક સ્વાગત કરે છે. આપ અમારી વેબસાઇટ અને સેવાઓ માટે પ્રતિસાદ આપવા માંગતા હોય તો અમને લખી શકો છો.`;
+                
+                document.getElementById("lbl-panchayat-name").textContent = data.panchayatName || "ઉપલબ્ધ નથી";
+                document.getElementById("lbl-address").textContent = data.address || "ઉપલબ્ધ નથી";
+                document.getElementById("lbl-email").textContent = data.email || "ઉપલબ્ધ નથી";
+                document.getElementById("lbl-phone").textContent = data.phone || "ઉપલબ્ધ નથી";
+
+                if (data.extraInfo) {
+                    document.getElementById("extra-info-container").classList.remove("hidden");
+                    document.getElementById("lbl-extra").textContent = data.extraInfo;
+                }
+            } else {
+                document.getElementById("lbl-panchayat-name").textContent = "માહિતી સેટ કરેલ નથી";
+            }
+        });
+
+        // ૨. યુઝર ફીડબેક સબમિટ કરવા માટે
+        document.getElementById("feedback-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const name = document.getElementById("fb-name").value.trim();
+            const phone = document.getElementById("fb-phone").value.trim();
+            const message = document.getElementById("fb-msg").value.trim();
+
+            try {
+                await addDoc(collection(db, "user_feedbacks"), {
+                    name, phone, message, createdAt: new Date()
+                });
+                alert("આપનો સંદેશો સફળતાપૂર્વક મોકલાઈ ગયો છે. આભાર!");
+                document.getElementById("feedback-form").reset();
+            } catch (err) {
+                console.error("Feedback error:", err);
+                alert("સંદેશો મોકલવામાં ભૂલ આવી, ફરી પ્રયત્ન કરો.");
+            }
+        });
+    </script>
+</body>
+</html>
