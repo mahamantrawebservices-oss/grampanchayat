@@ -1,6 +1,6 @@
 import { db, storage, auth } from "./firebase-config.js";
 import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { collection, onSnapshot, addDoc, updateDoc, getDocs, doc, setDoc, getDoc, deleteDoc, query, where, Timestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { collection, onSnapshot, addDoc, updateDoc, getDocs, doc, setDoc, getDoc, deleteDoc, query, orderBy, where, Timestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
 // Check Authentication
@@ -1835,14 +1835,7 @@ loadContactAdminData();
 
 
 
-import { 
-    collection, 
-    onSnapshot, 
-    deleteDoc, 
-    doc,
-    query,
-    orderBy 
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
 
 // એડમિન પેનલમાં યુઝર ફીડબેક લાઈવ લોડ કરવા
 function loadAdminFeedbacks() {
