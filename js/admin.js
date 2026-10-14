@@ -1909,3 +1909,74 @@ window.deleteFeedback = async (id) => {
 
 // પેજ લોડ થતાં ફંક્શન કોલ કરો
 loadAdminFeedbacks();
+
+
+
+
+
+
+// Load Admin Data સ્વયં જાહેર કરેલ માહિતી એડમિન મેનેજર
+async function loadProactiveAdmin() {
+    try {
+        const snap = await getDoc(doc(db, "proactive_disclosure", "main_data"));
+        if (snap.exists()) {
+            const data = snap.data();
+            if (data.officer) {
+                document.getElementById("off-name").value = data.officer.name || "";
+                document.getElementById("off-phone").value = data.officer.phone || "";
+                document.getElementById("off-appeal").value = data.officer.appealOfficer || "";
+            }
+            if (data.population) document.getElementById("json-pop").value = JSON.stringify(data.population, null, 2);
+            if (data.meetings) document.getElementById("json-meeting").value = JSON.stringify(data.meetings, null, 2);
+            if (data.taxes) document.getElementById("json-tax").value = JSON.stringify(data.taxes, null, 2);
+            if (data.salary) document.getElementById("json-salary").value = JSON.stringify(data.salary, null, 2);
+            if (data.budget) document.getElementById("json-budget").value = JSON.stringify(data.budget, null, 2);
+            if (data.water) document.getElementById("json-water").value = JSON.stringify(data.water, null, 2);
+            if (data.plots) document.getElementById("json-plots").value = JSON.stringify(data.plots, null, 2);
+            if (data.education) document.getElementById("json-edu").value = JSON.stringify(data.education, null, 2);
+            if (data.amenities) document.getElementById("json-amenities").value = JSON.stringify(data.amenities, null, 2);
+            if (data.property) document.getElementById("json-prop").value = JSON.stringify(data.property, null, 2);
+        }
+    } catch (err) {
+        console.error("Error loading proactive data:", err);
+    }
+}
+
+// Submit Form
+document.getElementById("proactive-admin-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    try {
+        const officer = {
+            name: document.getElementById("off-name").value.trim(),
+            phone: document.getElementById("off-phone").value.trim(),
+            appealOfficer: document.getElementById("off-appeal").value.trim()
+        };
+
+        const parseJSON = (id) => JSON.parse(document.getElementById(id).value || "[]");
+
+        const dataToSave = {
+            officer,
+            population: parseJSON("json-pop"),
+            meetings: parseJSON("json-meeting"),
+            taxes: parseJSON("json-tax"),
+            salary: parseJSON("json-salary"),
+            budget: parseJSON("json-budget"),
+            water: parseJSON("json-water"),
+            plots: parseJSON("json-plots"),
+            education: parseJSON("json-edu"),
+            amenities: parseJSON("json-amenities"),
+            property: parseJSON("json-prop"),
+            panchayatForms: ["અંદાજપત્ર", "પુન: વિનિયોગ અંદાજપત્ર", "માસિક કે વાર્ષિક તારીજ", "સામાન્ય રોજમેળ", "વર્ગીકરણ ખાતાવહિ", "સામાન્ય પહોંચ", "આકારણી રજીસ્ટર", "આકારેલ તમામ પ્રકારના વેરાનું રજીસ્ટર", "કરવેરા વસુલાત પહોંચ બુક", "પરચુરણ માંગણા રજીસ્ટર", "ઓકટ્રોયની પહોંચ", "ઓક્ટ્રોય વસુલાત રજીસ્ટર", "ઓકટ્રોયનો હિસાબ", "વાઉચર", "પગાર ધોરણનું પત્રક", "સ્ટેમ્પ રોજમેળ", "માલના સ્ટોકનું હિસાબ રજીસ્ટર", "ડેડસ્ટોક રજીસ્ટર", "પેશગી અને અનામત રકમોનું રજીસ્ટર", "પરચુરણ રોકડમેળ", "કામના અંદાજોનું નોંધપત્રક", "પંચાયત કર્મચારીનું માસિક પગારબીલ", "કાયમી/હંગામી કર્મચારીના પગારનું પત્રક", "પહોંચબુક અને ચેકની ચોપડીના સ્ટોકનો હિસાબ", "કોંન્ટ્રાકટરનું બીલ", "મજુરોનું હાજરી પત્રક", "મજુરોનો દૈનિક અહેવાલ", "નાના કામોની નોંધનું રજીસ્ટર", "કામોનું નોંધપત્રક", "માલનો હિસાબ", "ઓજારો અને પ્લોટનું નોંધપત્રક"],
+            revenueForms: ["કાયમ ખરડો, ફોરેસ્ટ રજીસ્ટર", "ખેતી સિવાયની બીજી કાયમી ઉપજનું પત્રક", "ઇનામી જમીનનું પત્રક", "પરચુરણ ઉપજ પત્રક", "ઠરાવબંધ", "હક્કપત્રક", "જમીનની અનુક્રમણીકા", "જમીનની ખાતાવહિ", "રેવન્યુ રોજમેળ", "ચલણ ફાઇલ", "ટાળા પત્રક", "પહાણી પત્રક", "તુલવારી રજીસ્ટર", "જન્મ-મરણ રજીસ્ટર", "ઢોર પત્રક", "કુવા અંગેનું પત્રક", "આવક-જાવક રજીસ્ટર", "કાયમી હુકમોની ફાઇલ"],
+            updatedAt: new Date()
+        };
+
+        await setDoc(doc(db, "proactive_disclosure", "main_data"), dataToSave);
+        alert("સ્વયં જાહેર કરેલ માહિતી સફળતાપૂર્વક સેવ/અપડેટ થઈ ગઈ!");
+    } catch (err) {
+        console.error("Save error:", err);
+        alert("ડેટા સેવ કરવામાં ભૂલ આવી! JSON ફોર્મેટ બરાબર ચકાસી લો.");
+    }
+});
+
+loadProactiveAdmin();
