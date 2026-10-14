@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>સ્વયં જાહેર કરેલ માહિતી (Proactive Disclosure)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="shortcut icon" href="#">
+</head>
+<body class="bg-slate-50 min-h-screen py-8 px-4 font-sans text-gray-800">
+
+    <div class="max-w-5xl mx-auto space-y-8">
+        
+        <!-- Header Banner -->
+        <div class="bg-emerald-800 text-white p-6 rounded-2xl shadow-lg text-center space-y-2">
+            <h1 class="text-2xl font-bold flex items-center justify-center gap-2">
+                <i class="fa-solid file-lines"></i> માહિતી અધિકાર અધિનિયમ ૨૦૦૫ - સ્વયં જાહેર કરેલ માહિતી
+            </h1>
+            <p class="text-xs text-emerald-100">ગ્રામ પંચાયત કચેરી દ્વારા જાહેર કરવામાં આવતી વિગતો</p>
+        </div>
+
+        <!-- 1. Introduction Section -->
+        <div class="bg-white p-6 rounded-2xl shadow-md border space-y-3">
+            <h3 class="font-bold text-emerald-800 text-base border-b pb-2 flex items-center gap-2">
+                <i class="fa-solid fa-circle-info text-emerald-600"></i> પ્રસ્તાવના
+            </h3>
+            <p class="text-xs leading-relaxed text-gray-700">
+                માહિતી અધિકાર અધિનિયમ ૨૦૦૫ માં ગ્રામ પંચાયતની ભૂમિકા આ પુસ્તિકામાં દર્શાવવામાં આવેલ છે. આ પુસ્તિકાનો હેતુ સામાન્ય જનતા અને અધિકારીઓ/પદાધિકારીઓની થતી કામગીરીની માહિતી કેવી રીતે મેળવી શકાય તે બાબતનું માર્ગદર્શન રાખવાનો છે. આ પુસ્તિકા માહિતી અધિકાર અધિનિયમ અંતર્ગત તમામ નાગરિકોને ઉપયોગી છે.
+            </p>
+        </div>
+
+        <!-- 2. Public Info & Information Officers (Dynamic) -->
+        <div class="bg-white p-6 rounded-2xl shadow-md border space-y-4">
+            <h3 class="font-bold text-emerald-800 text-base border-b pb-2 flex items-center gap-2">
+                <i class="fa-solid fa-user-shield text-emerald-600"></i> જાહેર માહિતી અધિકારીની વિગતો
+            </h3>
+            <div id="public-officer-box" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                <!-- Loaded dynamically -->
+                <p class="text-gray-500">માહિતી લોડ થઈ રહી છે...</p>
+            </div>
+        </div>
+
+        <!-- 3. Population Table (Dynamic) -->
+        <div class="bg-white p-6 rounded-2xl shadow-md border space-y-4">
+            <h3 class="font-bold text-emerald-800 text-base border-b pb-2 flex items-center gap-2">
+                <i class="fa-solid fa-users text-emerald-600"></i> ગામની વસ્તી વિશેની માહિતી
+            </h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-emerald-50 text-emerald-900 border-b">
+                            <th class="p-2.5">ક્રમ</th>
+                            <th class="p-2.5">વિગત</th>
+                            <th class="p-2.5">સ્ત્રી</th>
+                            <th class="p-2.5">પુરુષ</th>
+                            <th class="p-2.5">કુલ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="public-population-table">
+                        <tr><td colspan="5" class="p-3 text-gray-500 text-center">માહિતી લોડ થઈ રહી છે...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 4. Water Storage Table (Dynamic) -->
+        <div class="bg-white p-6 rounded-2xl shadow-md border space-y-4">
+            <h3 class="font-bold text-emerald-800 text-base border-b pb-2 flex items-center gap-2">
+                <i class="fa-solid fa-water text-emerald-600"></i> ગામના પાણીની વિગત
+            </h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-emerald-50 text-emerald-900 border-b">
+                            <th class="p-2.5">જળાશય</th>
+                            <th class="p-2.5">સંખ્યા</th>
+                            <th class="p-2.5">વિસ્તાર (ચોરસ મીટર)</th>
+                            <th class="p-2.5">પાણી સંગ્રહિત કરવાની ક્ષમતા (લીટર)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="public-water-table">
+                        <tr><td colspan="4" class="p-3 text-gray-500 text-center">માહિતી લોડ થઈ રહી છે...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 5. Education Facilities Table (Dynamic) -->
+        <div class="bg-white p-6 rounded-2xl shadow-md border space-y-4">
+            <h3 class="font-bold text-emerald-800 text-base border-b pb-2 flex items-center gap-2">
+                <i class="fa-solid fa-graduation-cap text-emerald-600"></i> ગામમાં ઉપલબ્ધ શિક્ષણ સુવિધા અંગેની વિગતો
+            </h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-emerald-50 text-emerald-900 border-b">
+                            <th class="p-2.5">શાળા</th>
+                            <th class="p-2.5">સંખ્યા</th>
+                            <th class="p-2.5">મકાન ઉપલબ્ધ છે?</th>
+                            <th class="p-2.5">શૌચાલય ઉપલબ્ધ છે?</th>
+                            <th class="p-2.5">વીજળીની સુવિધા ઉપલબ્ધ છે?</th>
+                        </tr>
+                    </thead>
+                    <tbody id="public-edu-table">
+                        <tr><td colspan="5" class="p-3 text-gray-500 text-center">માહિતી લોડ થઈ રહી છે...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 6. Panchayat Properties Table (Dynamic) -->
+        <div class="bg-white p-6 rounded-2xl shadow-md border space-y-4">
+            <h3 class="font-bold text-emerald-800 text-base border-b pb-2 flex items-center gap-2">
+                <i class="fa-solid fa-building text-emerald-600"></i> પંચાયતની મિલકત
+            </h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-emerald-50 text-emerald-900 border-b">
+                            <th class="p-2.5">મિલકત</th>
+                            <th class="p-2.5">સંખ્યા</th>
+                            <th class="p-2.5">અન્ય વિગત</th>
+                        </tr>
+                    </thead>
+                    <tbody id="public-property-table">
+                        <tr><td colspan="3" class="p-3 text-gray-500 text-center">માહિતી લોડ થઈ રહી છે...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Firebase Logic -->
+    <script type="module">
+        import { db } from "./firebase-config.js";
+        import { doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Real-time listener for Proactive Disclosure Data
+        onSnapshot(doc(db, "proactive_disclosure", "main_data"), (docSnap) => {
+            if (!docSnap.exists()) return;
+            const data = docSnap.data();
+
+            // 1. Officer Details
+            const officer = data.officer || {};
+            document.getElementById("public-officer-box").innerHTML = `
+                <div class="bg-gray-50 p-3 rounded-lg border space-y-1">
+                    <p><b>નામ:</b> ${officer.name || '-'}</p>
+                    <p><b>હોદ્દો:</b> ${officer.designation || '-'}</p>
+                    <p><b>ફોન નંબર:</b> ${officer.phone || '-'}</p>
+                </div>
+                <div class="bg-gray-50 p-3 rounded-lg border space-y-1">
+                    <p><b>મળવાના દિવસો:</b> ${officer.days || 'સોમવારથી શુક્રવાર'}</p>
+                    <p><b>સમય:</b> ${officer.time || '૧૦:૩૦ થી ૧૮:૧૦ કલાક'}</p>
+                    <p><b>પ્રથમ અપીલ અધિકારી:</b> ${officer.appealOfficer || 'તાલુકા વિકાસ અધિકારી સાહેબ'}</p>
+                </div>
+            `;
+
+            // 2. Population Table
+            const popList = data.population || [];
+            const popContainer = document.getElementById("public-population-table");
+            popContainer.innerHTML = popList.length ? popList.map((item, index) => `
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="p-2.5 font-semibold">${index + 1}</td>
+                    <td class="p-2.5">${item.title || '-'}</td>
+                    <td class="p-2.5">${item.female || '-'}</td>
+                    <td class="p-2.5">${item.male || '-'}</td>
+                    <td class="p-2.5 font-bold text-emerald-700">${item.total || '-'}</td>
+                </tr>
+            `).join("") : `<tr><td colspan="5" class="p-3 text-center text-gray-500">માહિતી ઉપલબ્ધ નથી</td></tr>`;
+
+            // 3. Water Table
+            const waterList = data.water || [];
+            const waterContainer = document.getElementById("public-water-table");
+            waterContainer.innerHTML = waterList.length ? waterList.map(item => `
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="p-2.5 font-semibold">${item.source || '-'}</td>
+                    <td class="p-2.5">${item.count || '-'}</td>
+                    <td class="p-2.5">${item.area || '-'}</td>
+                    <td class="p-2.5">${item.capacity || '-'}</td>
+                </tr>
+            `).join("") : `<tr><td colspan="4" class="p-3 text-center text-gray-500">માહિતી ઉપલબ્ધ નથી</td></tr>`;
+
+            // 4. Education Table
+            const eduList = data.education || [];
+            const eduContainer = document.getElementById("public-edu-table");
+            eduContainer.innerHTML = eduList.length ? eduList.map(item => `
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="p-2.5 font-semibold">${item.type || '-'}</td>
+                    <td class="p-2.5">${item.count || '-'}</td>
+                    <td class="p-2.5">${item.building || '-'}</td>
+                    <td class="p-2.5">${item.toilet || '-'}</td>
+                    <td class="p-2.5">${item.electricity || '-'}</td>
+                </tr>
+            `).join("") : `<tr><td colspan="5" class="p-3 text-center text-gray-500">માહિતી ઉપલબ્ધ નથી</td></tr>`;
+
+            // 5. Property Table
+            const propList = data.property || [];
+            const propContainer = document.getElementById("public-property-table");
+            propContainer.innerHTML = propList.length ? propList.map(item => `
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="p-2.5 font-semibold">${item.name || '-'}</td>
+                    <td class="p-2.5">${item.count || '-'}</td>
+                    <td class="p-2.5">${item.detail || '-'}</td>
+                </tr>
+            `).join("") : `<tr><td colspan="3" class="p-3 text-center text-gray-500">માહિતી ઉપલબ્ધ નથી</td></tr>`;
+        });
+    </script>
+</body>
+</html>
