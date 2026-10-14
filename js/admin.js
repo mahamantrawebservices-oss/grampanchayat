@@ -1830,3 +1830,89 @@ document.getElementById("contact-admin-form")?.addEventListener("submit", async 
 
 // પેજ લોડ પર કોલ કરો
 loadContactAdminData();
+
+
+
+
+
+import { 
+    collection, 
+    onSnapshot, 
+    deleteDoc, 
+    doc,
+    query,
+    orderBy 
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+// એડમિન પેનલમાં યુઝર ફીડબેક લાઈવ લોડ કરવા
+function loadAdminFeedbacks() {
+    const container = document.getElementById("admin-feedback-list");
+    if (!container) return;
+
+    // તારીખ પ્રમાણે નવા મેસેજ ઉપર આવે એ રીતે કવેરી (જો createdAt ફિલ્ડ હોય તો)
+    const q = query(collection(db, "user_feedbacks"), orderBy("createdAt", "desc"));
+
+    onSnapshot(q, (snapshot) => {
+        container.innerHTML = "";
+
+        if (snapshot.empty) {
+            container.innerHTML = `<p class="text-xs text-gray-500 p-2">હાલમાં કોઈ નવો પ્રતિસાદ મળ્યો નથી.</p>`;
+            return;
+        }
+
+        snapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            const id = docSnap.id;
+
+            // તારીખ ફોર્મેટ કરવી
+            let dateStr = "તારીખ ઉપલબ્ધ નથી";
+            if (data.createdAt?.toDate) {
+                dateStr = data.createdAt.toDate().toLocaleString('gu-IN');
+            }
+
+            const card = document.createElement("div");
+            card.className = "bg-gray-50 border p-3 rounded-xl space-y-2 text-xs shadow-sm";
+            card.innerHTML = `
+                <div class="flex justify-between items-start border-b pb-1.5">
+                    <div>
+                        <h4 class="font-bold text-gray-900 text-sm flex items-center gap-1">
+                            <i class="fa-solid fa-user text-emerald-600 text-xs"></i> ${data.name || 'અનામી'}
+                        </h4>
+                        <a href="tel:${data.phone}" class="text-blue-600 font-semibold hover:underline text-[11px] flex items-center gap-1 mt-0.5">
+                            <i class="fa-solid fa-phone text-[10px]"></i> ${data.phone || 'નંબર નથી'}
+                        </a>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-[10px] text-gray-400 bg-white px-2 py-0.5 rounded border">${dateStr}</span>
+                        <button onclick="deleteFeedback('${id}')" class="block mt-1 ml-auto bg-red-500 hover:bg-red-600 text-white px-2 py-0.5 rounded text-[10px] font-bold">
+                            ડિલીટ
+                        </button>
+                    </div>
+                </div>
+                <p class="text-gray-700 bg-white p-2.5 rounded border border-gray-200 whitespace-pre-line leading-relaxed">
+                    ${data.message || 'કોઈ સંદેશો નથી'}
+                </p>
+            `;
+            container.appendChild(card);
+        });
+    }, (error) => {
+        console.error("Error loading feedbacks:", error);
+        container.innerHTML = `<p class="text-xs text-red-500 p-2">પ્રતિસાદો લોડ કરવામાં ભૂલ આવી.</p>`;
+    });
+}
+
+// ફીડબેક ડિલીટ કરવા માટેનું ફંક્શન
+window.deleteFeedback = async (id) => {
+    if (confirm("શું તમે આ પ્રતિસાદ / સંદેશો ડિલીટ કરવા માંગો છો?")) {
+        try {
+            await deleteDoc(doc(db, "user_feedbacks", id));
+            alert("પ્રતિસાદ સફળતાપૂર્વક ડિલીટ થઈ ગયો!");
+        } catch (err) {
+            console.error("Error deleting feedback:", err);
+            alert("ડિલીટ કરવામાં ભૂલ આવી.");
+        }
+    }
+};
+
+// પેજ લોડ થતાં ફંક્શન કોલ કરો
+loadAdminFeedbacks();
