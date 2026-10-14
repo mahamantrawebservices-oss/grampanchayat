@@ -1779,3 +1779,54 @@ window.deleteGlance = async (id) => {
 
 loadAdminGlanceList();
 loadAdminGlanceList();
+
+
+
+
+
+
+
+// એડમિન પેનલમાં જૂની માહિતી ઓટો-લોડ કરવી
+async function loadContactAdminData() {
+    try {
+        const docRef = doc(db, "contact_info", "main_contact");
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            document.getElementById("adm-panchayat-name").value = data.panchayatName || "";
+            document.getElementById("adm-address").value = data.address || "";
+            document.getElementById("adm-email").value = data.email || "";
+            document.getElementById("adm-phone").value = data.phone || "";
+            document.getElementById("adm-extra").value = data.extraInfo || "";
+        }
+    } catch (err) {
+        console.error("Error loading contact info:", err);
+    }
+}
+
+// ફોર્મ સબમિટ (સેવ કે અપડેટ) કરવા પર
+document.getElementById("contact-admin-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const panchayatName = document.getElementById("adm-panchayat-name").value.trim();
+    const address = document.getElementById("adm-address").value.trim();
+    const email = document.getElementById("adm-email").value.trim();
+    const phone = document.getElementById("adm-phone").value.trim();
+    const extraInfo = document.getElementById("adm-extra").value.trim();
+
+    try {
+        // 'main_contact' નામના સિંગલ ડોક્યુમેન્ટમાં ડેટા સેવ થશે (જેથી ગમે ત્યારે સરળતાથી અપડેટ થાય)
+        await setDoc(doc(db, "contact_info", "main_contact"), {
+            panchayatName, address, email, phone, extraInfo, updatedAt: new Date()
+        }, { merge: true });
+
+        alert("સંપર્ક વિગતો સફળતાપૂર્વક સાચવાઈ ગઈ!");
+    } catch (err) {
+        console.error("Error saving contact info:", err);
+        alert("સાચવવામાં ભૂલ આવી.");
+    }
+});
+
+// પેજ લોડ પર કોલ કરો
+loadContactAdminData();
