@@ -603,69 +603,58 @@
 
 
 
-<!-- સ્વયં જાહેર કરેલ માહિતી એડમિન મેનેજર -->
-<div class="bg-white p-5 rounded-2xl shadow-md border space-y-4 mt-6">
+<div class="bg-white p-5 rounded-2xl shadow-md border space-y-6 mt-6">
     <h3 class="font-bold text-sm text-emerald-800 flex items-center gap-2 border-b pb-2">
         <i class="fa-solid fa-file-pen text-emerald-600"></i> સ્વયં જાહેર કરેલ માહિતી મેનેજ કરો
     </h3>
 
-    <form id="proactive-admin-form" class="space-y-4 bg-gray-50 p-4 rounded-xl border text-xs">
+    <form id="proactive-admin-form" class="space-y-6 text-xs">
         
-        <!-- Officer Section -->
-        <div class="space-y-2">
-            <h4 class="font-bold text-gray-800 border-b pb-1">૧. જાહેર માહિતી અધિકારી વિગતો</h4>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
-                <input type="text" id="off-name" placeholder="તલાટી કમ મંત્રીનું નામ" class="border p-2 rounded bg-white" required>
-                <input type="text" id="off-phone" placeholder="મોબાઈલ નંબર" class="border p-2 rounded bg-white" required>
-                <input type="text" id="off-appeal" placeholder="પ્રથમ અપીલ અધિકારીશ્રી" class="border p-2 rounded bg-white" required>
+        <!-- ૧. અધિકારી વિગતો -->
+        <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
+            <h4 class="font-bold text-gray-800 border-b pb-1">૧. જાહેર માહિતી અધિકારીની વિગતો અને લિંક્સ</h4>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div>
+                    <label class="block font-medium text-gray-700 mb-1">તલાટી કમ મંત્રીનું નામ</label>
+                    <input type="text" id="off-name" class="w-full border p-2 rounded bg-white" placeholder="નામ લખો" required>
+                </div>
+                <div>
+                    <label class="block font-medium text-gray-700 mb-1">મોબાઈલ નંબર</label>
+                    <input type="text" id="off-phone" class="w-full border p-2 rounded bg-white" placeholder="નંબર લખો" required>
+                </div>
+                <div>
+                    <label class="block font-medium text-gray-700 mb-1">પ્રથમ અપીલ અધિકારીશ્રી</label>
+                    <input type="text" id="off-appeal" class="w-full border p-2 rounded bg-white" placeholder="અધિકારીનું નામ" required>
+                </div>
+            </div>
+            <div class="mt-3">
+                <label class="block font-medium text-gray-700 mb-1">ગામના વિકાસ કામોના પેજની લિંક (URL):</label>
+                <input type="url" id="link-dev-input" class="w-full border p-2 rounded bg-white" placeholder="https://...">
             </div>
         </div>
 
-        <!-- Tables JSON Editors -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-                <label class="block font-bold text-gray-700 mb-1">વસ્તી માહિતી (Population JSON):</label>
-                <textarea id="json-pop" rows="4" class="w-full border p-2 rounded bg-white font-mono text-[11px]" placeholder='[{"title":"કુલ વસ્તી","female":1000,"male":1050,"total":2050}]'></textarea>
-            </div>
-            <div>
-                <label class="block font-bold text-gray-700 mb-1">સામાન્ય સભા (Meetings JSON):</label>
-                <textarea id="json-meeting" rows="4" class="w-full border p-2 rounded bg-white font-mono text-[11px]" placeholder='[{"date":"૧૨/૦૧/૨૦૨૬","members":"૭"}]'></textarea>
-            </div>
-            <div>
-                <label class="block font-bold text-gray-700 mb-1">કરવેરા વિગત (Taxes JSON):</label>
-                <textarea id="json-tax" rows="4" class="w-full border p-2 rounded bg-white font-mono text-[11px]" placeholder='[{"name":"ઘરવેરો","authority":"તલાટી કમ મંત્રી"}]'></textarea>
-            </div>
-            <div>
-                <label class="block font-bold text-gray-700 mb-1">કર્મચારી મહેનતાણું (Salary JSON):</label>
-                <textarea id="json-salary" rows="4" class="w-full border p-2 rounded bg-white font-mono text-[11px]" placeholder='[{"name":"રમેશભાઈ","designation":"સરપંચ","amount":"માનદ વેતન"}]'></textarea>
-            </div>
-            <div>
-                <label class="block font-bold text-gray-700 mb-1">બજેટ વિગત (Budget JSON):</label>
-                <textarea id="json-budget" rows="4" class="w-full border p-2 rounded bg-white font-mono text-[11px]" placeholder='[{"year":"૨૦૨૫-૨૬","income":"૫૦૦૦૦૦","grant":"૨૦૦૦૦૦","donation":"૫૦૦૦૦","totalIncome":"૭૫૦૦૦૦","expense":"૬૦૦૦૦૦","balance":"૧૫૦૦૦૦"}]'></textarea>
-            </div>
-            <div>
-                <label class="block font-bold text-gray-700 mb-1">પાણીની વિગત (Water JSON):</label>
-                <textarea id="json-water" rows="4" class="w-full border p-2 rounded bg-white font-mono text-[11px]" placeholder='[{"source":"તળાવ","count":2,"area":"૫૦૦૦","capacity":"૧૦૦૦૦૦"}]'></textarea>
-            </div>
-            <div>
-                <label class="block font-bold text-gray-700 mb-1">પ્લોટ માંગણી (Plots JSON):</label>
-                <textarea id="json-plots" rows="4" class="w-full border p-2 rounded bg-white font-mono text-[11px]" placeholder='[{"year":"૨૦૨૫","applied":10,"approved":8}]'></textarea>
-            </div>
-            <div>
-                <label class="block font-bold text-gray-700 mb-1">શિક્ષણ સુવિધા (Education JSON):</label>
-                <textarea id="json-edu" rows="4" class="w-full border p-2 rounded bg-white font-mono text-[11px]" placeholder='[{"type":"પ્રાથમિક","count":1,"building":"હા","toilet":"હા","electricity":"હા"}]'></textarea>
-            </div>
-            <div>
-                <label class="block font-bold text-gray-700 mb-1">અન્ય સુવિધાઓ (Amenities JSON):</label>
-                <textarea id="json-amenities" rows="4" class="w-full border p-2 rounded bg-white font-mono text-[11px]" placeholder='[{"name":"દુધ મંડળી","location":"ગામમાં","contact":"મેનેજર","phone":"૯૮૭૬૫..."}]'></textarea>
-            </div>
-            <div>
-                <label class="block font-bold text-gray-700 mb-1">પંચાયત મિલકત (Property JSON):</label>
-                <textarea id="json-prop" rows="4" class="w-full border p-2 rounded bg-white font-mono text-[11px]" placeholder='[{"name":"પંચાયત ઘર","count":1,"detail":"સારું સ્થિતિ"}]'></textarea>
-            </div>
+        <!-- ૨. વસ્તી માહિતી -->
+        <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
+            <h4 class="font-bold text-gray-800 border-b pb-1">૨. ગામની વસ્તી વિશેની માહિતી</h4>
+            <div id="population-rows" class="space-y-2"></div>
+            <button type="button" onclick="addPopulationRow()" class="bg-blue-600 text-white px-3 py-1 rounded text-[11px] font-bold">+ નવી વિગત ઉમેરો</button>
         </div>
 
-        <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded font-bold shadow transition">
+        <!-- ૩. પાણીની વિગત -->
+        <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
+            <h4 class="font-bold text-gray-800 border-b pb-1">૩. ગામના પાણીની વિગત</h4>
+            <div id="water-rows" class="space-y-2"></div>
+            <button type="button" onclick="addWaterRow()" class="bg-blue-600 text-white px-3 py-1 rounded text-[11px] font-bold">+ જળાશય ઉમેરો</button>
+        </div>
+
+        <!-- ૪. પંચાયત મિલકત -->
+        <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
+            <h4 class="font-bold text-gray-800 border-b pb-1">૪. પંચાયતની મિલકત</h4>
+            <div id="prop-rows" class="space-y-2"></div>
+            <button type="button" onclick="addPropRow()" class="bg-blue-600 text-white px-3 py-1 rounded text-[11px] font-bold">+ મિલકત ઉમેરો</button>
+        </div>
+
+        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white p-3 rounded-lg font-bold text-sm shadow transition">
             બધી માહિતી સેવ / અપડેટ કરો
         </button>
     </form>
