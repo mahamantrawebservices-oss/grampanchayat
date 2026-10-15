@@ -1,64 +1,352 @@
-<!-- સ્વયં જાહેર કરેલ માહિતી એડમિન મેનેજર -->
-<div class="bg-white p-5 rounded-2xl shadow-md border space-y-6 mt-6">
-    <h3 class="font-bold text-sm text-emerald-800 flex items-center gap-2 border-b pb-2">
-        <i class="fa-solid fa-file-pen text-emerald-600"></i> સ્વયં જાહેર કરેલ માહિતી મેનેજ કરો
-    </h3>
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>સ્વયં જાહેર કરેલ માહિતી (Proactive Disclosure)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="shortcut icon" href="#">
+</head>
+<body class="bg-slate-50 min-h-screen py-8 px-4 font-sans text-gray-800">
 
-    <form id="proactive-admin-form" class="space-y-6 text-xs">
+    <div class="max-w-4xl mx-auto space-y-8">
         
-        <!-- ૧. અધિકારી વિગતો -->
-        <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
-            <h4 class="font-bold text-gray-800 border-b pb-1">૧. જાહેર માહિતી અધિકારીની વિગતો અને લિંક્સ</h4>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <div>
-                    <label class="block font-medium text-gray-700 mb-1">તલાટી કમ મંત્રીનું નામ</label>
-                    <input type="text" id="off-name" class="w-full border p-2 rounded bg-white" placeholder="નામ લખો" required>
+        <!-- Header -->
+        <div class="bg-emerald-800 text-white p-6 rounded-2xl shadow-lg text-center space-y-2">
+            <h1 class="text-xl md:text-2xl font-bold flex items-center justify-center gap-2">
+                <i class="fa-solid fa-book-open"></i> માહિતી અધિકાર અધિનિયમ ૨૦૦૫ - સ્વયં જાહેર કરેલ માહિતી
+            </h1>
+            <p class="text-xs text-emerald-100">ગ્રામ પંચાયત કચેરી દ્વારા જાહેર કરવામાં આવતી વિગતવાર પુસ્તિકા</p>
+        </div>
+
+        <!-- 1. Introduction -->
+        <div class="bg-white p-6 rounded-2xl shadow-md border space-y-3">
+            <h3 class="font-bold text-emerald-800 text-base border-b pb-2 flex items-center gap-2">
+                <i class="fa-solid fa-circle-info text-emerald-600"></i> પ્રસ્તાવના
+            </h3>
+            <p class="text-xs leading-relaxed text-gray-700">
+                માહિતી અધિકાર અધિનિયમ ૨૦૦૫ માં ગ્રામ પંચાયત .......................ની ભૂમિકા આ પુસ્તિકામાં દર્શાવવામાં આવેલ છે. 
+                આ પુસ્તિકાનો હેતુ સામાન્ય જનતા અને અધિકારીઓ/પદાધિકારીઓની થતી કામગીરીની માહિતી કેવી રીતે મેળવી શકાય તે બાબતનું માર્ગદર્શન સામેલ રાખેલ છે. 
+                આ પુસ્તિકા માહિતી અધિકાર અધિનિયમ અંતર્ગત તમામ નાગરિકોને ઉપયોગી છે. 
+                આ પુસ્તિકામાં સમાવેશ કરવાનો બાકી હોય તેવી વહિવટી/હિસાબોને લગતી માહિતી માટે નિયત નમુનામાં અરજી કર્યેથી તથા નિર્ધારિત કરેલ ફી જમા કર્યેથી માહિતી આપવામાં આવશે.
+            </p>
+        </div>
+
+        <!-- 2. Panchayat Formation, Powers & Rules -->
+        <div class="bg-white p-6 rounded-2xl shadow-md border space-y-4">
+            <h3 class="font-bold text-emerald-800 text-base border-b pb-2 flex items-center gap-2">
+                <i class="fa-solid fa-landmark text-emerald-600"></i> ગ્રામ પંચાયતની સત્તા, કાર્યો અને ફરજો
+            </h3>
+            <div class="space-y-3 text-xs text-gray-700 leading-relaxed">
+                <h4 class="font-bold text-gray-900">ગ્રામ પંચાયતની રચના :</h4>
+                <ul class="list-disc pl-5 space-y-1">
+                    <li>ગ્રામ પંચાયતમાં એક સરપંચ અને એક ઉપસરપંચ હોય છે.</li>
+                    <li>સરપંચ લાયકાત ધરાવતા મતદારો દ્વારા પોતાનામાંથી ગુપ્ત મતદાનથી ચુંટવામાં આવશે.</li>
+                    <li>ઉપસરપંચ ગ્રામ પંચાયતના સભ્યો પોતાનામાંથી ચુંટશે.</li>
+                    <li>ગ્રામ પંચાયતનાં સભ્યો ગામના લાયકાત ધરાવતા મતદારોમાંથી ચુંટવામાં આવશે.</li>
+                    <li>ત્રણ હજાર કરતાં વધુ ન હોય તેટલી વસ્તી વાળા ગામની ગ્રામ પંચાયત સાત સભ્યોની બનશે અને ત્રણ હજાર કરતા વધુ દરેક એક હજાર અથવા તેના ભાગ માટે સદરહું સાતની સંખ્યામાં બે નો વધારો કરવો જોઇશે.</li>
+                </ul>
+
+                <h4 class="font-bold text-gray-900 pt-2">કાર્યો :-</h4>
+                <p>દરેક ગ્રામ પંચાયતના વહિવટી કાર્યો માટે એક સેક્રેટરી રહેશે જેને નિયમોનુંસાર નિમવામાં આવશે. ગ્રામ પંચાયતના સેક્રેટરીએ સરપંચના નિયંત્રણને આધીન રહીને .......</p>
+                <ul class="list-decimal pl-5 space-y-1">
+                    <li>ગ્રામ પંચાયતના દફતરો અને રજીસ્ટરો પોતાની કસ્ટડીમાં રાખવા જોઇશે.</li>
+                    <li>પંચાયત વતી તેને મળેલ નાણાની રકમો બદલ પોતાની સહિવાળી પહોંચ આપવી જોઇશે.</li>
+                    <li>સઘળા પત્રકો અને રીપોર્ટો તૈયાર કરવા જોઇશે.</li>
+                </ul>
+                <ul class="list-disc pl-5 space-y-1 pt-1">
+                    <li>પંચાયત તેને સોંપે તેવા કાર્યો અને ફરજો બજાવવા માટે તે ગ્રામ પંચાયત સમિતીઓ રચી શકશે.</li>
+                    <li>પંચાયતની સમિતીઓ પોતાના કાર્યો બજાવતી વેળા પંચાયત તેમને સોંપે તેવી ગ્રામ પંચાયતની સત્તા વાપરશે અને તેવી ફરજો બજાવશે.</li>
+                    <li>કોઇ સમિતીને નહિ સોંપવામાં આવેલા પંચાયતના સત્તા, કાર્યો અને ફરજો પંચાયત વાપરશે અને બજાવશે.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 3. Standards & Rules -->
+        <div class="bg-white p-6 rounded-2xl shadow-md border space-y-3">
+            <h3 class="font-bold text-emerald-800 text-base border-b pb-2 flex items-center gap-2">
+                <i class="fa-solid fa-book text-emerald-600"></i> પોતાના કાર્યો બજાવવા માટેના ધોરણો, નિયમો, અધિનિયમો, સંગ્રહો
+            </h3>
+            <p class="text-xs text-gray-700">ગ્રામ પંચાયત હસ્તકની વહિવટી અને વિકાસની તમામ કામગીરી અને તેને સંલગ્ન દાવાઓના યોગ્ય નિકાલ થાય તે માટે તથા સરકારશ્રીના પ્રવર્તમાન નાણાકિય/વહિવટી નિયમો અનુસાર રેકર્ડની નિભાવણી થાય તે માટે નીચેના સંદર્ભોનો ઉપયોગ કરવામાં આવે છે:</p>
+            <ul class="list-disc pl-5 space-y-1 text-xs text-gray-700">
+                <li>ગુજરાત પંચાયત ધારો – ૧૯૯૩</li>
+                <li>ગુજરાત પંચાયત નિયમો</li>
+                <li>ગુજરાત પંચાયત સેવા, શિસ્ત અને અપીલના નિયમો – ૧૯૯૭</li>
+                <li>સરકારશ્રીનાં સંબંધિત વિભાગો તરફથી મળતા સ્થાયી હુકમો અને સુચનાઓ.</li>
+                <li>ગુજરાત નાણાકિય નિયમો.</li>
+                <li>જમીન મહેસુલ અધિનિયમ – ૧૮૭૯.</li>
+                <li>જન્મ – મરણ નોંધણી અધિનિયમ – ૧૯૬૯</li>
+                <li>લગ્ન નોંધણી અધિનિયમ – ૨૦૦૬.</li>
+                <li>માહિતી અધિકાર અધિનિયમ – ૨૦૦૫.</li>
+                <li>રામજી યોજના</li>
+            </ul>
+        </div>
+
+        <!-- 4. General Info & Links -->
+        <div class="bg-white p-6 rounded-2xl shadow-md border space-y-3">
+            <h3 class="font-bold text-emerald-800 text-base border-b pb-2 flex items-center gap-2">
+                <i class="fa-solid fa-landmark text-emerald-600"></i> પંચાયત વિશેની સામાન્ય માહિતી
+            </h3>
+            <p class="text-xs text-gray-700">
+                ગ્રામ પંચાયત કર્મચારી તથા હંગામી ધોરણે રાખેલ કર્મચારી ગણની માહિતી માટે 
+                <a href="admin.html" class="text-blue-600 font-bold hover:underline">અહીં ક્લિક કરો</a>.
+            </p>
+        </div>
+
+        <!-- 5. Committees Info & Links -->
+        <div class="bg-white p-6 rounded-2xl shadow-md border space-y-3">
+            <h3 class="font-bold text-emerald-800 text-base border-b pb-2 flex items-center gap-2">
+                <i class="fa-solid fa-users-gear text-emerald-600"></i> પંચાયત સમિતિ – કમીટીની વિગતો
+            </h3>
+            <ul class="list-disc pl-5 space-y-2 text-xs text-gray-700">
+                <li>
+                    પંચાયત સમિતિની માહિતી માટે 
+                    <a href="admin.html" class="text-blue-600 font-bold hover:underline">અહીં ક્લિક કરો</a> (પંચાયત કમિટી અને સ્ટાફનું કાર્ડ).
+                </li>
+                <li>
+                    ગ્રામ પંચાયત સમિતિઓની માહિતી માટે 
+                    <a href="admin.html" class="text-blue-600 font-bold hover:underline">અહીં ક્લિક કરો</a> (કાર્યરત સમિતિનું કાર્ડ).
+                </li>
+            </ul>
+        </div>
+
+        <!-- 6. Public Info Officer Details -->
+        <div class="bg-white p-6 rounded-2xl shadow-md border space-y-3">
+            <h3 class="font-bold text-emerald-800 text-base border-b pb-2 flex items-center gap-2">
+                <i class="fa-solid fa-user-shield text-emerald-600"></i> જાહેર માહિતી અધિકારીની વિગતો
+            </h3>
+            <div id="public-officer-box" class="bg-gray-50 p-4 rounded-xl border space-y-2 text-xs">
+                <p class="text-gray-500">લોડ થઈ રહ્યું છે...</p>
+            </div>
+        </div>
+
+        <!-- 7. Population Table -->
+        <div class="bg-white p-6 rounded-2xl shadow-md border space-y-3">
+            <h3 class="font-bold text-emerald-800 text-base border-b pb-2 flex items-center gap-2">
+                <i class="fa-solid fa-users text-emerald-600"></i> ગામની વસ્તી વિશેની માહિતી
+            </h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-emerald-50 text-emerald-900 border-b">
+                            <th class="p-2.5">ક્રમ</th>
+                            <th class="p-2.5">વિગત</th>
+                            <th class="p-2.5">સ્ત્રી</th>
+                            <th class="p-2.5">પુરુષ</th>
+                            <th class="p-2.5">કુલ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="public-population-table">
+                        <tr><td colspan="5" class="p-3 text-center text-gray-500">લોડ થઈ રહ્યું છે...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 8. Employee Powers & Duties -->
+        <div class="bg-white p-6 rounded-2xl shadow-md border space-y-4">
+            <h3 class="font-bold text-emerald-800 text-base border-b pb-2 flex items-center gap-2">
+                <i class="fa-solid fa-user-tie text-emerald-600"></i> પંચાયતમાં ફરજ બજાવતા કર્મચારીઓની સત્તાઓ અને કાર્યોની વિગત
+            </h3>
+            <div class="space-y-4 text-xs text-gray-700 leading-relaxed">
+                <div class="border-b pb-2">
+                    <h4 class="font-bold text-gray-900 text-sm">૧. સરપંચ :-</h4>
+                    <ul class="list-disc pl-5 space-y-1 mt-1">
+                        <li>પંચાયતની બેઠકનું અધ્યક્ષ સ્થાન લેવું અને તેનું નિયમન કરવું જોઇશે.</li>
+                        <li>પંચાયતના સઘળા અધિકારીઓ અને નોકરોએ કરેલા કાર્યો અને લીધેલા પગલાં ઉપર દેખરેખ રાખવી અને તેનું નિયંત્રણ કરવું જોઇશે.</li>
+                        <li>કોઇપણ એક પ્રસંગે રૂપિયા પાંચસો સુધીનો આકસ્મિક ખર્ચ કરવો જોઇશે.</li>
+                        <li>નાણા આપવાનો અધિકાર આપવા, ચેક લખી આપવા અને રિફંડ આપવા સહિત પંચાયતના ફંડનો વહિવટ ચલાવવો જોઇશે.</li>
+                        <li>પંચાયતના ફંડની સલામત કસ્ટડી માટે જવાબદાર રહેવું જોઇશે.</li>
+                    </ul>
+                </div>
+                <div class="border-b pb-2">
+                    <h4 class="font-bold text-gray-900 text-sm">૨. તલાટી કમ મંત્રી :-</h4>
+                    <ul class="list-disc pl-5 space-y-1 mt-1">
+                        <li>પંચાયતના દફતરો અને રજીસ્ટરો પોતાની કસ્ટડીમાં રાખવા, પહોંચબુકો, ચેકબુકો વગેરે મંત્રીએ પોતાના કબજામાં તાળાકુંચીમાં સુરક્ષિત રાખવા.</li>
+                        <li>પંચાયત વતી તેને મળેલ નાણાની રકમો બદલ પોતાની સહિવાળી પહોંચ આપવી.</li>
+                        <li>સઘળા પત્રકો અને રીપોર્ટો તૈયાર કરવા.</li>
+                        <li>પંચાયતના વેરા અને બીજા લેણાં તથા સરકારી લેણાંની ઝડપી વસુલાત કરવી.</li>
+                        <li>તાલુકા પંચાયત અથવા જિલ્લા પંચાયત અથવા ઓડિત તરફથી જણાવાયેલ નિયમ બાહ્યતાઓ દુર કરવા ઝડપી પગલા લેવા.</li>
+                        <li>પંચાયતોની સઘળી મિલ્કતોની દેખરેખ રાખવી.</li>
+                    </ul>
+                </div>
+                <div class="border-b pb-2">
+                    <h4 class="font-bold text-gray-900 text-sm">૩. ઉપસરપંચ :-</h4>
+                    <p>સરપંચની ગેરહાજરીમાં પંચાયતની બેઠકોનું અધ્યક્ષસ્થાન લેવું, સરપંચ વખતો-વખત સોંપે તેવી સત્તા વાપરવી.</p>
+                </div>
+                <div class="border-b pb-2">
+                    <h4 class="font-bold text-gray-900 text-sm">૪. ગ્રામસેવક :-</h4>
+                    <p>ખેતીવાડી અને પશુપાલન તથા વિવિધ સરકારી યોજનાઓને ગામે ગામ પહોંચાડે છે.</p>
+                </div>
+                <div class="border-b pb-2">
+                    <h4 class="font-bold text-gray-900 text-sm">૫. વોટર વર્કસ ઓપરેટર :-</h4>
+                    <p>પાણી પુરવઠા પ્રણાલી, પંપ અને ફિલ્ટર પ્લાન્ટનું સંચાલન, ક્લોરીનેશન અને વિતરણની ફરજો બજાવે છે.</p>
+                </div>
+                <div class="border-b pb-2">
+                    <h4 class="font-bold text-gray-900 text-sm">૬. પટ્ટાવાળા :-</h4>
+                    <p>કચેરીનાં દૈનિક કાર્ય, ફાઇલોની હેરફેર, સફાઇ અને ટપાલ લાવવા-લઇ જવાની કામગીરી.</p>
                 </div>
                 <div>
-                    <label class="block font-medium text-gray-700 mb-1">મોબાઈલ નંબર</label>
-                    <input type="text" id="off-phone" class="w-full border p-2 rounded bg-white" placeholder="નંબર લખો" required>
-                </div>
-                <div>
-                    <label class="block font-medium text-gray-700 mb-1">પ્રથમ અપીલ અધિકારીશ્રી</label>
-                    <input type="text" id="off-appeal" class="w-full border p-2 rounded bg-white" placeholder="અધિકારીનું નામ" required>
+                    <h4 class="font-bold text-gray-900 text-sm">૭. કોમ્પ્યુટર ઓપરેટર (VCE) :-</h4>
+                    <p>ઇ-ગ્રામ કેન્દ્ર ચલાવવું, આવકના દાખલા, ૭/૧૨ ના ઉતારા, પેન્શન યોજનાઓ અને e-KYC જેવી સેવાઓ પૂરી પાડવી.</p>
                 </div>
             </div>
-            <div class="mt-3">
-                <label class="block font-medium text-gray-700 mb-1">ગામના વિકાસ કામોના પેજની લિંક (URL):</label>
-                <input type="url" id="link-dev-input" class="w-full border p-2 rounded bg-white" placeholder="https://... અથવા galance.html">
+        </div>
+
+        <!-- 9. Land & Development Links -->
+        <div class="bg-white p-6 rounded-2xl shadow-md border space-y-3">
+            <h3 class="font-bold text-emerald-800 text-base border-b pb-2 flex items-center gap-2">
+                <i class="fa-solid fa-map-location-dot text-emerald-600"></i> જમીન અને વિકાસ કામોની વિગતો
+            </h3>
+            <ul class="list-disc pl-5 space-y-2 text-xs text-gray-700">
+                <li>
+                    ગામની જમીન અંગેની વિગત માટે 
+                    <a href="glance.html" class="text-blue-600 font-bold hover:underline">મારૂ ગામ - એક નજરમાં પેજ</a> જુઓ.
+                </li>
+                <li>
+                    ગામના વિકાસ કામોની વિગતો માટે 
+                    <a id="link-development-works" href="#" target="_blank" class="text-blue-600 font-bold hover:underline">અહીં ક્લિક કરો</a>.
+                </li>
+            </ul>
+        </div>
+
+        <!-- 10. Water & Education Tables -->
+        <div class="bg-white p-6 rounded-2xl shadow-md border space-y-3">
+            <h3 class="font-bold text-emerald-800 text-base border-b pb-2 flex items-center gap-2">
+                <i class="fa-solid fa-water text-emerald-600"></i> ગામના પાણીની વિગત
+            </h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-emerald-50 text-emerald-900 border-b">
+                            <th class="p-2.5">જળાશય</th>
+                            <th class="p-2.5">સંખ્યા</th>
+                            <th class="p-2.5">વિસ્તાર (ચોરસ મીટર)</th>
+                            <th class="p-2.5">ક્ષમતા (લીટર)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="public-water-table">
+                        <tr><td colspan="4" class="p-3 text-center text-gray-500">લોડ થઈ રહ્યું છે...</td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
 
-        <!-- ૨. વસ્તી માહિતી -->
-        <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
-            <h4 class="font-bold text-gray-800 border-b pb-1">૨. ગામની વસ્તી વિશેની માહિતી</h4>
-            <div id="population-rows" class="space-y-2"></div>
-            <button type="button" onclick="addPopulationRow()" class="bg-blue-600 text-white px-3 py-1 rounded text-[11px] font-bold">+ નવી વિગત ઉમેરો</button>
+        <!-- 11. Panchayat 32 & Revenue 18 Forms (Static) -->
+        <div class="bg-white p-6 rounded-2xl shadow-md border space-y-3">
+            <h3 class="font-bold text-emerald-800 text-base border-b pb-2 flex items-center gap-2">
+                <i class="fa-solid fa-folder-tree text-emerald-600"></i> પંચાયતના ૩૨ અને રેવન્યુના ૧૮ નમૂનાઓની યાદી
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-gray-700">
+                <div class="bg-gray-50 p-3 rounded-lg border">
+                    <h4 class="font-bold text-emerald-900 mb-2">પંચાયતી નમુનાઓ (૩૨):</h4>
+                    <ul class="list-disc pl-5 space-y-1">
+                        <li>અંદાજપત્ર, પુન: વિનિયોગ અંદાજપત્ર</li>
+                        <li>માસિક કે વાર્ષિક તારીજ, સામાન્ય રોજમેળ</li>
+                        <li>વર્ગીકરણ ખાતાવહિ, સામાન્ય પહોંચ</li>
+                        <li>આકારણી રજીસ્ટર, વેરા વસુલાત પહોંચ બુક</li>
+                        <li>પરચુરણ માંગણા રજીસ્ટર, ઓકટ્રોય રજીસ્ટર</li>
+                        <li>વાઉચર, પગાર ધોરણ અને સ્ટેમ્પ રોજમેળ</li>
+                        <li>માલનો સ્ટોક તથા ડેડસ્ટોક હિસાબ રજીસ્ટર</li>
+                        <li>પેશગી, અનામત, અને મજુરોનું હાજરી પત્રક</li>
+                    </ul>
+                </div>
+                <div class="bg-gray-50 p-3 rounded-lg border">
+                    <h4 class="font-bold text-emerald-900 mb-2">રેવન્યુના નમુનાઓ (૧૮):</h4>
+                    <ul class="list-disc pl-5 space-y-1">
+                        <li>કાયમ ખરડો, ફોરેસ્ટ રજીસ્ટર</li>
+                        <li>ખેતી સિવાયની બીજી કાયમી ઉપજનું પત્રક</li>
+                        <li>ઇનામી જમીન અને પરચુરણ ઉપજ પત્રક</li>
+                        <li>ઠરાવબંધ, હક્કપત્રક, જમીનની ખાતાવહિ</li>
+                        <li>રેવન્યુ રોજમેળ, ચલણ ફાઇલ, ટાળા પત્રક</li>
+                        <li>પહાણી પત્રક, જન્મ-મરણ અને ઢોર પત્રક</li>
+                        <li>કુવા અંગેનું પત્રક, આવક-જાવક રજીસ્ટર</li>
+                        <li>કાયમી હુકમોની ફાઇલ</li>
+                    </ul>
+                </div>
+            </div>
+            <p class="text-[11px] text-gray-500 italic mt-2">
+                <b>નોંધ:-</b> રેવન્યુ તલાટી અને તલાટી કમ મંત્રી સંવર્ગનો જોબ ચાર્ટ અલગ થતાં બંને કર્મચારીઓએ પોત પોતાના જોબ ચાર્ટ મુજબ કામ કરવાનું રહે છે.
+            </p>
         </div>
 
-        <!-- ૩. પાણીની વિગત -->
-        <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
-            <h4 class="font-bold text-gray-800 border-b pb-1">૩. ગામના પાણીની વિગત</h4>
-            <div id="water-rows" class="space-y-2"></div>
-            <button type="button" onclick="addWaterRow()" class="bg-blue-600 text-white px-3 py-1 rounded text-[11px] font-bold">+ જળાશય ઉમેરો</button>
+        <!-- 12. Property Table -->
+        <div class="bg-white p-6 rounded-2xl shadow-md border space-y-3">
+            <h3 class="font-bold text-emerald-800 text-base border-b pb-2 flex items-center gap-2">
+                <i class="fa-solid fa-building text-emerald-600"></i> પંચાયતની મિલકત
+            </h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-emerald-50 text-emerald-900 border-b">
+                            <th class="p-2.5">મિલકત</th>
+                            <th class="p-2.5">સંખ્યા</th>
+                            <th class="p-2.5">અન્ય વિગત</th>
+                        </tr>
+                    </thead>
+                    <tbody id="public-property-table">
+                        <tr><td colspan="3" class="p-3 text-center text-gray-500">લોડ થઈ રહ્યું છે...</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
-        <!-- ૪. શિક્ષણ સુવિધા -->
-        <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
-            <h4 class="font-bold text-gray-800 border-b pb-1">૪. શિક્ષણ સુવિધા અંગેની વિગતો</h4>
-            <div id="edu-rows" class="space-y-2"></div>
-            <button type="button" onclick="addEduRow()" class="bg-blue-600 text-white px-3 py-1 rounded text-[11px] font-bold">+ શાળા ઉમેરો</button>
-        </div>
+    </div>
 
-        <!-- ૫. પંચાયત મિલકત -->
-        <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
-            <h4 class="font-bold text-gray-800 border-b pb-1">૫. પંચાયતની મિલકત</h4>
-            <div id="prop-rows" class="space-y-2"></div>
-            <button type="button" onclick="addPropRow()" class="bg-blue-600 text-white px-3 py-1 rounded text-[11px] font-bold">+ મિલકત ઉમેરો</button>
-        </div>
+    <!-- Firebase Real-time Loader -->
+    <script type="module">
+        import { db } from "./firebase-config.js";
+        import { doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white p-3 rounded-lg font-bold text-sm shadow transition">
-            બધી માહિતી સેવ / અપડેટ કરો
-        </button>
-    </form>
-</div>
+        onSnapshot(doc(db, "proactive_disclosure", "main_data"), (docSnap) => {
+            if (!docSnap.exists()) return;
+            const data = docSnap.data();
+
+            const off = data.officer || {};
+            document.getElementById("public-officer-box").innerHTML = `
+                <p><b>નામ:</b> ${off.name || '-'}</p>
+                <p><b>હોદ્દો:</b> જાહેર માહિતી અધિકારી તથા તલાટી કમ મંત્રી</p>
+                <p><b>ફોન નંબર:</b> ${off.phone || '-'}</p>
+                <p><b>પ્રથમ અપીલ અધિકારી:</b> ${off.appealOfficer || '-'}</p>
+            `;
+
+            if (data.developmentLink) {
+                document.getElementById("link-development-works").href = data.developmentLink;
+            }
+
+            const renderTable = (id, list, mapper) => {
+                const el = document.getElementById(id);
+                if (el) el.innerHTML = list && list.length ? list.map(mapper).join("") : `<tr><td colspan="10" class="p-3 text-center text-gray-500">માહિતી ઉપલબ્ધ નથી</td></tr>`;
+            };
+
+            renderTable("public-population-table", data.population, (item, idx) => `
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="p-2.5 font-semibold">${idx + 1}</td>
+                    <td class="p-2.5">${item.title || '-'}</td>
+                    <td class="p-2.5">${item.female || '-'}</td>
+                    <td class="p-2.5">${item.male || '-'}</td>
+                    <td class="p-2.5 font-bold text-emerald-700">${item.total || '-'}</td>
+                </tr>
+            `);
+
+            renderTable("public-water-table", data.water, item => `
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="p-2.5 font-semibold">${item.source || '-'}</td>
+                    <td class="p-2.5">${item.count || '-'}</td>
+                    <td class="p-2.5">${item.area || '-'}</td>
+                    <td class="p-2.5">${item.capacity || '-'}</td>
+                </tr>
+            `);
+
+            renderTable("public-property-table", data.property, item => `
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="p-2.5 font-semibold">${item.name || '-'}</td>
+                    <td class="p-2.5">${item.count || '-'}</td>
+                    <td class="p-2.5">${item.detail || '-'}</td>
+                </tr>
+            `);
+        });
+    </script>
+</body>
+</html>
