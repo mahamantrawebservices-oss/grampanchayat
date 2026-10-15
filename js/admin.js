@@ -1916,7 +1916,46 @@ loadAdminFeedbacks();
 
 
 // Load Admin Data સ્વયં જાહેર કરેલ માહિતી એડમિન મેનેજર
-async function loadProactiveAdmin() {
+
+window.addPopulationRow = (val = {}) => {
+    const div = document.createElement("div");
+    div.className = "flex gap-2 items-center bg-white p-2 rounded border";
+    div.innerHTML = `
+        <input type="text" placeholder="વિગત (દા.ત. કુલ વસ્તી)" class="pop-title border p-1 rounded w-1/3 text-xs" value="${val.title || ''}">
+        <input type="number" placeholder="સ્ત્રી" class="pop-female border p-1 rounded w-1/5 text-xs" value="${val.female || ''}">
+        <input type="number" placeholder="પુરુષ" class="pop-male border p-1 rounded w-1/5 text-xs" value="${val.male || ''}">
+        <input type="number" placeholder="કુલ" class="pop-total border p-1 rounded w-1/5 text-xs" value="${val.total || ''}">
+        <button type="button" onclick="this.parentElement.remove()" class="text-red-500 font-bold px-2">✕</button>
+    `;
+    document.getElementById("population-rows").appendChild(div);
+};
+
+window.addWaterRow = (val = {}) => {
+    const div = document.createElement("div");
+    div.className = "flex gap-2 items-center bg-white p-2 rounded border";
+    div.innerHTML = `
+        <input type="text" placeholder="જળાશય નામ" class="wat-source border p-1 rounded w-1/4 text-xs" value="${val.source || ''}">
+        <input type="number" placeholder="સંખ્યા" class="wat-count border p-1 rounded w-1/4 text-xs" value="${val.count || ''}">
+        <input type="text" placeholder="વિસ્તાર" class="wat-area border p-1 rounded w-1/4 text-xs" value="${val.area || ''}">
+        <input type="text" placeholder="ક્ષમતા" class="wat-cap border p-1 rounded w-1/4 text-xs" value="${val.capacity || ''}">
+        <button type="button" onclick="this.parentElement.remove()" class="text-red-500 font-bold px-2">✕</button>
+    `;
+    document.getElementById("water-rows").appendChild(div);
+};
+
+window.addPropRow = (val = {}) => {
+    const div = document.createElement("div");
+    div.className = "flex gap-2 items-center bg-white p-2 rounded border";
+    div.innerHTML = `
+        <input type="text" placeholder="મિલકત નામ" class="prop-name border p-1 rounded w-1/3 text-xs" value="${val.name || ''}">
+        <input type="number" placeholder="સંખ્યા" class="prop-count border p-1 rounded w-1/4 text-xs" value="${val.count || ''}">
+        <input type="text" placeholder="અન્ય વિગત" class="prop-detail border p-1 rounded w-1/3 text-xs" value="${val.detail || ''}">
+        <button type="button" onclick="this.parentElement.remove()" class="text-red-500 font-bold px-2">✕</button>
+    `;
+    document.getElementById("prop-rows").appendChild(div);
+};
+
+async function loadAdminData() {
     try {
         const snap = await getDoc(doc(db, "proactive_disclosure", "main_data"));
         if (snap.exists()) {
@@ -1926,23 +1965,18 @@ async function loadProactiveAdmin() {
                 document.getElementById("off-phone").value = data.officer.phone || "";
                 document.getElementById("off-appeal").value = data.officer.appealOfficer || "";
             }
-            if (data.population) document.getElementById("json-pop").value = JSON.stringify(data.population, null, 2);
-            if (data.meetings) document.getElementById("json-meeting").value = JSON.stringify(data.meetings, null, 2);
-            if (data.taxes) document.getElementById("json-tax").value = JSON.stringify(data.taxes, null, 2);
-            if (data.salary) document.getElementById("json-salary").value = JSON.stringify(data.salary, null, 2);
-            if (data.budget) document.getElementById("json-budget").value = JSON.stringify(data.budget, null, 2);
-            if (data.water) document.getElementById("json-water").value = JSON.stringify(data.water, null, 2);
-            if (data.plots) document.getElementById("json-plots").value = JSON.stringify(data.plots, null, 2);
-            if (data.education) document.getElementById("json-edu").value = JSON.stringify(data.education, null, 2);
-            if (data.amenities) document.getElementById("json-amenities").value = JSON.stringify(data.amenities, null, 2);
-            if (data.property) document.getElementById("json-prop").value = JSON.stringify(data.property, null, 2);
+            if (data.developmentLink) {
+                document.getElementById("link-dev-input").value = data.developmentLink;
+            }
+            if (data.population) data.population.forEach(item => addPopulationRow(item));
+            if (data.water) data.water.forEach(item => addWaterRow(item));
+            if (data.property) data.property.forEach(item => addPropRow(item));
         }
     } catch (err) {
-        console.error("Error loading proactive data:", err);
+        console.error("Error loading admin data:", err);
     }
 }
 
-// Submit Form
 document.getElementById("proactive-admin-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     try {
@@ -1952,31 +1986,37 @@ document.getElementById("proactive-admin-form")?.addEventListener("submit", asyn
             appealOfficer: document.getElementById("off-appeal").value.trim()
         };
 
-        const parseJSON = (id) => JSON.parse(document.getElementById(id).value || "[]");
+        const developmentLink = document.getElementById("link-dev-input").value.trim();
 
-        const dataToSave = {
-            officer,
-            population: parseJSON("json-pop"),
-            meetings: parseJSON("json-meeting"),
-            taxes: parseJSON("json-tax"),
-            salary: parseJSON("json-salary"),
-            budget: parseJSON("json-budget"),
-            water: parseJSON("json-water"),
-            plots: parseJSON("json-plots"),
-            education: parseJSON("json-edu"),
-            amenities: parseJSON("json-amenities"),
-            property: parseJSON("json-prop"),
-            panchayatForms: ["અંદાજપત્ર", "પુન: વિનિયોગ અંદાજપત્ર", "માસિક કે વાર્ષિક તારીજ", "સામાન્ય રોજમેળ", "વર્ગીકરણ ખાતાવહિ", "સામાન્ય પહોંચ", "આકારણી રજીસ્ટર", "આકારેલ તમામ પ્રકારના વેરાનું રજીસ્ટર", "કરવેરા વસુલાત પહોંચ બુક", "પરચુરણ માંગણા રજીસ્ટર", "ઓકટ્રોયની પહોંચ", "ઓક્ટ્રોય વસુલાત રજીસ્ટર", "ઓકટ્રોયનો હિસાબ", "વાઉચર", "પગાર ધોરણનું પત્રક", "સ્ટેમ્પ રોજમેળ", "માલના સ્ટોકનું હિસાબ રજીસ્ટર", "ડેડસ્ટોક રજીસ્ટર", "પેશગી અને અનામત રકમોનું રજીસ્ટર", "પરચુરણ રોકડમેળ", "કામના અંદાજોનું નોંધપત્રક", "પંચાયત કર્મચારીનું માસિક પગારબીલ", "કાયમી/હંગામી કર્મચારીના પગારનું પત્રક", "પહોંચબુક અને ચેકની ચોપડીના સ્ટોકનો હિસાબ", "કોંન્ટ્રાકટરનું બીલ", "મજુરોનું હાજરી પત્રક", "મજુરોનો દૈનિક અહેવાલ", "નાના કામોની નોંધનું રજીસ્ટર", "કામોનું નોંધપત્રક", "માલનો હિસાબ", "ઓજારો અને પ્લોટનું નોંધપત્રક"],
-            revenueForms: ["કાયમ ખરડો, ફોરેસ્ટ રજીસ્ટર", "ખેતી સિવાયની બીજી કાયમી ઉપજનું પત્રક", "ઇનામી જમીનનું પત્રક", "પરચુરણ ઉપજ પત્રક", "ઠરાવબંધ", "હક્કપત્રક", "જમીનની અનુક્રમણીકા", "જમીનની ખાતાવહિ", "રેવન્યુ રોજમેળ", "ચલણ ફાઇલ", "ટાળા પત્રક", "પહાણી પત્રક", "તુલવારી રજીસ્ટર", "જન્મ-મરણ રજીસ્ટર", "ઢોર પત્રક", "કુવા અંગેનું પત્રક", "આવક-જાવક રજીસ્ટર", "કાયમી હુકમોની ફાઇલ"],
-            updatedAt: new Date()
-        };
+        const population = Array.from(document.querySelectorAll("#population-rows > div")).map(row => ({
+            title: row.querySelector(".pop-title").value,
+            female: row.querySelector(".pop-female").value,
+            male: row.querySelector(".pop-male").value,
+            total: row.querySelector(".pop-total").value
+        }));
 
-        await setDoc(doc(db, "proactive_disclosure", "main_data"), dataToSave);
-        alert("સ્વયં જાહેર કરેલ માહિતી સફળતાપૂર્વક સેવ/અપડેટ થઈ ગઈ!");
+        const water = Array.from(document.querySelectorAll("#water-rows > div")).map(row => ({
+            source: row.querySelector(".wat-source").value,
+            count: row.querySelector(".wat-count").value,
+            area: row.querySelector(".wat-area").value,
+            capacity: row.querySelector(".wat-cap").value
+        }));
+
+        const property = Array.from(document.querySelectorAll("#prop-rows > div")).map(row => ({
+            name: row.querySelector(".prop-name").value,
+            count: row.querySelector(".prop-count").value,
+            detail: row.querySelector(".prop-detail").value
+        }));
+
+        await setDoc(doc(db, "proactive_disclosure", "main_data"), {
+            officer, developmentLink, population, water, property, updatedAt: new Date()
+        });
+
+        alert("માહિતી સફળતાપૂર્વક સેવ/અપડેટ થઈ ગઈ!");
     } catch (err) {
         console.error("Save error:", err);
-        alert("ડેટા સેવ કરવામાં ભૂલ આવી! JSON ફોર્મેટ બરાબર ચકાસી લો.");
+        alert("સેવ કરવામાં ભૂલ આવી.");
     }
 });
 
-loadProactiveAdmin();
+loadAdminData();
