@@ -9,13 +9,35 @@
 </head>
 <body class="bg-slate-50 min-h-screen flex flex-col font-sans">
 
+    <!-- ૧. Developer Maintenance Screen (Hidden by default) -->
+    <div id="maintenance-screen" class="hidden fixed inset-0 bg-slate-900 text-white z-50 flex flex-col items-center justify-center p-6 text-center">
+        <div class="bg-slate-800 p-8 rounded-3xl border border-slate-700 max-w-lg shadow-2xl space-y-4">
+            <i class="fa-solid fa-screwdriver-wrench text-6xl text-amber-400 animate-bounce"></i>
+            <h2 class="text-2xl font-bold text-amber-400">સિસ્ટમ મેન્ટેનન્સ ચાલુ છે</h2>
+            <p id="maintenance-msg-text" class="text-gray-300 text-sm">
+                હાલમાં ટેકનિકલ સુધારા અર્થે સિસ્ટમ મેન્ટેનન્સ મોડમાં છે. કૃપા કરીને થોડીવાર પછી પ્રયત્ન કરો.
+            </p>
+        </div>
+    </div>
+
+    <!-- ૨. Subscription Deactive Screen (Hidden by default) -->
+    <div id="deactive-screen" class="hidden fixed inset-0 bg-gray-900/90 text-white z-40 flex flex-col items-center justify-center p-6 text-center">
+        <div class="bg-white text-gray-800 p-8 rounded-3xl max-w-md shadow-2xl space-y-4">
+            <i class="fa-solid fa-circle-exclamation text-6xl text-red-500"></i>
+            <h2 class="text-xl font-bold text-red-600">સબ્સ્ક્રિપ્શન નિષ્ક્રિય છે (Deactive)</h2>
+            <p class="text-gray-600 text-sm">
+                આ ગ્રામ પંચાયતની વેબસાઇટ સેવા હાલ પૂરતી સ્થગિત કરવામાં આવી છે.
+            </p>
+        </div>
+    </div>
+
     <!-- Header -->
     <header class="bg-gradient-to-r from-emerald-800 via-teal-900 to-emerald-800 text-white p-4 shadow-md sticky top-0 z-50">
         <div class="container mx-auto flex justify-between items-center">
             <h1 class="text-lg md:text-xl font-bold text-amber-300 flex items-center gap-2">
                 <i class="fa-solid fa-clipboard-list"></i> ફરિયાદ અને સ્ટેટસ પોર્ટલ
             </h1>
-            <a href="index.html" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow transition">
+            <a id="back-home-btn" href="index.html" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow transition">
                 ← મુખ્ય પૃષ્ઠ
             </a>
         </div>
@@ -91,52 +113,111 @@
     </main>
 
     <script type="module">
-        import { db } from "./js/firebase-config.js";
-        import { collection, addDoc, query, where, getDocs, Timestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, query, where, getDocs, Timestamp, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // ૧. ફરિયાદ સબમિટ ફંક્શન (ટોકન જનરેટ કરશે)
+        const firebaseConfig = {
+            apiKey: "AIzaSyCMhWWI_6oxPIVEQEVlq2SIBf72EI2o8NI",
+            authDomain: "gram-panchayat-33c86.firebaseapp.com",
+            projectId: "gram-panchayat-33c86",
+            storageBucket: "gram-panchayat-33c86.firebasestorage.app",
+            messagingSenderId: "1025176315779",
+            appId: "1:1025176315779:web:a24ca10a06c55edcc8f8b6",
+            measurementId: "G-TQBSXCWNBV"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const panchayatId = urlParams.get('id') || "ahmedabad_daskroi_motapipalva";
+
+        // મુખ્ય પૃષ્ઠ લિંક સાથે ID જાળવી રાખવો
+        document.getElementById("back-home-btn").href = `index.html?id=${panchayatId}`;
+
+        async function verifySystemAccess() {
+            try {
+                // 1. Global Maintenance Check
+                const maintSnap = await getDoc(doc(db, "system_settings", "global_config"));
+                if (maintSnap.exists() && maintSnap.data().isMaintenance) {
+                    document.getElementById("maintenance-screen").classList.remove("hidden");
+                    if (maintSnap.data().maintenanceMessage) {
+                        document.getElementById("maintenance-msg-text").textContent = maintSnap.data().maintenanceMessage;
+                    }
+                    return false;
+                }
+
+                // 2. Panchayat Active Status Check
+                const pSnap = await getDoc(doc(db, "panchayats", panchayatId));
+                if (pSnap.exists() && pSnap.data().isActive === false) {
+                    document.getElementById("deactive-screen").classList.remove("hidden");
+                    return false;
+                }
+            } catch (err) {
+                console.error("Access verification error:", err);
+            }
+            return true;
+        }
+
+        // ૧. ફરિયાદ સબમિટ ફંક્શન (પંચાયત સ્કોપ સાથે)
         document.getElementById("add-complaint-form").addEventListener("submit", async (e) => {
             e.preventDefault();
+            const isAllowed = await verifySystemAccess();
+            if (!isAllowed) return;
+
             const token = "GP-" + Math.floor(100000 + Math.random() * 900000);
             
-            await addDoc(collection(db, "complaints"), {
-                token: token,
-                name: document.getElementById("c-name").value,
-                mobile: document.getElementById("c-mobile").value,
-                area: document.getElementById("c-area").value,
-                type: document.getElementById("c-type").value,
-                details: document.getElementById("c-details").value,
-                status: "ફરિયાદ પેન્ડિંગ રાખવામા આવેલ છે",
-                createdAt: Timestamp.now()
-            });
+            try {
+                await addDoc(collection(db, "panchayats", panchayatId, "complaints"), {
+                    token: token,
+                    name: document.getElementById("c-name").value,
+                    mobile: document.getElementById("c-mobile").value,
+                    area: document.getElementById("c-area").value,
+                    type: document.getElementById("c-type").value,
+                    details: document.getElementById("c-details").value,
+                    status: "ફરિયાદ પેન્ડિંગ રાખવામા આવેલ છે",
+                    createdAt: Timestamp.now()
+                });
 
-            alert(`તમારી ફરિયાદ નોંધાઈ ગઈ છે!\nતમારો ફરિયાદ નંબર: ${token}\nકૃપા કરીને આ નંબર સાચવી રાખો.`);
-            e.target.reset();
+                alert(`તમારી ફરિયાદ નોંધાઈ ગઈ છે!\nતમારો ફરિયાદ નંબર: ${token}\nકૃપા કરીને આ નંબર સાચવી રાખો.`);
+                e.target.reset();
+            } catch (err) {
+                console.error("Complaint submit error:", err);
+                alert("ફરિયાદ સબમિટ કરવામાં ભૂલ આવી.");
+            }
         });
 
-        // ૨. સ્ટેટસ ટ્રેકિંગ ફંક્શન
+        // ૨. સ્ટેટસ ટ્રેકિંગ ફંક્શન (પંચાયત સ્કોપ સાથે)
         document.getElementById("check-status-form").addEventListener("submit", async (e) => {
             e.preventDefault();
             const tokenInput = document.getElementById("search-token").value.trim();
             const resultDiv = document.getElementById("status-result");
 
-            const q = query(collection(db, "complaints"), where("token", "==", tokenInput));
-            const querySnap = await getDocs(q);
+            try {
+                const q = query(collection(db, "panchayats", panchayatId, "complaints"), where("token", "==", tokenInput));
+                const querySnap = await getDocs(q);
 
-            resultDiv.classList.remove("hidden");
-            if (!querySnap.empty) {
-                const data = querySnap.docs[0].data();
-                resultDiv.innerHTML = `
-                    <p class="font-bold text-emerald-900">ટોકન નં: <span class="text-amber-600">${data.token}</span></p>
-                    <p><b>અરજદારનું નામ:</b> ${data.name}</p>
-                    <p><b>સમસ્યાનો પ્રકાર:</b> ${data.type}</p>
-                    <p><b>હાલનું સ્ટેટસ:</b> <span class="bg-amber-100 text-amber-900 px-2 py-0.5 rounded font-bold border border-amber-300 text-xs">${data.status}</span></p>
-                    ${data.adminRemark ? `<p class="text-xs text-gray-600 mt-1"><b>રિમાર્ક:</b> ${data.adminRemark}</p>` : ''}
-                `;
-            } else {
-                resultDiv.innerHTML = `<p class="text-red-600 font-medium">આપેલ ફરિયાદ નંબર મુજબ કોઈ રેકોર્ડ મળ્યો નથી.</p>`;
+                resultDiv.classList.remove("hidden");
+                if (!querySnap.empty) {
+                    const data = querySnap.docs[0].data();
+                    resultDiv.innerHTML = `
+                        <p class="font-bold text-emerald-900">ટોકન નં: <span class="text-amber-600">${data.token}</span></p>
+                        <p><b>અરજદારનું નામ:</b> ${data.name}</p>
+                        <p><b>સમસ્યાનો પ્રકાર:</b> ${data.type}</p>
+                        <p><b>હાલનું સ્ટેટસ:</b> <span class="bg-amber-100 text-amber-900 px-2 py-0.5 rounded font-bold border border-amber-300 text-xs">${data.status}</span></p>
+                        ${data.adminRemark ? `<p class="text-xs text-gray-600 mt-1"><b>રિમાર્ક:</b> ${data.adminRemark}</p>` : ''}
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<p class="text-red-600 font-medium">આપેલ ફરિયાદ નંબર મુજબ કોઈ રેકોર્ડ મળ્યો નથી.</p>`;
+                }
+            } catch (err) {
+                console.error("Status check error:", err);
+                resultDiv.classList.remove("hidden");
+                resultDiv.innerHTML = `<p class="text-red-600 font-medium">સ્ટેટસ તપાસવામાં ભૂલ આવી.</p>`;
             }
         });
+
+        verifySystemAccess();
     </script>
 </body>
 </html>
