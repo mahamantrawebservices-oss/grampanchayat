@@ -3,7 +3,7 @@ import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https:/
 import { collection, onSnapshot, addDoc, updateDoc, getDocs, doc, setDoc, getDoc, deleteDoc, query, orderBy, where, Timestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
-// URL mathi panchayat ID melavvu
+// URL માંથી પંચાયત ID મેળવવું
 const urlParams = new URLSearchParams(window.location.search);
 const panchayatId = urlParams.get('id') || "ahmedabad_daskroi_motapipalva";
 
@@ -15,8 +15,8 @@ async function checkAdminSystemAccess() {
             document.body.innerHTML = `
                 <div class="fixed inset-0 bg-slate-900 text-white z-50 flex flex-col items-center justify-center p-6 text-center">
                     <div class="bg-slate-800 p-8 rounded-3xl border border-slate-700 max-w-lg shadow-2xl space-y-4">
-                        <h2 class="text-2xl font-bold text-amber-400">Sistam Maintenance chalu chhe</h2>
-                        <p class="text-gray-300 text-sm">Hal ma sistam update hetal chhe.</p>
+                        <h2 class="text-2xl font-bold text-amber-400">સિસ્ટમ મેન્ટેનન્સ ચાલુ છે</h2>
+                        <p class="text-gray-300 text-sm">હાલમાં સિસ્ટમ અપડેટ હેઠળ છે.</p>
                     </div>
                 </div>`;
             return false;
@@ -27,14 +27,14 @@ async function checkAdminSystemAccess() {
             document.body.innerHTML = `
                 <div class="fixed inset-0 bg-gray-900/90 text-white z-40 flex flex-col items-center justify-center p-6 text-center">
                     <div class="bg-white text-gray-800 p-8 rounded-3xl max-w-md shadow-2xl space-y-4">
-                        <h2 class="text-xl font-bold text-red-600">Subscription nishkriya chhe (Deactive)</h2>
-                        <p class="text-gray-600 text-sm">Aa gram panchayat nu subscription active nathi.</p>
+                        <h2 class="text-xl font-bold text-red-600">સબસ્ક્રિપ્શન નિષ્ક્રિય છે (Deactive)</h2>
+                        <p class="text-gray-600 text-sm">આ ગ્રામ પંચાયતનું સબસ્ક્રિપ્શન સક્રિય નથી.</p>
                     </div>
                 </div>`;
             return false;
         }
     } catch (err) {
-        console.error("Admin Access Check Error:", err);
+        console.error("એડમિન એક્સેસ ચેક એરર:", err);
     }
     return true;
 }
@@ -74,7 +74,7 @@ document.getElementById("admin-login-form")?.addEventListener("submit", (e) => {
     e.preventDefault();
     const email = document.getElementById("login-email")?.value;
     const pass = document.getElementById("login-password")?.value;
-    signInWithEmailAndPassword(auth, email, pass).catch(err => alert("Login nishfal: " + err.message));
+    signInWithEmailAndPassword(auth, email, pass).catch(err => alert("લોગિન નિષ્ફળ ગયું: " + err.message));
 });
 
 // Logout
@@ -91,7 +91,7 @@ document.getElementById("settings-form")?.addEventListener("submit", async (e) =
         ...(tagline && { tagline })
     }, { merge: true });
 
-    alert("Settings safaltapurvak save thai gaya!");
+    alert("સેટિંગ્સ સફળતાપૂર્વક સેવ થઈ ગયા!");
 });
 
 // Global Cache object for Posts
@@ -103,7 +103,7 @@ function resetPostForm() {
 
     form.reset();
     document.getElementById('edit-post-id').value = "";
-    document.getElementById('submit-post-btn').textContent = "Post Umero";
+    document.getElementById('submit-post-btn').textContent = "પોસ્ટ ઉમેરો";
     document.getElementById('cancel-post-edit-btn').classList.add('hidden');
 }
 
@@ -124,7 +124,7 @@ document.getElementById("add-post-form")?.addEventListener("submit", async (e) =
                 type: 'post',
                 updatedAt: new Date()
             });
-            alert("Post safaltapurvak update thai gai!");
+            alert("પોસ્ટ સફળતાપૂર્વક અપડેટ થઈ ગઈ!");
         } else {
             await addDoc(collection(db, "panchayats", panchayatId, "posts"), {
                 title: title,
@@ -132,13 +132,13 @@ document.getElementById("add-post-form")?.addEventListener("submit", async (e) =
                 type: 'post',
                 createdAt: new Date()
             });
-            alert("Navi post safaltapurvak umerai gai!");
+            alert("નવી પોસ્ટ સફળતાપૂર્વક ઉમેરાઈ ગઈ!");
         }
 
         resetPostForm();
     } catch (error) {
-        console.error("Error saving post:", error);
-        alert("Save karvama bhul avi, fari prayatna karo.");
+        console.error("એરર સેવિંગ પોસ્ટ:", error);
+        alert("સેવ કરવામાં ભૂલ આવી, ફરી પ્રયત્ન કરો.");
     }
 });
 
@@ -151,7 +151,7 @@ function loadAdminPosts() {
         postsCache = {};
 
         if (snapshot.empty) {
-            container.innerHTML = `<p class="text-xs text-gray-500 p-2">Koi post ke news meleli nathi.</p>`;
+            container.innerHTML = `<p class="text-xs text-gray-500 p-2">કોઈ પોસ્ટ કે ન્યૂઝ મળેલા નથી.</p>`;
             return;
         }
 
@@ -160,10 +160,10 @@ function loadAdminPosts() {
             const id = docSnap.id;
             postsCache[id] = data;
 
-            const title = data.title || data.heading || "Anami Post";
+            const title = data.title || data.heading || "અનામી પોસ્ટ";
             const desc = data.desc || data.description || "";
             
-            let dateStr = "Tarikh uplabdh nathi";
+            let dateStr = "તારીખ ઉપલબ્ધ નથી";
             if (data.createdAt?.toDate) {
                 dateStr = data.createdAt.toDate().toLocaleDateString('gu-IN');
             } else if (data.date) {
@@ -181,8 +181,8 @@ function loadAdminPosts() {
                     ${desc ? `<p class="text-gray-600 text-[11px] whitespace-pre-line">${desc}</p>` : ''}
                 </div>
                 <div class="flex gap-1.5 shrink-0">
-                    <button onclick="editPost('${id}')" class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-[10px] font-bold">Edit</button>
-                    <button onclick="deletePost('${id}')" class="bg-red-500 hover:bg-red-700 text-white px-2 py-1 rounded text-[10px] font-bold">Delete</button>
+                    <button onclick="editPost('${id}')" class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-[10px] font-bold">ફેરફાર કરો</button>
+                    <button onclick="deletePost('${id}')" class="bg-red-500 hover:bg-red-700 text-white px-2 py-1 rounded text-[10px] font-bold">ડિલીટ કરો</button>
                 </div>
             `;
             container.appendChild(card);
@@ -198,21 +198,21 @@ window.editPost = (id) => {
     document.getElementById('post-title').value = data.title || "";
     document.getElementById('post-desc').value = data.desc || "";
 
-    document.getElementById('submit-post-btn').textContent = "Update Karo";
+    document.getElementById('submit-post-btn').textContent = "અપડેટ કરો";
     document.getElementById('cancel-post-edit-btn').classList.remove('hidden');
     document.getElementById('add-post-form').scrollIntoView({ behavior: 'smooth' });
 };
 
 window.deletePost = async (id) => {
-    if (confirm("Shu tame kharekhar aa post delete karva mango cho?")) {
+    if (confirm("શું તમે ખરેખર આ પોસ્ટ ડિલીટ કરવા માંગો છો?")) {
         try {
             await deleteDoc(doc(db, "panchayats", panchayatId, "posts", id));
-            alert("Post delete thai gai!");
+            alert("પોસ્ટ ડિલીટ થઈ ગઈ!");
             if (document.getElementById('edit-post-id').value === id) {
                 resetPostForm();
             }
         } catch (err) {
-            console.error("Delete error:", err);
+            console.error("ડિલીટ એરર:", err);
         }
     }
 };
@@ -225,7 +225,7 @@ function resetNoticeForm() {
 
     form.reset();
     document.getElementById('edit-notice-id').value = "";
-    document.getElementById('submit-notice-btn').textContent = "Notis Post Karo";
+    document.getElementById('submit-notice-btn').textContent = "નોટિસ પોસ્ટ કરો";
     document.getElementById('cancel-notice-edit-btn').classList.add('hidden');
 }
 
@@ -245,19 +245,19 @@ document.getElementById("add-notice-form")?.addEventListener("submit", async (e)
                 desc: desc,
                 updatedAt: new Date()
             });
-            alert("Notis safaltapurvak update thai gai!");
+            alert("નોટિસ સફળતાપૂર્વક અપડેટ થઈ ગઈ!");
         } else {
             await addDoc(collection(db, "panchayats", panchayatId, "notices"), {
                 title: title,
                 desc: desc,
                 createdAt: new Date()
             });
-            alert("Navi notis safaltapurvak sachvai gai!");
+            alert("નવી નોટિસ સફળતાપૂર્વક સાચવાઈ ગઈ!");
         }
 
         resetNoticeForm();
     } catch (error) {
-        console.error("Error saving notice:", error);
+        console.error("એરર સેવિંગ નોટિસ:", error);
     }
 });
 
@@ -270,7 +270,7 @@ function loadNotices() {
         noticesCache = {};
 
         if (snapshot.empty) {
-            container.innerHTML = `<p class="text-xs text-gray-500 p-2">Koi notis ke post meleli nathi.</p>`;
+            container.innerHTML = `<p class="text-xs text-gray-500 p-2">કોઈ નોટિસ કે પોસ્ટ મળેલી નથી.</p>`;
             return;
         }
 
@@ -279,10 +279,10 @@ function loadNotices() {
             const id = docSnap.id;
             noticesCache[id] = data;
 
-            const title = data.title || data.noticeTitle || "Anami Notis";
+            const title = data.title || data.noticeTitle || "અનામી નોટિસ";
             const desc = data.desc || data.description || "";
             
-            let dateStr = "Tarikh uplabdh nathi";
+            let dateStr = "તારીખ ઉપલબ્ધ નથી";
             if (data.createdAt?.toDate) {
                 dateStr = data.createdAt.toDate().toLocaleDateString('gu-IN');
             }
@@ -298,8 +298,8 @@ function loadNotices() {
                     ${desc ? `<p class="text-gray-600 text-[11px] whitespace-pre-line">${desc}</p>` : ''}
                 </div>
                 <div class="flex gap-1.5 shrink-0">
-                    <button onclick="editNotice('${id}')" class="bg-blue-600 text-white px-2 py-1 rounded text-[10px] font-bold">Edit</button>
-                    <button onclick="deleteNotice('${id}')" class="bg-red-500 text-white px-2 py-1 rounded text-[10px] font-bold">Delete</button>
+                    <button onclick="editNotice('${id}')" class="bg-blue-600 text-white px-2 py-1 rounded text-[10px] font-bold">ફેરફાર કરો</button>
+                    <button onclick="deleteNotice('${id}')" class="bg-red-500 text-white px-2 py-1 rounded text-[10px] font-bold">ડિલીટ કરો</button>
                 </div>
             `;
             container.appendChild(card);
@@ -315,21 +315,21 @@ window.editNotice = (id) => {
     document.getElementById('notice-title').value = data.title || "";
     document.getElementById('notice-desc').value = data.desc || "";
 
-    document.getElementById('submit-notice-btn').textContent = "Update Karo";
+    document.getElementById('submit-notice-btn').textContent = "અપડેટ કરો";
     document.getElementById('cancel-notice-edit-btn').classList.remove('hidden');
     document.getElementById('add-notice-form').scrollIntoView({ behavior: 'smooth' });
 };
 
 window.deleteNotice = async (id) => {
-    if (confirm("Shu tame kharekhar aa notis delete karva mango cho?")) {
+    if (confirm("શું તમે ખરેખર આ નોટિસ ડિલીટ કરવા માંગો છો?")) {
         try {
             await deleteDoc(doc(db, "panchayats", panchayatId, "notices", id));
-            alert("Notis delete thai gai!");
+            alert("નોટિસ ડિલીટ થઈ ગઈ!");
             if (document.getElementById('edit-notice-id').value === id) {
                 resetNoticeForm();
             }
         } catch (err) {
-            console.error("Delete error:", err);
+            console.error("ડિલીટ એરર:", err);
         }
     }
 };
@@ -346,7 +346,7 @@ document.getElementById("gallery-form")?.addEventListener("submit", async (e) =>
         createdAt: new Date()
     });
 
-    alert("Photo gallery ma umerai gayo!");
+    alert("ફોટો ગેલેરીમાં ઉમેરાઈ ગયો!");
     e.target.reset();
     loadAdminGallery();
 });
@@ -358,7 +358,7 @@ async function loadAdminGallery() {
     
     container.innerHTML = "";
     if (snap.empty) {
-        container.innerHTML = "<p class='text-xs text-gray-500'>Koi photo melelo nathi.</p>";
+        container.innerHTML = "<p class='text-xs text-gray-500'>કોઈ ફોટો મળેલો નથી.</p>";
         return;
     }
 
@@ -371,7 +371,7 @@ async function loadAdminGallery() {
                     <img src="${item.imageUrl}" class="w-8 h-8 object-cover rounded flex-shrink-0">
                     <span class="text-xs font-semibold text-gray-700 truncate">${item.title}</span>
                 </div>
-                <button data-id="${id}" class="delete-gallery-btn bg-red-600 hover:bg-red-700 text-white text-[10px] px-2 py-1 rounded transition flex-shrink-0">Delete</button>
+                <button data-id="${id}" class="delete-gallery-btn bg-red-600 hover:bg-red-700 text-white text-[10px] px-2 py-1 rounded transition flex-shrink-0">ડિલીટ</button>
             </div>
         `;
     });
@@ -379,7 +379,7 @@ async function loadAdminGallery() {
     document.querySelectorAll(".delete-gallery-btn").forEach(btn => {
         btn.addEventListener("click", async (e) => {
             const docId = e.target.getAttribute("data-id");
-            if (confirm("Shu tame aa photo gallery mathi kadhi nakhva mango cho?")) {
+            if (confirm("શું તમે આ ફોટો ગેલેરીમાંથી કાઢી નાખવા માંગો છો?")) {
                 await deleteDoc(doc(db, "panchayats", panchayatId, "gallery", docId));
                 loadAdminGallery();
             }
@@ -416,7 +416,7 @@ document.getElementById("add-menu-form")?.addEventListener("submit", async (e) =
                 content: content,
                 updatedAt: new Date()
             }, { merge: true });
-            alert("Menu safaltapurvak update thai gayu!");
+            alert("મેનૂ સફળતાપૂર્વક અપડેટ થઈ ગયું!");
         } else {
             await addDoc(collection(db, "panchayats", panchayatId, "village_details"), {
                 title: title,
@@ -424,13 +424,13 @@ document.getElementById("add-menu-form")?.addEventListener("submit", async (e) =
                 isShow: true,
                 createdAt: new Date()
             });
-            alert("Navu menu safaltapurvak umerai gayu!");
+            alert("નવું મેનૂ સફળતાપૂર્વક ઉમેરાઈ ગયું!");
         }
 
         resetMenuForm();
         loadAdminMenuList();
     } catch (err) {
-        console.error("Error saving village menu:", err);
+        console.error("એરર સેવિંગ વિલેજ મેનૂ:", err);
     }
 });
 
@@ -438,7 +438,7 @@ function resetMenuForm() {
     document.getElementById("add-menu-form")?.reset();
     if (document.getElementById("edit-menu-id")) document.getElementById("edit-menu-id").value = "";
     if (typeof menuQuill !== 'undefined') menuQuill.root.innerHTML = "";
-    if (document.getElementById("save-menu-btn")) document.getElementById("save-menu-btn").innerText = "Menu Save Karo";
+    if (document.getElementById("save-menu-btn")) document.getElementById("save-menu-btn").innerText = "મેનૂ સેવ કરો";
     document.getElementById("cancel-edit-btn")?.classList.add("hidden");
 }
 
@@ -453,7 +453,7 @@ async function loadAdminMenuList() {
         container.innerHTML = "";
 
         if (querySnapshot.empty) {
-            container.innerHTML = "<p class='text-xs text-gray-500'>Koi menu malel nathi.</p>";
+            container.innerHTML = "<p class='text-xs text-gray-500'>કોઈ મેનૂ મળેલ નથી.</p>";
             return;
         }
 
@@ -464,11 +464,11 @@ async function loadAdminMenuList() {
 
             container.innerHTML += `
                 <div class="flex justify-between items-center bg-white p-2 border rounded shadow-sm mb-1">
-                    <span class="text-xs font-semibold ${isShow ? 'text-gray-800' : 'text-gray-400 line-through'}">${item.title || 'Nam vagar nu'}</span>
+                    <span class="text-xs font-semibold ${isShow ? 'text-gray-800' : 'text-gray-400 line-through'}">${item.title || 'નામ વગરનું'}</span>
                     <div class="flex items-center gap-1.5">
-                        <button type="button" data-id="${id}" class="edit-menu-btn bg-blue-600 text-white text-[10px] px-2 py-1 rounded font-bold">Edit</button>
-                        <button type="button" data-id="${id}" data-status="${isShow}" class="toggle-show-btn text-[10px] px-2 py-1 rounded text-white ${isShow ? 'bg-amber-600' : 'bg-gray-500'} font-bold">${isShow ? 'Santado' : 'Batavo'}</button>
-                        <button type="button" data-id="${id}" class="delete-menu-btn bg-red-600 text-white text-[10px] px-2 py-1 rounded font-bold">Delete</button>
+                        <button type="button" data-id="${id}" class="edit-menu-btn bg-blue-600 text-white text-[10px] px-2 py-1 rounded font-bold">ફેરફાર કરો</button>
+                        <button type="button" data-id="${id}" data-status="${isShow}" class="toggle-show-btn text-[10px] px-2 py-1 rounded text-white ${isShow ? 'bg-amber-600' : 'bg-gray-500'} font-bold">${isShow ? 'સંતાડો' : 'બતાવો'}</button>
+                        <button type="button" data-id="${id}" class="delete-menu-btn bg-red-600 text-white text-[10px] px-2 py-1 rounded font-bold">ડિલીટ</button>
                     </div>
                 </div>
             `;
@@ -476,7 +476,7 @@ async function loadAdminMenuList() {
 
         attachMenuEventListeners();
     } catch (err) {
-        console.error("Menu Load Error:", err);
+        console.error("મેનૂ લોડ એરર:", err);
     }
 }
 
@@ -490,7 +490,7 @@ function attachMenuEventListeners() {
                 document.getElementById("edit-menu-id").value = id;
                 document.getElementById("menu-title").value = data.title || "";
                 if (typeof menuQuill !== 'undefined') menuQuill.root.innerHTML = data.content || "";
-                document.getElementById("save-menu-btn").innerText = "Update Karo";
+                document.getElementById("save-menu-btn").innerText = "અપડેટ કરો";
                 document.getElementById("cancel-edit-btn").classList.remove("hidden");
                 document.getElementById("add-menu-form")?.scrollIntoView({ behavior: 'smooth' });
             }
@@ -509,7 +509,7 @@ function attachMenuEventListeners() {
     document.querySelectorAll(".delete-menu-btn").forEach(btn => {
         btn.addEventListener("click", async (e) => {
             const id = e.target.getAttribute("data-id");
-            if (confirm("Shu tame aa menu delete karva mango cho?")) {
+            if (confirm("શું તમે આ મેનૂ ડિલીટ કરવા માંગો છો?")) {
                 await deleteDoc(doc(db, "panchayats", panchayatId, "village_details", id));
                 loadAdminMenuList();
             }
@@ -545,15 +545,15 @@ async function loadAdminComplaints() {
         container.innerHTML += `
             <div class="bg-white p-3 border rounded shadow-sm space-y-2 text-xs mb-2">
                 <div class="flex justify-between font-bold text-gray-800 border-b pb-1">
-                    <span>Token: <span class="text-amber-600">${item.token || 'N/A'}</span> (${item.name || ''} - ${item.mobile || ''})</span>
+                    <span>ટોકન: <span class="text-amber-600">${item.token || 'N/A'}</span> (${item.name || ''} - ${item.mobile || ''})</span>
                     <span class="text-emerald-700">${item.type || ''}</span>
                 </div>
-                <p><b>Tarikh & Samay:</b> <span class="text-blue-600 font-semibold">${formattedDate}</span></p>
-                <p><b>Vistar:</b> ${item.area || ''} | <b>Vigat:</b> ${item.details || ''}</p>
+                <p><b>તારીખ અને સમય:</b> <span class="text-blue-600 font-semibold">${formattedDate}</span></p>
+                <p><b>વિસ્તાર:</b> ${item.area || ''} | <b>વિગત:</b> ${item.details || ''}</p>
                 <div class="flex flex-wrap items-center gap-2">
-                    <label class="font-bold">Status Badlo:</label>
+                    <label class="font-bold">સ્ટેટસ બદલો:</label>
                     <select data-id="${d.id}" class="update-status-select border p-1 rounded bg-amber-50">
-                        <option value="${item.status}" selected>Hal nu: ${item.status}</option>
+                        <option value="${item.status}" selected>હાલનું: ${item.status}</option>
                         <option value="ફરિયાદ પર કામ ચાલી રહ્યું છે">ફરિયાદ પર કામ ચાલી રહ્યું છે</option>
                         <option value="ફરિયાદ નિવારણ થઈ ગયું છે">ફરિયાદ નિવારણ થઈ ગયું છે</option>
                         <option value="ફરિયાદ દફતરે કરવામાં આવેલ છે">ફરિયાદ દફતરે કરવામાં આવેલ છે</option>
@@ -568,7 +568,7 @@ async function loadAdminComplaints() {
         sel.addEventListener("change", async (e) => {
             const id = e.target.getAttribute("data-id");
             await setDoc(doc(db, "panchayats", panchayatId, "complaints", id), { status: e.target.value }, { merge: true });
-            alert("Status update thai gayu!");
+            alert("સ્ટેટસ અપડેટ થઈ ગયું!");
             loadAdminComplaints();
         });
     });
@@ -613,7 +613,7 @@ document.getElementById("save-meta-btn")?.addEventListener("click", async () => 
     const term = document.getElementById("admin-term-input").value;
     const note = document.getElementById("admin-note-input").value;
     await setDoc(doc(db, "panchayats", panchayatId, "settings", "staff_page_meta"), { term, note }, { merge: true });
-    alert("Mudat ane nondh sachvai gai!");
+    alert("મુદત અને નોંધ સાચવાઈ ગઈ!");
 });
 
 async function loadAdminStaffAndCommittee() {
@@ -627,8 +627,8 @@ async function loadAdminStaffAndCommittee() {
             const item = docSnap.data();
             committeeContainer.innerHTML += `
                 <div class="flex justify-between items-center bg-white p-2 border rounded shadow-sm text-xs mb-1">
-                    <div><b>${item.name}</b> (${item.designation}) - Ward: ${item.ward || '-'}</div>
-                    <button data-id="${docSnap.id}" data-col="panchayat_committee" class="delete-ms-btn bg-red-600 text-white text-[10px] px-2 py-1 rounded">Delete</button>
+                    <div><b>${item.name}</b> (${item.designation}) - વોર્ડ: ${item.ward || '-'}</div>
+                    <button data-id="${docSnap.id}" data-col="panchayat_committee" class="delete-ms-btn bg-red-600 text-white text-[10px] px-2 py-1 rounded">ડિલીટ</button>
                 </div>
             `;
         });
@@ -642,7 +642,7 @@ async function loadAdminStaffAndCommittee() {
             staffContainer.innerHTML += `
                 <div class="flex justify-between items-center bg-white p-2 border rounded shadow-sm text-xs mb-1">
                     <div><b>${item.name}</b> (${item.designation})</div>
-                    <button data-id="${docSnap.id}" data-col="panchayat_staff" class="delete-ms-btn bg-red-600 text-white text-[10px] px-2 py-1 rounded">Delete</button>
+                    <button data-id="${docSnap.id}" data-col="panchayat_staff" class="delete-ms-btn bg-red-600 text-white text-[10px] px-2 py-1 rounded">ડિલીટ</button>
                 </div>
             `;
         });
@@ -652,7 +652,7 @@ async function loadAdminStaffAndCommittee() {
         btn.addEventListener("click", async (e) => {
             const id = e.target.getAttribute("data-id");
             const col = e.target.getAttribute("data-col");
-            if (confirm("Delete karvu chhe?")) {
+            if (confirm("ડિલીટ કરવું છે?")) {
                 await deleteDoc(doc(db, "panchayats", panchayatId, col, id));
                 loadAdminStaffAndCommittee();
             }
@@ -672,7 +672,7 @@ document.getElementById("add-member-staff-form")?.addEventListener("submit", asy
         ward: document.getElementById("ms-ward").value || '',
         order: Date.now()
     });
-    alert("Umerai gayu!");
+    alert("ઉમેરાઈ ગયું!");
     e.target.reset();
     loadAdminStaffAndCommittee();
 });
@@ -688,7 +688,7 @@ async function loadAdminSchedule() {
         container.innerHTML += `
             <div class="flex justify-between items-center bg-white p-2 border rounded shadow-sm text-xs mb-1">
                 <div><b>${item.name}</b> (${item.designation}) - ${item.timing}</div>
-                <button data-id="${docSnap.id}" class="delete-sch-btn bg-red-600 text-white text-[10px] px-2 py-1 rounded">Delete</button>
+                <button data-id="${docSnap.id}" class="delete-sch-btn bg-red-600 text-white text-[10px] px-2 py-1 rounded">ડિલીટ</button>
             </div>
         `;
     });
@@ -709,7 +709,7 @@ document.getElementById("add-schedule-form")?.addEventListener("submit", async (
         days: document.getElementById("sch-days").value,
         note: document.getElementById("sch-note").value || ''
     });
-    alert("Samay patrak umerai gayu!");
+    alert("સમય પત્રક ઉમેરાઈ ગયું!");
     e.target.reset();
     loadAdminSchedule();
 });
@@ -725,7 +725,7 @@ async function loadAdminTaxLink() {
 document.getElementById("tax-link-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     await setDoc(doc(db, "panchayats", panchayatId, "settings", "tax_payment"), { url: document.getElementById("tax-payment-url").value }, { merge: true });
-    alert("Tax link update thai gai!");
+    alert("ટેક્સ લિંક અપડેટ થઈ ગઈ!");
 });
 
 // Custom Buttons
@@ -739,7 +739,7 @@ async function loadAdminCustomButtons() {
         listDiv.innerHTML += `
             <div class="flex justify-between items-center bg-gray-50 p-2 border rounded text-xs mb-1">
                 <span>${data.buttonTitle}</span>
-                <button data-id="${docSnap.id}" class="delete-page-btn bg-red-600 text-white px-2 py-1 rounded text-[10px]">Delete</button>
+                <button data-id="${docSnap.id}" class="delete-page-btn bg-red-600 text-white px-2 py-1 rounded text-[10px]">ડિલીટ</button>
             </div>
         `;
     });
@@ -757,7 +757,7 @@ document.getElementById("add-page-button-form")?.addEventListener("submit", asyn
         buttonTitle: document.getElementById("custom-btn-title").value,
         htmlContent: document.getElementById("custom-page-html").value
     });
-    alert("Button umerai gayu!");
+    alert("બટન ઉમેરાઈ ગયું!");
     e.target.reset();
     loadAdminCustomButtons();
 });
@@ -773,7 +773,7 @@ async function loadAdminEvents() {
         listDiv.innerHTML += `
             <div class="flex justify-between items-center bg-gray-50 p-2 border rounded text-xs mb-1">
                 <span>${data.eventName} (${data.eventDate})</span>
-                <button data-id="${docSnap.id}" class="delete-event-btn bg-red-600 text-white px-2 py-1 rounded text-[10px]">Delete</button>
+                <button data-id="${docSnap.id}" class="delete-event-btn bg-red-600 text-white px-2 py-1 rounded text-[10px]">ડિલીટ</button>
             </div>
         `;
     });
@@ -792,7 +792,7 @@ document.getElementById("event-form")?.addEventListener("submit", async (e) => {
         eventDate: document.getElementById("event-date").value,
         eventLocation: document.getElementById("event-location").value
     });
-    alert("Event umerai gai!");
+    alert("ઇવેન્ટ ઉમેરાઈ ગઈ!");
     e.target.reset();
     loadAdminEvents();
 });
@@ -803,7 +803,7 @@ document.getElementById("disaster-management-form")?.addEventListener("submit", 
     const key = document.getElementById("disaster-page-key").value;
     const content = document.getElementById("disaster-page-content").value;
     await setDoc(doc(db, "panchayats", panchayatId, "disaster_management", key), { content }, { merge: true });
-    alert("Mahiti sachvai gai!");
+    alert("માહિતી સાચવાઈ ગઈ!");
 });
 
 // Village Map Links
@@ -824,7 +824,7 @@ document.getElementById("village-map-form")?.addEventListener("submit", async (e
         satelliteUrl: document.getElementById("admin-satellite-url").value,
         revenuePdfUrl: document.getElementById("admin-revenue-pdf-url").value
     }, { merge: true });
-    alert("Gram na naksha ni links sachvai gai!");
+    alert("ગામના નકશાની લિંક્સ સાચવાઈ ગઈ!");
 });
 
 // Glance (Maru Gam - Ek Najarma) Manager
@@ -838,7 +838,7 @@ async function loadAdminGlanceList() {
         container.innerHTML += `
             <div class="flex justify-between items-center bg-gray-50 p-2 border rounded text-xs mb-1">
                 <span><b>${item.section}:</b> ${item.title} - ${item.value}</span>
-                <button data-id="${docSnap.id}" class="delete-glance-btn bg-red-600 text-white px-2 py-1 rounded text-[10px]">Delete</button>
+                <button data-id="${docSnap.id}" class="delete-glance-btn bg-red-600 text-white px-2 py-1 rounded text-[10px]">ડિલીટ</button>
             </div>
         `;
     });
@@ -858,7 +858,7 @@ document.getElementById("add-glance-form")?.addEventListener("submit", async (e)
         value: document.getElementById("glance-value").value,
         extra: document.getElementById("glance-extra").value || ''
     });
-    alert("Mahiti umerai gai!");
+    alert("માહિતી ઉમેરાઈ ગઈ!");
     e.target.reset();
     loadAdminGlanceList();
 });
@@ -883,7 +883,7 @@ document.getElementById("contact-admin-form")?.addEventListener("submit", async 
         email: document.getElementById("adm-email").value,
         phone: document.getElementById("adm-phone").value
     }, { merge: true });
-    alert("Sampark vigato save thai gai!");
+    alert("સંપર્ક વિગતો સેવ થઈ ગઈ!");
 });
 
 function loadAdminFeedbacks() {
@@ -893,7 +893,7 @@ function loadAdminFeedbacks() {
         container.innerHTML = "";
         snapshot.forEach((docSnap) => {
             const data = docSnap.data();
-            container.innerHTML += `<div class="bg-gray-50 border p-3 rounded-xl text-xs"><b>${data.name || 'Anami'}</b>: ${data.message}</div>`;
+            container.innerHTML += `<div class="bg-gray-50 border p-3 rounded-xl text-xs"><b>${data.name || 'અનામી'}</b>: ${data.message}</div>`;
         });
     });
 }
@@ -923,7 +923,7 @@ async function loadAdminData() {
             renderPropertyRows([]);
         }
     } catch (err) {
-        console.error("Proactive data load bhul:", err);
+        console.error("પ્રોએક્ટિવ ડેટા લોડ ભૂલ:", err);
     }
 }
 
@@ -938,10 +938,10 @@ function createPopRow(item = {}) {
     const div = document.createElement("div");
     div.className = "flex gap-2 items-center bg-white p-2 rounded border pop-row";
     div.innerHTML = `
-        <input type="text" placeholder="Vigat (e.g. Kul Vasti)" value="${item.title || ''}" class="pop-title w-1/3 border p-1 rounded text-xs" required>
-        <input type="text" placeholder="Stri" value="${item.female || ''}" class="pop-female w-1/5 border p-1 rounded text-xs">
-        <input type="text" placeholder="Purush" value="${item.male || ''}" class="pop-male w-1/5 border p-1 rounded text-xs">
-        <input type="text" placeholder="Kul" value="${item.total || ''}" class="pop-total w-1/5 border p-1 rounded text-xs" required>
+        <input type="text" placeholder="વિગત (દા.ત. કુલ વસ્તી)" value="${item.title || ''}" class="pop-title w-1/3 border p-1 rounded text-xs" required>
+        <input type="text" placeholder="સ્ત્રી" value="${item.female || ''}" class="pop-female w-1/5 border p-1 rounded text-xs">
+        <input type="text" placeholder="પુરુષ" value="${item.male || ''}" class="pop-male w-1/5 border p-1 rounded text-xs">
+        <input type="text" placeholder="કુલ" value="${item.total || ''}" class="pop-total w-1/5 border p-1 rounded text-xs" required>
         <button type="button" onclick="this.parentElement.remove()" class="text-red-600 font-bold px-2">×</button>
     `;
     return div;
@@ -962,10 +962,10 @@ function createWaterRow(item = {}) {
     const div = document.createElement("div");
     div.className = "flex gap-2 items-center bg-white p-2 rounded border water-row";
     div.innerHTML = `
-        <input type="text" placeholder="Jalashay Nam" value="${item.source || ''}" class="water-source w-1/4 border p-1 rounded text-xs" required>
-        <input type="text" placeholder="Sankhya" value="${item.count || ''}" class="water-count w-1/4 border p-1 rounded text-xs">
-        <input type="text" placeholder="Vistar" value="${item.area || ''}" class="water-area w-1/4 border p-1 rounded text-xs">
-        <input type="text" placeholder="Kshamata" value="${item.capacity || ''}" class="water-capacity w-1/4 border p-1 rounded text-xs">
+        <input type="text" placeholder="જળાશય નામ" value="${item.source || ''}" class="water-source w-1/4 border p-1 rounded text-xs" required>
+        <input type="text" placeholder="સંખ્યા" value="${item.count || ''}" class="water-count w-1/4 border p-1 rounded text-xs">
+        <input type="text" placeholder="વિસ્તાર" value="${item.area || ''}" class="water-area w-1/4 border p-1 rounded text-xs">
+        <input type="text" placeholder="ક્ષમતા" value="${item.capacity || ''}" class="water-capacity w-1/4 border p-1 rounded text-xs">
         <button type="button" onclick="this.parentElement.remove()" class="text-red-600 font-bold px-2">×</button>
     `;
     return div;
@@ -986,9 +986,9 @@ function createPropertyRow(item = {}) {
     const div = document.createElement("div");
     div.className = "flex gap-2 items-center bg-white p-2 rounded border prop-row";
     div.innerHTML = `
-        <input type="text" placeholder="Milkat Nam" value="${item.name || ''}" class="prop-name w-1/3 border p-1 rounded text-xs" required>
-        <input type="text" placeholder="Sankhya" value="${item.count || ''}" class="prop-count w-1/4 border p-1 rounded text-xs">
-        <input type="text" placeholder="Vadhare ni vigat" value="${item.detail || ''}" class="prop-detail w-1/3 border p-1 rounded text-xs">
+        <input type="text" placeholder="મિલકત નામ" value="${item.name || ''}" class="prop-name w-1/3 border p-1 rounded text-xs" required>
+        <input type="text" placeholder="સંખ્યા" value="${item.count || ''}" class="prop-count w-1/4 border p-1 rounded text-xs">
+        <input type="text" placeholder="વધારાની વિગત" value="${item.detail || ''}" class="prop-detail w-1/3 border p-1 rounded text-xs">
         <button type="button" onclick="this.parentElement.remove()" class="text-red-600 font-bold px-2">×</button>
     `;
     return div;
@@ -1049,9 +1049,9 @@ document.getElementById("proactive-admin-form")?.addEventListener("submit", asyn
             updatedAt: new Date()
         }, { merge: true });
 
-        alert("Swayam jahir karel mahiti safaltapurvak save/update thai gai!");
+        alert("સ્વયં જાહેર કરેલ માહિતી સફળતાપૂર્વક સેવ/અપડેટ થઈ ગઈ!");
     } catch (err) {
-        console.error("Save error:", err);
-        alert("Save karvama bhul avi: " + err.message);
+        console.error("સેવ એરર:", err);
+        alert("સેવ કરવામાં ભૂલ આવી: " + err.message);
     }
 });
