@@ -1965,9 +1965,9 @@ async function loadAdminData() {
                 document.getElementById("off-phone").value = data.officer.phone || "";
                 document.getElementById("off-appeal").value = data.officer.appealOfficer || "";
             }
-            if (data.developmentLink) {
-                document.getElementById("link-dev-input").value = data.developmentLink;
-            }
+            if (data.extraTitle) document.getElementById("extra-title-input").value = data.extraTitle;
+            if (data.extraContent) document.getElementById("extra-content-input").value = data.extraContent;
+
             if (data.population) data.population.forEach(item => addPopulationRow(item));
             if (data.water) data.water.forEach(item => addWaterRow(item));
             if (data.property) data.property.forEach(item => addPropRow(item));
@@ -1986,7 +1986,8 @@ document.getElementById("proactive-admin-form")?.addEventListener("submit", asyn
             appealOfficer: document.getElementById("off-appeal").value.trim()
         };
 
-        const developmentLink = document.getElementById("link-dev-input").value.trim();
+        const extraTitle = document.getElementById("extra-title-input").value.trim();
+        const extraContent = document.getElementById("extra-content-input").value.trim();
 
         const population = Array.from(document.querySelectorAll("#population-rows > div")).map(row => ({
             title: row.querySelector(".pop-title").value,
@@ -2009,7 +2010,7 @@ document.getElementById("proactive-admin-form")?.addEventListener("submit", asyn
         }));
 
         await setDoc(doc(db, "proactive_disclosure", "main_data"), {
-            officer, developmentLink, population, water, property, updatedAt: new Date()
+            officer, extraTitle, extraContent, population, water, property, updatedAt: new Date()
         });
 
         alert("માહિતી સફળતાપૂર્વક સેવ/અપડેટ થઈ ગઈ!");
