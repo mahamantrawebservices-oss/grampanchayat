@@ -3,23 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>પંચાયત એડમિન કંટ્રોલ પેનલ</title>
+    <title>Panchayat Admin Control Panel</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Quill Editor CSS & JS -->
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="min-h-screen flex flex-col font-sans" style="background-color: #97B3DE;">
 
     <!-- Login Modal -->
     <div id="login-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
         <div class="bg-white p-8 rounded-xl shadow-2xl w-96">
-            <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">એડમિન લોગિન</h2>
+            <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">Admin Login</h2>
             <form id="admin-login-form" class="space-y-4">
-                <input type="email" id="login-email" placeholder="ઇમેઇલ" required class="w-full border p-2 rounded text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500">
-                <input type="password" id="login-password" placeholder="પાસવર્ડ" required class="w-full border p-2 rounded text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500">
-                <button type="submit" class="w-full bg-emerald-600 text-white font-bold py-2 rounded hover:bg-emerald-700 transition">લોગિન કરો</button>
+                <input type="email" id="login-email" placeholder="Email" required class="w-full border p-2 rounded text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                <input type="password" id="login-password" placeholder="Password" required class="w-full border p-2 rounded text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                <button type="submit" class="w-full bg-emerald-600 text-white font-bold py-2 rounded hover:bg-emerald-700 transition">Login Karo</button>
             </form>
         </div>
     </div>
@@ -27,210 +30,377 @@
     <!-- Main Admin Dashboard -->
     <div id="admin-dashboard" class="hidden min-h-screen flex flex-col">
         
+        <!-- Top Navigation Header -->
         <header class="bg-emerald-900 text-white px-6 py-4 flex justify-between items-center shadow-md">
-            <h1 class="text-xl font-bold">ગ્રામ પંચાયત એડમિન પેનલ</h1>
-            <button id="logout-btn" class="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1.5 rounded transition font-bold">લોગઆઉટ</button>
+            <h1 class="text-xl font-bold">Gram Panchayat Admin Panel</h1>
+            <button id="logout-btn" class="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1.5 rounded transition font-bold">Logout</button>
         </header>
 
+        <!-- Main Grid Container -->
         <main class="flex-1 container mx-auto px-4 py-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-            <!-- વેબસાઇટ સેટિંગ્સ -->
+            <!-- Section 1: Website Settings -->
             <div class="bg-emerald-50/70 border border-emerald-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[500px] overflow-y-auto">
-                <h3 class="font-bold border-b border-emerald-300 pb-2 text-emerald-900">૧. વેબસાઇટ સેટિંગ્સ</h3>
+                <h3 class="font-bold border-b border-emerald-300 pb-2 text-emerald-900">1. Website Settings</h3>
                 <form id="settings-form" class="space-y-3">
                     <div>
-                        <label class="text-xs font-semibold text-emerald-950">પંચાયત નામ:</label>
-                        <input type="text" id="set-gp-name" class="w-full border border-emerald-300 p-2 rounded text-sm bg-white" placeholder="દા.ત. ગ્રામ પંચાયત">
+                        <label class="text-xs font-semibold text-emerald-950">Panchayat Name:</label>
+                        <input type="text" id="set-gp-name" class="w-full border border-emerald-300 p-2 rounded text-sm bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500" placeholder="e.g. Gram Panchayat">
                     </div>
                     <div>
-                        <label class="text-xs font-semibold text-emerald-950">ટેગ લાઇન:</label>
-                        <input type="text" id="set-gp-tagline" class="w-full border border-emerald-300 p-2 rounded text-sm bg-white" placeholder="દા.ત. ડિજિટલ પંચાયત">
+                        <label class="text-xs font-semibold text-emerald-950">Tagline:</label>
+                        <input type="text" id="set-gp-tagline" class="w-full border border-emerald-300 p-2 rounded text-sm bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500" placeholder="e.g. Digital Panchayat">
                     </div>
-                    <button type="submit" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white text-xs px-4 py-2 rounded font-bold shadow transition">સેટિંગ્સ સેવ કરો</button>
+                    <button type="submit" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white text-xs px-4 py-2 rounded font-bold shadow transition">Settings Save Karo</button>
                 </form>
             </div>
 
-            <!-- તાજી પોસ્ટ્સ અને ન્યૂઝ મેનેજર -->
+            <!-- Posts & News Manager -->
             <div class="bg-white p-5 rounded-2xl shadow-md border space-y-4">
-                <h3 class="font-bold text-sm text-emerald-800 flex items-center gap-2 border-b pb-2">📢 તાજી પોસ્ટ્સ અને ન્યૂઝ મેનેજ કરો</h3>
+                <h3 class="font-bold text-sm text-emerald-800 flex items-center gap-2 border-b pb-2">
+                    📢 Taji Posts ane News Manage Karo
+                </h3>
                 <form id="add-post-form" class="space-y-3 bg-gray-50 p-4 rounded-xl border">
                     <input type="hidden" id="edit-post-id" value="">
                     <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">પોસ્ટ / ન્યૂઝનું શીર્ષક</label>
-                        <input type="text" id="post-title" placeholder="શીર્ષક..." class="w-full border p-2 rounded text-xs bg-white" required>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Post / News Title</label>
+                        <input type="text" id="post-title" placeholder="Title..." class="w-full border p-2 rounded text-xs bg-white" required>
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">વિગત</label>
-                        <textarea id="post-desc" rows="3" placeholder="માહિતી..." class="w-full border p-2 rounded text-xs bg-white" required></textarea>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Description</label>
+                        <textarea id="post-desc" rows="3" placeholder="Details..." class="w-full border p-2 rounded text-xs bg-white" required></textarea>
                     </div>
                     <div class="flex gap-2">
-                        <button type="submit" id="submit-post-btn" class="bg-emerald-600 text-white px-4 py-2 rounded text-xs font-semibold">પોસ્ટ ઉમેરો</button>
-                        <button type="button" id="cancel-post-edit-btn" class="hidden bg-gray-500 text-white px-4 py-2 rounded text-xs font-semibold">રદ કરો</button>
+                        <button type="submit" id="submit-post-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded text-xs font-semibold">Post Umero</button>
+                        <button type="button" id="cancel-post-edit-btn" class="hidden bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded text-xs font-semibold">Cancel</button>
                     </div>
                 </form>
-                <div id="admin-posts-list" class="space-y-2 max-h-72 overflow-y-auto"></div>
+                <div class="mt-4">
+                    <div id="admin-posts-list" class="space-y-2 max-h-72 overflow-y-auto"></div>
+                </div>
             </div>
 
-            <!-- નોટિસ મેનેજર -->
+            <!-- Section 2: Notice Manager -->
             <div class="bg-blue-50/70 border border-blue-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[500px] overflow-y-auto">
-                <h3 class="font-bold border-b border-blue-300 pb-2 text-blue-900">૨. નવી નોટિસ મૂકો</h3>
-                <form id="add-notice-form" class="space-y-3 bg-white p-4 rounded-xl border">
+                <h3 class="font-bold border-b border-blue-300 pb-2 text-blue-900">2. Navi Post / Notis Muko</h3>
+                <form id="add-notice-form" class="space-y-3 bg-white p-4 rounded-xl border shadow-sm">
                     <input type="hidden" id="edit-notice-id" value="">
                     <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">નોટિસ શીર્ષક</label>
-                        <input type="text" id="notice-title" placeholder="શીર્ષક..." class="w-full border p-2 rounded text-xs" required>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Notice Title</label>
+                        <input type="text" id="notice-title" placeholder="Title..." class="w-full border p-2 rounded text-xs" required>
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">વિગત</label>
-                        <textarea id="notice-desc" rows="3" placeholder="વિગત..." class="w-full border p-2 rounded text-xs"></textarea>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Description</label>
+                        <textarea id="notice-desc" rows="3" placeholder="Details..." class="w-full border p-2 rounded text-xs"></textarea>
                     </div>
                     <div class="flex gap-2">
-                        <button type="submit" id="submit-notice-btn" class="bg-blue-600 text-white px-4 py-2 rounded text-xs font-semibold">નોટિસ પોસ્ટ કરો</button>
-                        <button type="button" id="cancel-notice-edit-btn" class="hidden bg-gray-500 text-white px-4 py-2 rounded text-xs font-semibold">રદ કરો</button>
+                        <button type="submit" id="submit-notice-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-xs font-semibold">Notis Post Karo</button>
+                        <button type="button" id="cancel-notice-edit-btn" class="hidden bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded text-xs font-semibold">Cancel</button>
                     </div>
                 </form>
-                <div id="admin-notices-list" class="space-y-2 max-h-80 overflow-y-auto"></div>
+                <div class="mt-4">
+                    <div id="admin-notices-list" class="space-y-2 max-h-80 overflow-y-auto"></div>
+                </div>
             </div>
 
-            <!-- Blogger ફોટો ગેલેરી -->
+            <!-- Section 3: Blogger Photo Gallery -->
             <div class="bg-orange-50/70 border border-orange-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[500px] overflow-y-auto">
-                <h3 class="font-bold border-b border-orange-300 pb-2 text-orange-900">૩. Blogger ફોટો ગેલેરી</h3>
+                <h3 class="font-bold border-b border-orange-300 pb-2 text-orange-900">3. Blogger Photo Gallery</h3>
                 <form id="gallery-form" class="space-y-3">
-                    <input type="text" id="img-title" placeholder="ફોટાનું શીર્ષક" required class="w-full border p-2 rounded text-sm bg-white">
-                    <input type="url" id="img-url" placeholder="Blogger Image URL https://..." required class="w-full border p-2 rounded text-sm bg-white">
-                    <button type="submit" class="w-full bg-orange-600 text-white text-xs px-4 py-2 rounded font-bold shadow">ફોટો ઉમેરો</button>
+                    <div>
+                        <label class="text-xs font-semibold text-orange-950">Photo Title:</label>
+                        <input type="text" id="img-title" placeholder="e.g. Gram Sabha" required class="w-full border border-orange-300 p-2 rounded text-sm bg-white">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-orange-950">Blogger Image URL:</label>
+                        <input type="url" id="img-url" placeholder="https://..." required class="w-full border border-orange-300 p-2 rounded text-sm bg-white">
+                    </div>
+                    <button type="submit" class="w-full bg-orange-600 hover:bg-orange-700 text-white text-xs px-4 py-2 rounded font-bold shadow transition">Gallery ma Photo Umero</button>
                 </form>
-                <div id="admin-gallery-list" class="space-y-2 max-h-48 overflow-y-auto"></div>
+                <div class="mt-4 border-t border-orange-200 pt-3">
+                    <div id="admin-gallery-list" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
+                </div>
             </div>
 
-            <!-- ગામ અને પંચાયત વિગત -->
+            <!-- Section 4: Village Details & Menu Manager -->
             <div class="bg-purple-50/70 border border-purple-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[500px] overflow-y-auto">
-                <h3 class="font-bold border-b border-purple-300 pb-2 text-purple-900">૪. ગામ અને પંચાયત વિગત મેનેજર</h3>
+                <h3 class="font-bold border-b border-purple-300 pb-2 text-purple-900">4. Gram ane Panchayat Vigat Manager</h3>
                 <form id="add-menu-form" class="space-y-3">
                     <input type="hidden" id="edit-menu-id" value="">
-                    <input type="text" id="menu-title" placeholder="મેનૂનું નામ" required class="w-full border p-2 rounded text-sm bg-white">
-                    <div id="menu-editor-container" class="bg-white rounded border border-purple-300" style="min-height: 120px;"></div>
+                    <div>
+                        <label class="text-xs font-semibold text-purple-950">Menu Title:</label>
+                        <input type="text" id="menu-title" placeholder="Title..." required class="w-full border border-purple-300 p-2 rounded text-sm bg-white">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-purple-950">Content:</label>
+                        <div id="menu-editor-container" class="bg-white rounded border border-purple-300" style="min-height: 120px;"></div>
+                    </div>
                     <div class="flex gap-2">
-                        <button type="submit" id="save-menu-btn" class="w-full bg-purple-700 text-white text-xs px-4 py-2 rounded font-bold">મેનૂ સેવ કરો</button>
-                        <button type="button" id="cancel-edit-btn" class="hidden bg-gray-500 text-white text-xs px-4 py-2 rounded font-bold">રદ કરો</button>
+                        <button type="submit" id="save-menu-btn" class="w-full bg-purple-700 hover:bg-purple-800 text-white text-xs px-4 py-2 rounded font-bold shadow transition">Menu Save Karo</button>
+                        <button type="button" id="cancel-edit-btn" class="hidden bg-gray-500 hover:bg-gray-600 text-white text-xs px-4 py-2 rounded font-bold transition">Cancel</button>
                     </div>
                 </form>
-                <div id="admin-menu-list" class="space-y-2 max-h-48 overflow-y-auto"></div>
-            </div>
-
-            <!-- ફરિયાદો મેનેજર -->
-            <div class="bg-emerald-50/80 border border-emerald-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[500px] overflow-y-auto">
-                <h3 class="font-bold border-b border-emerald-300 pb-2 text-emerald-950">૫. આવેલ ફરિયાદો અને સ્ટેટસ મેનેજર</h3>
-                <select id="admin-complaint-filter" class="border p-1.5 rounded text-xs bg-white">
-                    <option value="ALL">તમામ ફરિયાદો</option>
-                    <option value="PENDING">ફક્ત પેન્ડિંગ</option>
-                </select>
-                <div id="admin-complaint-list" class="space-y-3 max-h-72 overflow-y-auto"></div>
-            </div>
-
-            <!-- કમિટી અને સ્ટાફ મેનેજર -->
-            <div class="bg-blue-50/80 border border-blue-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[500px] overflow-y-auto">
-                <h3 class="font-bold border-b border-blue-300 pb-2 text-blue-950">૬. પંચાયત કમિટી અને સ્ટાફ મેનેજર</h3>
-                <div class="grid grid-cols-2 gap-2">
-                    <input type="text" id="admin-term-input" placeholder="મુદત (દા.ત. ૨૦૨૧-૨૦૨૬)" class="border p-1.5 rounded text-xs bg-white">
-                    <input type="text" id="admin-note-input" placeholder="નોંધ" class="border p-1.5 rounded text-xs bg-white">
+                <div class="mt-4 border-t border-purple-200 pt-3">
+                    <div id="admin-menu-list" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
                 </div>
-                <button id="save-meta-btn" class="bg-blue-700 text-white font-bold px-3 py-1 rounded text-xs w-full">મુદત / નોંધ સાચવો</button>
-                <div id="admin-committee-list" class="space-y-1 max-h-32 overflow-y-auto"></div>
-                <div id="admin-staff-list" class="space-y-1 max-h-32 overflow-y-auto"></div>
             </div>
 
-            <!-- સમય પત્રક -->
+            <!-- Section 5: Complaints Manager & PDF Report -->
+            <div class="bg-emerald-50/80 border border-emerald-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[500px] overflow-y-auto">
+                <h3 class="font-bold border-b border-emerald-300 pb-2 text-emerald-950">5. Avel Fariyado ane Status Manager</h3>
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <select id="admin-complaint-filter" class="border border-emerald-300 p-1.5 rounded text-xs bg-white focus:outline-none">
+                        <option value="ALL">Tamam Fariyado</option>
+                        <option value="PENDING">Fakt Pending</option>
+                    </select>
+                    <div class="flex items-center gap-1 bg-emerald-100/60 p-1 rounded-lg border border-emerald-200">
+                        <button id="download-pdf-btn" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-2 py-1 rounded text-xs shadow flex items-center gap-1 transition-colors">
+                            PDF Report
+                        </button>
+                    </div>
+                </div>
+                <div id="admin-complaint-list" class="space-y-3 max-h-72 overflow-y-auto pr-1"></div>
+            </div>
+
+            <!-- Section 6: Panchayat Committee & Staff Manager -->
             <div class="bg-blue-50/80 border border-blue-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[500px] overflow-y-auto">
-                <h3 class="font-bold border-b border-blue-300 pb-2 text-blue-950">૭. અધિકારી સમય પત્રક</h3>
+                <h3 class="font-bold border-b border-blue-300 pb-2 text-blue-950">6. Panchayat Committee & Staff Manager</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <input type="text" id="admin-term-input" placeholder="Mudat (e.g. 2021-2026)" class="border border-blue-300 p-1.5 rounded text-xs bg-white">
+                    <input type="text" id="admin-note-input" placeholder="Nondh" class="border border-blue-300 p-1.5 rounded text-xs bg-white">
+                </div>
+                <button id="save-meta-btn" class="bg-blue-700 hover:bg-blue-800 text-white font-bold px-3 py-1 rounded text-xs shadow w-full">Mudat / Nondh Sachvo</button>
+
+                <form id="add-member-staff-form" class="space-y-2 border-t border-blue-200 pt-3">
+                    <div class="grid grid-cols-2 gap-2">
+                        <select id="ms-category" class="border border-blue-300 p-1.5 rounded text-xs bg-white">
+                            <option value="committee">Panchayat Committee</option>
+                            <option value="staff">Staff Member</option>
+                        </select>
+                        <input type="text" id="ms-name" placeholder="Name" required class="border border-blue-300 p-1.5 rounded text-xs bg-white">
+                        <input type="text" id="ms-desig" placeholder="Designation" required class="border border-blue-300 p-1.5 rounded text-xs bg-white">
+                        <input type="text" id="ms-mobile" placeholder="Mobile" required class="border border-blue-300 p-1.5 rounded text-xs bg-white">
+                    </div>
+                    <input type="text" id="ms-ward" placeholder="Ward No. (Committee mate)" class="border border-blue-300 p-1.5 rounded text-xs bg-white w-full">
+                    <button type="submit" class="bg-indigo-700 hover:bg-indigo-800 text-white font-bold px-3 py-1.5 rounded text-xs w-full shadow">Member/Staff Umero</button>
+                </form>
+                <div class="mt-2 space-y-2 border-t pt-2">
+                    <div id="admin-committee-list" class="space-y-1 max-h-32 overflow-y-auto"></div>
+                    <div id="admin-staff-list" class="space-y-1 max-h-32 overflow-y-auto"></div>
+                </div>
+            </div>
+
+            <!-- Section 7: Officer Schedule -->
+            <div class="bg-blue-50/80 border border-blue-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[500px] overflow-y-auto">
+                <h3 class="font-bold border-b border-blue-300 pb-2 text-blue-950">7. Officer Schedule (Samay Patrak)</h3>
                 <form id="add-schedule-form" class="space-y-2">
-                    <input type="text" id="sch-name" placeholder="નામ" required class="border p-1.5 rounded text-xs bg-white w-full">
-                    <input type="text" id="sch-desig" placeholder="હોદ્દો" required class="border p-1.5 rounded text-xs bg-white w-full">
-                    <input type="text" id="sch-timing" placeholder="સમય" required class="border p-1.5 rounded text-xs bg-white w-full">
-                    <input type="text" id="sch-days" placeholder="દિવસો" required class="border p-1.5 rounded text-xs bg-white w-full">
-                    <button type="submit" class="bg-indigo-700 text-white font-bold px-3 py-1.5 rounded text-xs w-full">સમય પત્રક ઉમેરો</button>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <input type="text" id="sch-name" placeholder="Name" required class="border border-blue-300 p-1.5 rounded text-xs bg-white">
+                        <input type="text" id="sch-desig" placeholder="Designation" required class="border border-blue-300 p-1.5 rounded text-xs bg-white">
+                    </div>
+                    <input type="text" id="sch-timing" placeholder="Timing (e.g. 11 to 5)" required class="border border-blue-300 p-1.5 rounded text-xs bg-white w-full">
+                    <input type="text" id="sch-days" placeholder="Days (e.g. Mon, Wed)" required class="border border-blue-300 p-1.5 rounded text-xs bg-white w-full">
+                    <input type="text" id="sch-note" placeholder="Special Note" class="border border-blue-300 p-1.5 rounded text-xs bg-white w-full">
+                    <button type="submit" class="bg-indigo-700 hover:bg-indigo-800 text-white font-bold px-3 py-1.5 rounded text-xs w-full shadow">Samay Patrak Umero</button>
                 </form>
-                <div id="admin-schedule-list" class="space-y-1 max-h-36 overflow-y-auto"></div>
+                <div class="border-t pt-2">
+                    <div id="admin-schedule-list" class="space-y-1 max-h-36 overflow-y-auto"></div>
+                </div>
             </div>
 
-            <!-- મિલકત વેરો લિંક -->
-            <div class="bg-slate-50 border p-5 rounded-xl shadow-sm space-y-4 max-h-[500px] overflow-y-auto">
-                <h3 class="font-bold text-gray-800 border-b pb-2">૯. મિલકત વેરો ચૂકવણી લિંક</h3>
+            <!-- Section 8: Active Committees -->
+            <div class="bg-purple-50/80 border border-purple-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[500px] overflow-y-auto">
+                <h3 class="font-bold border-b border-purple-300 pb-2 text-purple-950">8. Karyarat Samitiyo Manager</h3>
+                <form id="add-committee-group-form" class="space-y-3 bg-white p-4 rounded-xl border shadow-sm">
+                    <input type="hidden" id="edit-committee-id" value="">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Samiti Name</label>
+                        <input type="text" id="cg-title" placeholder="e.g. Karobari Samiti" class="w-full border p-2 rounded text-xs" required>
+                    </div>
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="block text-xs font-medium text-gray-700">Members</label>
+                        <button type="button" id="add-member-row-btn" class="text-xs bg-emerald-100 text-emerald-800 px-2 py-1 rounded font-semibold">+ Member Umero</button>
+                    </div>
+                    <div id="committee-members-container" class="space-y-2">
+                        <div class="member-row flex items-center gap-2 border p-2 rounded bg-gray-50">
+                            <input type="text" placeholder="Name" class="member-name w-1/3 border p-1.5 rounded text-xs" required>
+                            <input type="text" placeholder="Role" class="member-main-role w-1/3 border p-1.5 rounded text-xs" required>
+                            <input type="text" placeholder="Samiti Role" class="member-comm-role w-1/3 border p-1.5 rounded text-xs" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="bg-emerald-600 text-white px-4 py-2 rounded text-xs font-semibold w-full">Samiti Sachvo</button>
+                </form>
+                <div class="mt-4">
+                    <div id="admin-committees-list" class="space-y-2 max-h-80 overflow-y-auto"></div>
+                </div>
+            </div>
+
+            <!-- Section 9: Tax Payment Link Manager -->
+            <div class="bg-slate-50 border border-slate-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[500px] overflow-y-auto">
+                <h3 class="font-bold text-gray-800 border-b pb-2">9. 💳 Milkat Vero Chukavni Link</h3>
                 <form id="tax-link-form" class="space-y-3">
-                    <input type="url" id="tax-payment-url" placeholder="https://..." required class="w-full text-xs p-2 border rounded">
-                    <button type="submit" class="w-full bg-blue-600 text-white text-xs font-bold py-2 rounded">અપડેટ કરો</button>
+                    <input type="url" id="tax-payment-url" placeholder="https://..." required class="w-full text-xs p-2 border border-gray-300 rounded">
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2 rounded">Link Update Karo</button>
                 </form>
             </div>
 
-            <!-- સ્વયં જાહેર કરેલ માહિતી મેનેજર (સંપૂર્ણ સુધારેલ અને અપડેટેડ) -->
+            <!-- Section 10: Custom Buttons & Pages Manager -->
+            <div class="bg-slate-50 border border-slate-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[500px] overflow-y-auto">
+                <h3 class="font-bold text-gray-800 border-b pb-2">10. 🔗 Custom Button & Page Manager</h3>
+                <form id="add-page-button-form" class="space-y-3">
+                    <input type="text" id="custom-btn-title" placeholder="Button Title" required class="w-full text-xs p-2 border rounded">
+                    <textarea id="custom-page-html" rows="3" placeholder="HTML / Text content..." required class="w-full text-xs p-2 border rounded font-mono"></textarea>
+                    <button type="submit" class="w-full bg-blue-600 text-white text-xs font-bold py-2 rounded">Umero</button>
+                </form>
+                <div class="border-t pt-2">
+                    <div id="admin-custom-buttons-list" class="space-y-1 max-h-28 overflow-y-auto"></div>
+                </div>
+            </div>
+
+            <!-- Section 11: Events Manager -->
+            <div class="bg-slate-50 border border-slate-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[500px] overflow-y-auto">
+                <h3 class="font-bold text-gray-800 border-b pb-2">11. 📅 Events Manager</h3>
+                <form id="event-form" class="space-y-3">
+                    <input type="text" id="event-name" placeholder="Event Name" required class="w-full text-xs p-2 border rounded">
+                    <input type="date" id="event-date" required class="w-full text-xs p-2 border rounded">
+                    <input type="text" id="event-location" placeholder="Location" required class="w-full text-xs p-2 border rounded">
+                    <button type="submit" class="w-full bg-blue-600 text-white text-xs font-bold py-2 rounded">Event Umero</button>
+                </form>
+                <div class="border-t pt-2">
+                    <div id="admin-events-list" class="space-y-1 max-h-28 overflow-y-auto"></div>
+                </div>
+            </div>
+
+            <!-- Section 12: Disaster Management Manager -->
+            <div class="bg-slate-50 border border-slate-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[500px] overflow-y-auto">
+                <h3 class="font-bold text-gray-800 border-b pb-2">12. 🚨 Disaster Management Manager</h3>
+                <form id="disaster-management-form" class="space-y-3">
+                    <select id="disaster-page-key" required class="w-full text-xs p-2 border rounded bg-white">
+                        <option value="important_contacts">1. Important Contacts</option>
+                        <option value="mock_drills">2. Mock Drills</option>
+                        <option value="vdrmp">3. VDRMP Plan</option>
+                        <option value="disaster_gallery">4. Management Gallery</option>
+                    </select>
+                    <textarea id="disaster-page-content" rows="6" placeholder="HTML / Text content..." required class="w-full text-xs p-2 border rounded font-mono bg-white"></textarea>
+                    <button type="submit" class="w-full bg-blue-600 text-white text-xs font-bold py-2 rounded">Mahiti Sachvo / Update Karo</button>
+                </form>
+            </div>
+
+            <!-- Village Map Links -->
+            <form id="village-map-form" class="space-y-4 bg-white p-5 rounded-xl shadow-md border">
+                <h3 class="font-bold text-sm text-emerald-800 border-b pb-2">🛰️ Village Map Links</h3>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-1">Satellite Map Link:</label>
+                    <input type="url" id="admin-satellite-url" placeholder="https://..." class="w-full p-2 border rounded text-xs">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-1">Revenue Survey PDF Link:</label>
+                    <input type="url" id="admin-revenue-pdf-url" placeholder="https://..." class="w-full p-2 border rounded text-xs">
+                </div>
+                <button type="submit" class="bg-emerald-600 text-white font-bold px-4 py-2 rounded transition text-xs w-full">Links Save / Update Karo</button>
+            </form>
+
+            <!-- Maru Gam - Ek Najarma Manager -->
+            <div class="bg-white p-5 rounded-2xl shadow-md border space-y-4">
+                <h3 class="font-bold text-sm text-emerald-800 border-b pb-2">📊 Maru Gam - Ek Najarma</h3>
+                <form id="add-glance-form" class="space-y-3 bg-gray-50 p-4 rounded-xl border">
+                    <select id="glance-section" class="w-full border p-2 rounded text-xs bg-white" required>
+                        <option value="ભૌગોલિક માહિતી (Geography)">Bhugolik Mahiti</option>
+                        <option value="શૈક્ષણિક સંસ્થાઓ (Education)">Shaikshanik Sansthao</option>
+                        <option value="આંગણવાડી કેન્દ્રો (Anganwadi)">Anganwadi Kendro</option>
+                        <option value="સહકારી મંડળીઓ અને જૂથો">Sahkari Mandliyo</option>
+                        <option value="અન્ય જનસુવિધાઓ (Amenities)">Jansuvidhao</option>
+                    </select>
+                    <input type="text" id="glance-title" placeholder="Title" class="w-full border p-2 rounded text-xs bg-white" required>
+                    <input type="text" id="glance-value" placeholder="Value / Ankdo" class="w-full border p-2 rounded text-xs bg-white" required>
+                    <input type="text" id="glance-extra" placeholder="Extra Detail" class="w-full border p-2 rounded text-xs bg-white">
+                    <button type="submit" class="bg-emerald-600 text-white px-4 py-2 rounded text-xs font-semibold w-full">Mahiti Sachvo</button>
+                </form>
+                <div id="admin-glance-list" class="space-y-2 max-h-72 overflow-y-auto"></div>
+            </div>
+
+            <!-- Contact Info Manager -->
+            <div class="bg-white p-5 rounded-2xl shadow-md border space-y-4">
+                <h3 class="font-bold text-sm text-emerald-800 border-b pb-2">📍 Contact Page Manager</h3>
+                <form id="contact-admin-form" class="space-y-3 bg-gray-50 p-4 rounded-xl border">
+                    <input type="text" id="adm-panchayat-name" placeholder="Panchayat Name" class="w-full border p-2 rounded text-xs bg-white" required>
+                    <textarea id="adm-address" rows="2" placeholder="Address..." class="w-full border p-2 rounded text-xs bg-white" required></textarea>
+                    <input type="email" id="adm-email" placeholder="Email" class="w-full border p-2 rounded text-xs bg-white" required>
+                    <input type="text" id="adm-phone" placeholder="Phone" class="w-full border p-2 rounded text-xs bg-white" required>
+                    <button type="submit" class="bg-emerald-600 text-white px-4 py-2 rounded text-xs font-semibold w-full">Contact Save Karo</button>
+                </form>
+            </div>
+
+            <!-- PROACTIVE DISCLOSURE MANAGER (સ્વયં જાહેર કરેલ માહિતી) -->
             <div class="bg-white p-5 rounded-2xl shadow-md border space-y-6 mt-6 md:col-span-2 lg:col-span-3">
                 <h3 class="font-bold text-sm text-emerald-800 flex items-center gap-2 border-b pb-2">
-                    <i class="fa-solid fa-file-pen text-emerald-600"></i> સ્વયં જાહેર કરેલ માહિતી મેનેજ કરો (Proactive Disclosure)
+                    <i class="fa-solid fa-file-pen text-emerald-600"></i> Swayam Jahir Karel Mahiti Manager (Proactive Disclosure)
                 </h3>
                 <form id="proactive-admin-form" class="space-y-6 text-xs">
-                    <!-- ૧. અધિકારી વિગતો -->
+                    
+                    <!-- 1. Officer Details -->
                     <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
-                        <h4 class="font-bold text-gray-800 border-b pb-1">૧. જાહેર માહિતી અધિકારીની વિગતો</h4>
+                        <h4 class="font-bold text-gray-800 border-b pb-1">1. Jahir Mahiti Adhikari ni Vigato</h4>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                             <div>
-                                <label class="block font-medium text-gray-700 mb-1">તલાટી કમ મંત્રીનું નામ</label>
+                                <label class="block font-medium text-gray-700 mb-1">Talati cum Mantri Name</label>
                                 <input type="text" id="off-name" class="w-full border p-2 rounded bg-white" required>
                             </div>
                             <div>
-                                <label class="block font-medium text-gray-700 mb-1">મોબાઈલ નંબર</label>
+                                <label class="block font-medium text-gray-700 mb-1">Mobile Number</label>
                                 <input type="text" id="off-phone" class="w-full border p-2 rounded bg-white" required>
                             </div>
                             <div>
-                                <label class="block font-medium text-gray-700 mb-1">પ્રથમ અપીલ અધિકારીશ્રી</label>
+                                <label class="block font-medium text-gray-700 mb-1">Pratham Appeal Adhikari</label>
                                 <input type="text" id="off-appeal" class="w-full border p-2 rounded bg-white" required>
                             </div>
                         </div>
                     </div>
 
-                    <!-- ૨. અન્ય માહિતી (Extra Section) -->
+                    <!-- 2. Extra Information Section -->
                     <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
-                        <h4 class="font-bold text-gray-800 border-b pb-1">૨. અન્ય માહિતી (નીચે દર્શાવવા માટે)</h4>
+                        <h4 class="font-bold text-gray-800 border-b pb-1">2. Anya Mahiti (Extra Section)</h4>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div>
-                                <label class="block font-medium text-gray-700 mb-1">શીર્ષક (Extra Title)</label>
-                                <input type="text" id="extra-title" placeholder="દા.ત. ખાસ નોંધ" class="w-full border p-2 rounded bg-white">
+                                <label class="block font-medium text-gray-700 mb-1">Extra Title</label>
+                                <input type="text" id="extra-title" placeholder="e.g. Special Nondh" class="w-full border p-2 rounded bg-white">
                             </div>
                             <div>
-                                <label class="block font-medium text-gray-700 mb-1">વિગત (Extra Content)</label>
-                                <textarea id="extra-content" rows="2" placeholder="વિગત લખો..." class="w-full border p-2 rounded bg-white"></textarea>
+                                <label class="block font-medium text-gray-700 mb-1">Extra Content</label>
+                                <textarea id="extra-content" rows="2" placeholder="Details..." class="w-full border p-2 rounded bg-white"></textarea>
                             </div>
                         </div>
                     </div>
 
-                    <!-- ૩. ગામની વસ્તી માહિતી -->
+                    <!-- 3. Population Rows -->
                     <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
                         <div class="flex justify-between items-center border-b pb-1">
-                            <h4 class="font-bold text-gray-800">૩. ગામની વસ્તી વિશેની માહિતી</h4>
-                            <button type="button" id="add-pop-row" class="bg-emerald-600 text-white px-2 py-1 rounded font-bold text-[11px]">+ વસ્તી રો ઉમેરો</button>
+                            <h4 class="font-bold text-gray-800">3. Gam ni Vasti Information</h4>
+                            <button type="button" id="add-pop-row" class="bg-emerald-600 text-white px-2 py-1 rounded font-bold text-[11px]">+ Vasti Row Umero</button>
                         </div>
                         <div id="population-rows-container" class="space-y-2"></div>
                     </div>
 
-                    <!-- ૪. ગામના પાણીની વિગત -->
+                    <!-- 4. Water Sources Rows -->
                     <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
                         <div class="flex justify-between items-center border-b pb-1">
-                            <h4 class="font-bold text-gray-800">૪. ગામના પાણીની વિગત</h4>
-                            <button type="button" id="add-water-row" class="bg-emerald-600 text-white px-2 py-1 rounded font-bold text-[11px]">+ જળાશય ઉમેરો</button>
+                            <h4 class="font-bold text-gray-800">4. Gam na Pani ni Vigat (Water Sources)</h4>
+                            <button type="button" id="add-water-row" class="bg-emerald-600 text-white px-2 py-1 rounded font-bold text-[11px]">+ Jalashay Umero</button>
                         </div>
                         <div id="water-rows-container" class="space-y-2"></div>
                     </div>
 
-                    <!-- ૫. પંચાયતની મિલકત -->
+                    <!-- 5. Property Rows -->
                     <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
                         <div class="flex justify-between items-center border-b pb-1">
-                            <h4 class="font-bold text-gray-800">૫. પંચાયતની મિલકત</h4>
-                            <button type="button" id="add-prop-row" class="bg-emerald-600 text-white px-2 py-1 rounded font-bold text-[11px]">+ મિલકત ઉમેરો</button>
+                            <h4 class="font-bold text-gray-800">5. Panchayat ni Milkat (Properties)</h4>
+                            <button type="button" id="add-prop-row" class="bg-emerald-600 text-white px-2 py-1 rounded font-bold text-[11px]">+ Milkat Umero</button>
                         </div>
                         <div id="property-rows-container" class="space-y-2"></div>
                     </div>
 
                     <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white p-3 rounded-lg font-bold text-sm shadow transition">
-                        સ્વયં જાહેર કરેલ તમામ માહિતી સેવ / અપડેટ કરો
+                        Swayam Jahir Karel Tamam Mahiti Save / Update Karo
                     </button>
                 </form>
             </div>
@@ -238,6 +408,64 @@
         </main>
     </div>
 
+    <!-- Firebase Script & Security Guards -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCMhWWI_6oxPIVEQEVlq2SIBf72EI2o8NI",
+            authDomain: "gram-panchayat-33c86.firebaseapp.com",
+            projectId: "gram-panchayat-33c86",
+            storageBucket: "gram-panchayat-33c86.firebasestorage.app",
+            messagingSenderId: "1025176315779",
+            appId: "1:1025176315779:web:a24ca10a06c55edcc8f8b6",
+            measurementId: "G-TQBSXCWNBV"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const panchayatId = urlParams.get('id') || "ahmedabad_daskroi_motapipalva";
+
+        async function verifyAdminAccess() {
+            try {
+                const maintSnap = await getDoc(doc(db, "system_settings", "global_config"));
+                if (maintSnap.exists() && maintSnap.data().isMaintenance) {
+                    document.body.innerHTML = `
+                        <div class="fixed inset-0 bg-slate-900 text-white z-50 flex flex-col items-center justify-center p-6 text-center">
+                            <div class="bg-slate-800 p-8 rounded-3xl border border-slate-700 max-w-lg shadow-2xl space-y-4">
+                                <h2 class="text-2xl font-bold text-amber-400">System Maintenance chalu chhe</h2>
+                                <p class="text-gray-300 text-sm">Hal ma system update hetal chhe.</p>
+                            </div>
+                        </div>`;
+                    return;
+                }
+
+                const pSnap = await getDoc(doc(db, "panchayats", panchayatId));
+                if (pSnap.exists() && pSnap.data().isActive === false) {
+                    document.body.innerHTML = `
+                        <div class="fixed inset-0 bg-gray-900/90 text-white z-40 flex flex-col items-center justify-center p-6 text-center">
+                            <div class="bg-white text-gray-800 p-8 rounded-3xl max-w-md shadow-2xl space-y-4">
+                                <h2 class="text-xl font-bold text-red-600">Subscription Deactive chhe</h2>
+                                <p class="text-gray-600 text-sm">Aa gram panchayat nu subscription active nathi.</p>
+                            </div>
+                        </div>`;
+                    return;
+                }
+            } catch (err) {
+                console.error("Access verification error:", err);
+            }
+        }
+
+        verifyAdminAccess();
+    </script>
+
+    <!-- HTML2PDF Bundle -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <!-- Admin JS Reference -->
     <script type="module" src="./js/admin.js"></script>
 </body>
 </html>
