@@ -60,7 +60,8 @@ addForm?.addEventListener("submit", async (e) => {
 
         const docId = generateDocId(district, taluka, panchayatName);
 
-        await setDoc(doc(doc(db, "panchayats"), docId), {
+        // Fixed double doc() syntax error here
+        await setDoc(doc(db, "panchayats", docId), {
             district,
             taluka,
             panchayatName,
@@ -86,12 +87,17 @@ onSnapshot(collection(db, "panchayats"), (snapshot) => {
         allPanchayats.push({ id: docSnap.id, ...docSnap.data() });
     });
 
-    document.getElementById("total-panchayats-count").textContent = `કુલ પંચાયતો: ${allPanchayats.length}`;
+    const totalCountEl = document.getElementById("total-panchayats-count");
+    if (totalCountEl) {
+        totalCountEl.textContent = `કુલ પંચાયતો: ${allPanchayats.length}`;
+    }
     renderPanchayatTable(allPanchayats);
 });
 
 function renderPanchayatTable(list) {
     const tbody = document.getElementById("panchayat-table-body");
+    if (!tbody) return;
+
     if (!list.length) {
         tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-500">કોઈ પંચાયત મળી નથી.</td></tr>`;
         return;
