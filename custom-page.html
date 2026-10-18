@@ -9,12 +9,34 @@
 </head>
 <body class="bg-slate-50 min-h-screen flex flex-col font-sans">
 
+    <!-- ૧. Developer Maintenance Screen (Hidden by default) -->
+    <div id="maintenance-screen" class="hidden fixed inset-0 bg-slate-900 text-white z-50 flex flex-col items-center justify-center p-6 text-center">
+        <div class="bg-slate-800 p-8 rounded-3xl border border-slate-700 max-w-lg shadow-2xl space-y-4">
+            <i class="fa-solid fa-screwdriver-wrench text-6xl text-amber-400 animate-bounce"></i>
+            <h2 class="text-2xl font-bold text-amber-400">સિસ્ટમ મેન્ટેનન્સ ચાલુ છે</h2>
+            <p id="maintenance-msg-text" class="text-gray-300 text-sm">
+                હાલમાં ટેકનિકલ સુધારા અર્થે સિસ્ટમ મેન્ટેનન્સ મોડમાં છે. કૃપા કરીને થોડીવાર પછી પ્રયત્ન કરો.
+            </p>
+        </div>
+    </div>
+
+    <!-- ૨. Subscription Deactive Screen (Hidden by default) -->
+    <div id="deactive-screen" class="hidden fixed inset-0 bg-gray-900/90 text-white z-40 flex flex-col items-center justify-center p-6 text-center">
+        <div class="bg-white text-gray-800 p-8 rounded-3xl max-w-md shadow-2xl space-y-4">
+            <i class="fa-solid fa-circle-exclamation text-6xl text-red-500"></i>
+            <h2 class="text-xl font-bold text-red-600">સબ્સ્ક્રિપ્શન નિષ્ક્રિય છે (Deactive)</h2>
+            <p class="text-gray-600 text-sm">
+                આ ગ્રામ પંચાયતની વેબસાઇટ સેવા હાલ પૂરતી સ્થગિત કરવામાં આવી છે.
+            </p>
+        </div>
+    </div>
+
     <header class="bg-amber-800 text-white p-4 shadow-md sticky top-0 z-50">
         <div class="container mx-auto flex justify-between items-center">
             <h1 id="header-title" class="text-lg md:text-xl font-bold flex items-center gap-2">
                 <i class="fa-solid fa-file-lines"></i> પંચાયત સેવા
             </h1>
-            <a href="index.html" class="bg-amber-900 hover:bg-amber-950 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-amber-700">← મુખ્ય પૃષ્ઠ</a>
+            <a id="back-home-btn" href="index.html" class="bg-amber-900 hover:bg-amber-950 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-amber-700">← મુખ્ય પૃષ્ઠ</a>
         </div>
     </header>
 
@@ -25,40 +47,84 @@
     </main>
 
     <script type="module">
-        import { db } from "./js/firebase-config.js";
-        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCMhWWI_6oxPIVEQEVlq2SIBf72EI2o8NI",
+            authDomain: "gram-panchayat-33c86.firebaseapp.com",
+            projectId: "gram-panchayat-33c86",
+            storageBucket: "gram-panchayat-33c86.firebasestorage.app",
+            messagingSenderId: "1025176315779",
+            appId: "1:1025176315779:web:a24ca10a06c55edcc8f8b6",
+            measurementId: "G-TQBSXCWNBV"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
         const urlParams = new URLSearchParams(window.location.search);
-        const pageId = urlParams.get('id');
+        const panchayatId = urlParams.get('id') || "ahmedabad_daskroi_motapipalva";
+        const pageId = urlParams.get('pageId') || urlParams.get('id'); // Custom page id
+
+        // મુખ્ય પૃષ્ઠ લિંક સાથે panchayat id જાળવી રાખવો
+        document.getElementById("back-home-btn").href = `index.html?id=${panchayatId}`;
+
+        async function verifyAndLoad() {
+            try {
+                // 1. Global Maintenance Check
+                const maintSnap = await getDoc(doc(db, "system_settings", "global_config"));
+                if (maintSnap.exists() && maintSnap.data().isMaintenance) {
+                    document.getElementById("maintenance-screen").classList.remove("hidden");
+                    if (maintSnap.data().maintenanceMessage) {
+                        document.getElementById("maintenance-msg-text").textContent = maintSnap.data().maintenanceMessage;
+                    }
+                    return;
+                }
+
+                // 2. Panchayat Active Status Check
+                const pSnap = await getDoc(doc(db, "panchayats", panchayatId));
+                if (pSnap.exists() && pSnap.data().isActive === false) {
+                    document.getElementById("deactive-screen").classList.remove("hidden");
+                    return;
+                }
+
+                // 3. Load Custom Page Content
+                loadCustomPageContent();
+            } catch (err) {
+                console.error("Verification error:", err);
+            }
+        }
 
         async function loadCustomPageContent() {
             const contentDiv = document.getElementById("page-content");
             const headerTitle = document.getElementById("header-title");
             const pageTitle = document.getElementById("page-title");
 
-            if (!pageId) {
+            const customPageId = urlParams.get('pageId');
+            if (!customPageId) {
                 contentDiv.innerHTML = "<p class='text-red-500 text-center'>અમાન્ય પેજ લિંક.</p>";
                 return;
             }
 
             try {
-                const docSnap = await getDoc(doc(db, "custom_pages", pageId));
+                const docSnap = await getDoc(doc(db, "panchayats", panchayatId, "custom_pages", customPageId));
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    headerTitle.innerHTML = `<i class="fa-solid fa-file-lines"></i> ${data.buttonTitle}`;
-                    pageTitle.innerText = data.buttonTitle;
+                    headerTitle.innerHTML = `<i class="fa-solid fa-file-lines"></i> ${data.buttonTitle || 'સેવા'}`;
+                    pageTitle.innerText = data.buttonTitle || 'પંચાયત સેવા';
                     
-                    // HTML કોડ રેન્ડર કરવો
                     contentDiv.innerHTML = data.htmlContent || "<p class='text-gray-500 text-center'>કોઈ કન્ટેન્ટ ઉપલબ્ધ નથી.</p>";
                 } else {
                     contentDiv.innerHTML = "<p class='text-red-500 text-center'>પેજ મળ્યું નથી.</p>";
                 }
             } catch (err) {
                 console.error("પેજ કન્ટેન્ટ લોડ કરવામાં ભૂલ:", err);
+                contentDiv.innerHTML = "<p class='text-red-500 text-center'>કન્ટેન્ટ લોડ કરવામાં સમસ્યા આવી.</p>";
             }
         }
 
-        loadCustomPageContent();
+        verifyAndLoad();
     </script>
 </body>
 </html>
