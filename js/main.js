@@ -1,9 +1,50 @@
 import { db } from "./firebase-config.js";
 import { collection, onSnapshot, addDoc, getDocs, doc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
+// URL માંથી પંચાયત આઈડી મેળવવું (ડિફોલ્ટ ડેમો આઈડી જો લિંકમાં ન હોય તો)
+const urlParams = new URLSearchParams(window.location.search);
+const panchayatId = urlParams.get('id') || "ahmedabad_daskroi_motapipalva";
+
+// 🔒 1. Global Maintenance & Active/Deactive Guard Check
+async function checkSystemAccess() {
+    try {
+        // Global Maintenance Check
+        const maintSnap = await getDoc(doc(db, "system_settings", "global_config"));
+        if (maintSnap.exists() && maintSnap.data().isMaintenance) {
+            const msg = maintSnap.data().maintenanceMessage || "સિસ્ટમ મેન્ટેનન્સ મોડમાં છે.";
+            document.body.innerHTML = `
+                <div class="fixed inset-0 bg-slate-900 text-white z-50 flex flex-col items-center justify-center p-6 text-center">
+                    <div class="bg-slate-800 p-8 rounded-3xl border border-slate-700 max-w-lg shadow-2xl space-y-4">
+                        <i class="fa-solid fa-screwdriver-wrench text-6xl text-amber-400 animate-bounce"></i>
+                        <h2 class="text-2xl font-bold text-amber-400">સિસ્ટમ મેન્ટેનન્સ ચાલુ છે</h2>
+                        <p class="text-gray-300 text-sm">${msg}</p>
+                    </div>
+                </div>`;
+            return false;
+        }
+
+        // Panchayat Active/Deactive Status Check
+        const pSnap = await getDoc(doc(db, "panchayats", panchayatId));
+        if (pSnap.exists() && pSnap.data().isActive === false) {
+            document.body.innerHTML = `
+                <div class="fixed inset-0 bg-gray-900/90 text-white z-40 flex flex-col items-center justify-center p-6 text-center">
+                    <div class="bg-white text-gray-800 p-8 rounded-3xl max-w-md shadow-2xl space-y-4">
+                        <i class="fa-solid fa-circle-exclamation text-6xl text-red-500"></i>
+                        <h2 class="text-xl font-bold text-red-600">સબ્સ્ક્રિપ્શન નિષ્ક્રિય છે (Deactive)</h2>
+                        <p class="text-gray-600 text-sm">આ ગ્રામ પંચાયતની વેબસાઇટ સેવા હાલ પૂરતી સ્થગિત કરવામાં આવી છે. કૃપા કરીને વહીવટી કચેરીનો સંપર્ક કરો.</p>
+                    </div>
+                </div>`;
+            return false;
+        }
+    } catch (err) {
+        console.error("Access Check Error:", err);
+    }
+    return true;
+}
+
 // ૧. વેબસાઇટ સેટિંગ્સ લોડ કરવા
 async function loadSettings() {
-    const docRef = doc(db, "settings", "general");
+    const docRef = doc(db, "panchayats", panchayatId, "settings", "general");
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
         const data = docSnap.data();
@@ -22,14 +63,12 @@ async function loadSettings() {
     }
 }
 
-
-
 // ૨. તાજી પોસ્ટ્સ અને ન્યૂઝ લોડ કરવા (Real-time Live Sync)
 function loadPosts() {
     const container = document.getElementById("posts-container");
     if (!container) return;
 
-    onSnapshot(collection(db, "posts"), (querySnapshot) => {
+    onSnapshot(collection(db, "panchayats", panchayatId, "posts"), (querySnapshot) => {
         container.innerHTML = "";
 
         if (querySnapshot.empty) {
@@ -39,8 +78,6 @@ function loadPosts() {
 
         querySnapshot.forEach((docSnap) => {
             const item = docSnap.data();
-            
-            // જો type 'post' હોય અથવા type સેટ જ ન કર્યો હોય તો પણ દેખાડવા માટે
             if (!item.type || item.type === 'post') {
                 const title = item.title || "અનામી પોસ્ટ";
                 const desc = item.desc || "";
@@ -59,21 +96,12 @@ function loadPosts() {
     });
 }
 
-// પેજ લોડ પર રન કરો
-loadPosts();
-
-
-
-
-
-
-// અગત્યની નોટિસ ફ્રન્ટએન્ડ પર લોડ કરવા માટેનું ફંક્શન(ગામ અને પંચાયત વિગત માટે )
-function loadNotices() {
+// ૩. નોટિસ લોડ કરવી
+function loadFrontendNotices() {
     const noticeList = document.getElementById("notice-list");
     if (!noticeList) return;
 
-    // Real-time listener
-    onSnapshot(collection(db, "notices"), (snapshot) => {
+    onSnapshot(collection(db, "panchayats", panchayatId, "notices"), (snapshot) => {
         noticeList.innerHTML = "";
 
         if (snapshot.empty) {
@@ -83,69 +111,9 @@ function loadNotices() {
 
         snapshot.forEach((docSnap) => {
             const data = docSnap.data();
-
-            // જૂના અને નવા ડેટા માટે ફેલબેક
-            const title = data.title || data.noticeTitle || data.subject || "અગત્યની સૂચના";
-            const desc = data.desc || data.description || data.details || "";
-            
-            let dateStr = "";
-            if (data.createdAt?.toDate) {
-                dateStr = data.createdAt.toDate().toLocaleDateString('gu-IN');
-            } else if (data.date) {
-                dateStr = data.date;
-            }
-
-            const card = document.createElement("div");
-            card.className = "bg-red-700/60 backdrop-blur-sm p-3 rounded-lg border border-red-400/40 space-y-1 shadow-sm mb-2";
-            card.innerHTML = `
-                <div class="flex justify-between items-start gap-2">
-                    <h5 class="font-bold text-white text-base flex items-center gap-1.5">
-                        <span class="text-amber-300">📌</span> ${title}
-                    </h5>
-                    ${dateStr ? `<span class="text-[11px] bg-red-900/80 text-amber-200 px-2 py-0.5 rounded-full font-sans border border-amber-300/30 shrink-0">${dateStr}</span>` : ''}
-                </div>
-                ${desc ? `<p class="text-white/95 text-xs whitespace-pre-line leading-relaxed pl-5">${desc}</p>` : ''}
-            `;
-
-            noticeList.appendChild(card);
-        });
-    }, (error) => {
-        console.error("Error loading notices:", error);
-        noticeList.innerHTML = `<p class="text-white/80 text-xs">નોટિસ લોડ કરવામાં ભૂલ આવી.</p>`;
-    });
-}
-
-// જો તમે લાઇન 490 પર આ ફંક્શન કોલ કર્યું જ હોય, તો ઉપરનું ફંક્શન ઉમેરવાથી તે ઓટોમેટિક કામ કરવા લાગશે!
-
-
-
-
-
-
-
-
-// ૩. નોટિસ લોડ કરવી
-function loadFrontendNotices() {
-    const noticeList = document.getElementById("notice-list");
-    if (!noticeList) return;
-
-    // Real-time updates માટે onSnapshot
-    onSnapshot(collection(db, "notices"), (snapshot) => {
-        noticeList.innerHTML = ""; // લોડિંગ મેસેજ સાફ કરવો
-
-        if (snapshot.empty) {
-            noticeList.innerHTML = `<p class="text-white/80 text-xs italic">હાલમાં કોઈ નવી નોટિસ નથી.</p>`;
-            return;
-        }
-
-        snapshot.forEach((docSnap) => {
-            const data = docSnap.data();
-
-            // જૂના અને નવા ડેટા માટે ફેલબેક (Fallback logic)
             const title = data.title || data.noticeTitle || data.subject || data.heading || "અગત્યની સૂચના";
             const desc = data.desc || data.description || data.details || data.message || data.content || "";
             
-            // તારીખ મેળવવી
             let dateStr = "";
             if (data.createdAt?.toDate) {
                 dateStr = data.createdAt.toDate().toLocaleDateString('gu-IN');
@@ -153,7 +121,6 @@ function loadFrontendNotices() {
                 dateStr = data.date;
             }
 
-            // Red Box સાથે મેચ થાય એવું Clean White Text Card
             const card = document.createElement("div");
             card.className = "bg-red-700/60 backdrop-blur-sm p-3 rounded-lg border border-red-400/40 space-y-1 shadow-sm";
             card.innerHTML = `
@@ -174,12 +141,9 @@ function loadFrontendNotices() {
     });
 }
 
-// પેજ લોડ થતાં જ કોલ કરો
-loadFrontendNotices();
-
 // ૪. ઇતિહાસ બતાવવો
 async function displayHistory() {
-    const docSnap = await getDoc(doc(db, "settings", "village_history"));
+    const docSnap = await getDoc(doc(db, "panchayats", panchayatId, "settings", "village_history"));
     const historyContainer = document.getElementById("info-history");
     if (docSnap.exists() && historyContainer) {
         historyContainer.innerHTML = docSnap.data().content;
@@ -188,7 +152,7 @@ async function displayHistory() {
 
 // ૫. ફોટો ગેલેરી
 async function displayGallery() {
-    const querySnapshot = await getDocs(collection(db, "gallery"));
+    const querySnapshot = await getDocs(collection(db, "panchayats", panchayatId, "gallery"));
     const container = document.getElementById("gallery-container");
     if(!container) return;
     container.innerHTML = "";
@@ -266,7 +230,7 @@ document.getElementById("image-modal")?.addEventListener("click", (e) => {
 document.getElementById("complaint-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     try {
-        await addDoc(collection(db, "complaints"), {
+        await addDoc(collection(db, "panchayats", panchayatId, "complaints"), {
             name: document.getElementById("c-name").value,
             mobile: document.getElementById("c-mobile").value,
             faliya: document.getElementById("c-faliya").value,
@@ -296,7 +260,7 @@ async function loadFrontendSchedule() {
     const container = document.getElementById("frontend-schedule-list");
     if (!container) return;
 
-    const snap = await getDocs(collection(db, "panchayat_schedule"));
+    const snap = await getDocs(collection(db, "panchayats", panchayatId, "panchayat_schedule"));
     container.innerHTML = "";
 
     if (snap.empty) {
@@ -306,8 +270,6 @@ async function loadFrontendSchedule() {
 
     snap.forEach(docSnap => {
         const item = docSnap.data();
-        
-        // જો ફિલ્ડનું નામ અલગ હોય તો પણ ડેટા બતાવે તે માટેનું લોજિક
         const name = item.name || item.officerName || "-";
         const designation = item.designation || item.post || item.role || "-";
         const timing = item.timing || item.time || "-";
@@ -334,7 +296,7 @@ async function loadFrontendSchedule() {
 
 // ૧૦. ગામ અને પંચાયત વિગત પબ્લિક ડ્રોપડાઉન મેન્યૂ
 async function loadVillageDetailsMenu() {
-    const snap = await getDocs(collection(db, "village_details"));
+    const snap = await getDocs(collection(db, "panchayats", panchayatId, "village_details"));
     const container = document.getElementById("village-details-menu-list");
     if (!container) return;
 
@@ -343,7 +305,7 @@ async function loadVillageDetailsMenu() {
         const item = docSnap.data();
         if (item.isShow !== false) {
             container.innerHTML += `
-                <a href="details.html?id=${docSnap.id}" target="_blank" class="flex items-center gap-2 p-2 rounded-lg hover:bg-purple-50 text-purple-900 font-medium text-sm transition border-b border-purple-100">
+                <a href="details.html?id=${docSnap.id}&p=${panchayatId}" target="_blank" class="flex items-center gap-2 p-2 rounded-lg hover:bg-purple-50 text-purple-900 font-medium text-sm transition border-b border-purple-100">
                     <i class="fa-solid fa-chevron-right text-xs text-purple-600"></i>
                     <span>${item.title}</span>
                 </a>
@@ -352,34 +314,29 @@ async function loadVillageDetailsMenu() {
     });
 }
 
-
-// 15. વેરો ભરો બટન સેક્શન
+// 11. વેરો ભરો બટન સેક્શન
 async function setupTaxLink() {
     const taxBtn = document.getElementById("pay-tax-btn");
     if (!taxBtn) return;
 
     try {
-        const docSnap = await getDoc(doc(db, "settings", "tax_payment"));
+        const docSnap = await getDoc(doc(db, "panchayats", panchayatId, "settings", "tax_payment"));
         if (docSnap.exists() && docSnap.data().url) {
             taxBtn.href = docSnap.data().url;
-            taxBtn.target = "_blank"; // નવા ટેબમાં ખોલવા માટે
+            taxBtn.target = "_blank";
         }
     } catch (err) {
         console.error("ટેક્સ લિંક લોડ કરવામાં ભૂલ:", err);
     }
 }
 
-setupTaxLink();
-
-
-
-// 15. ડાયનેમિક બટન સેક્શન
+// 12. ડાયનેમિક બટન સેક્શન
 async function loadCustomButtons() {
     const container = document.getElementById("custom-buttons-container");
     if (!container) return;
 
     try {
-        const snap = await getDocs(collection(db, "custom_pages"));
+        const snap = await getDocs(collection(db, "panchayats", panchayatId, "custom_pages"));
         container.innerHTML = "";
 
         if (snap.empty) {
@@ -392,7 +349,7 @@ async function loadCustomButtons() {
             const pageId = docSnap.id;
 
             container.innerHTML += `
-                <a href="custom-page.html?id=${pageId}" 
+                <a href="custom-page.html?id=${pageId}&p=${panchayatId}" 
                    class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold p-3 rounded-xl shadow-sm hover:shadow text-xs md:text-sm text-center flex flex-col items-center justify-center gap-2 transition transform hover:-translate-y-0.5">
                     <i class="fa-solid fa-link text-lg"></i>
                     <span>${data.buttonTitle}</span>
@@ -404,21 +361,15 @@ async function loadCustomButtons() {
     }
 }
 
-loadCustomButtons();
-
-
-
-
-// 16. Events સેક્શન
+// 13. Events સેક્શન
 async function loadUpcomingEvents() {
     const container = document.getElementById("events-container");
     if (!container) return;
 
     try {
-        const snap = await getDocs(collection(db, "events"));
+        const snap = await getDocs(collection(db, "panchayats", panchayatId, "events"));
         container.innerHTML = "";
 
-        // આજની તારીખ (YYYY-MM-DD ફોરમેટમાં)
         const today = new Date().toISOString().split('T')[0];
         let hasEvents = false;
 
@@ -430,15 +381,12 @@ async function loadUpcomingEvents() {
         for (const docSnap of snap.docs) {
             const data = docSnap.data();
 
-            // 🧹 પૂરી થયેલી ઇવેન્ટ્સ આપોઆપ ડિલીટ કરવી
             if (data.eventDate < today) {
-                await deleteDoc(doc(db, "events", docSnap.id));
+                await deleteDoc(doc(db, "panchayats", panchayatId, "events", docSnap.id));
                 continue;
             }
 
             hasEvents = true;
-
-            // તારીખને ભારતીય ફોરમેટમાં કન્વર્ટ કરવી (DD/MM/YYYY)
             const formattedDate = new Date(data.eventDate).toLocaleDateString('gu-IN', {
                 year: 'numeric',
                 month: 'short',
@@ -472,34 +420,22 @@ async function loadUpcomingEvents() {
     }
 }
 
-loadUpcomingEvents();
-
-
-
-// Firebase Firestore માંથી મોડ્યુલ્સ ઇમ્પોર્ટ કરો (તમારી Firebase આયાત મુજબ સેટ કરો)
-
-// ૧. આપત્તિ વ્યવસ્થાપન મોડલ ખોલવાનું ફંક્શન
+// ૧૪. આપત્તિ વ્યવસ્થાપન મોડલ ખોલવાનું ફંક્શન
 window.openDisasterPage = async function(key, title) {
     const modal = document.getElementById('disaster-modal');
     const modalTitle = document.getElementById('disaster-modal-title');
     const modalContent = document.getElementById('disaster-modal-content');
 
-    if (!modal) {
-        console.error("દુઃખદ! 'disaster-modal' નામનું એલિમેન્ટ મળ્યું નથી.");
-        return;
-    }
+    if (!modal) return;
 
-    // ટાઇટલ અને લોડિંગ સ્ટેટ બતાવવું
     modalTitle.innerText = title;
     modalContent.innerHTML = "<p class='text-gray-500 font-bold animate-pulse'>Firebase માંથી માહિતી લોડ થઈ રહી છે...</p>";
 
-    // મોડલ શો કરવું
     modal.classList.remove('hidden');
     modal.classList.add('flex');
 
     try {
-        // Firestore માંથી "disaster_management" કલેક્શનમાંથી Document રીડ કરવો
-        const docRef = doc(db, "disaster_management", key);
+        const docRef = doc(db, "panchayats", panchayatId, "disaster_management", key);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists() && docSnap.data().content) {
@@ -508,16 +444,14 @@ window.openDisasterPage = async function(key, title) {
             modalContent.innerHTML = `
                 <div class="text-center py-6 text-gray-500">
                     <p class="text-base font-semibold">હજુ સુધી કોઈ માહિતી ઉમેરવામાં આવી નથી.</p>
-                    <p class="text-xs text-gray-400 mt-1">એડમિન પેનલમાંથી આ પેજની વિગત ઉમેરો.</p>
                 </div>`;
         }
     } catch (error) {
-        console.error("Firebase માંથી ડેટા મેળવવામાં ભૂલ:", error);
-        modalContent.innerHTML = "<p class='text-red-500'>માહિતી લોડ કરવામાં કઈંક ભૂલ આવી છે.</p>";
+        console.error("ડેટા મેળવવામાં ભૂલ:", error);
+        modalContent.innerHTML = "<p class='text-red-500'>માહિતી લોડ કરવામાં ભૂલ આવી.</p>";
     }
 };
 
-// ૨. મોડલ બંધ કરવાનું ફંક્શન
 window.closeDisasterPage = function() {
     const modal = document.getElementById('disaster-modal');
     if (modal) {
@@ -526,7 +460,6 @@ window.closeDisasterPage = function() {
     }
 };
 
-// મોડલની બહાર ક્લિક કરવાથી મોડલ બંધ થાય તે માટે
 document.addEventListener('click', function(event) {
     const modal = document.getElementById('disaster-modal');
     if (event.target === modal) {
@@ -534,21 +467,21 @@ document.addEventListener('click', function(event) {
     }
 });
 
+// 🚀 સબમિટ/સ્ટાર્ટઅપ પ્રોસેસ (પ્રથમ એક્સેસ ચેક થશે, પછી જ બધું લોડ થશે)
+async function initApp() {
+    const isAllowed = await checkSystemAccess();
+    if (!isAllowed) return;
 
+    loadSettings();
+    loadPosts();
+    loadFrontendNotices();
+    displayHistory();
+    displayGallery();
+    loadFrontendSchedule();
+    loadVillageDetailsMenu();
+    setupTaxLink();
+    loadCustomButtons();
+    loadUpcomingEvents();
+}
 
-
-
-
-
-
-
-
-
-// 🚀 સબમિટ/સ્ટાર્ટઅપ પ્રોસેસ
-loadSettings();
-loadPosts();
-loadNotices();
-displayHistory();
-displayGallery();
-loadFrontendSchedule();
-loadVillageDetailsMenu();
+initApp();
