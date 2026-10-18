@@ -12,7 +12,36 @@
 </head>
 <body class="bg-slate-50 min-h-screen py-8 px-4 font-sans">
 
+    <!-- ૧. Developer Maintenance Screen (Hidden by default) -->
+    <div id="maintenance-screen" class="hidden fixed inset-0 bg-slate-900 text-white z-50 flex flex-col items-center justify-center p-6 text-center">
+        <div class="bg-slate-800 p-8 rounded-3xl border border-slate-700 max-w-lg shadow-2xl space-y-4">
+            <i class="fa-solid fa-screwdriver-wrench text-6xl text-amber-400 animate-bounce"></i>
+            <h2 class="text-2xl font-bold text-amber-400">સિસ્ટમ મેન્ટેનન્સ ચાલુ છે</h2>
+            <p id="maintenance-msg-text" class="text-gray-300 text-sm">
+                હાલમાં ટેકનિકલ સુધારા અર્થે સિસ્ટમ મેન્ટેનન્સ મોડમાં છે. કૃપા કરીને થોડીવાર પછી પ્રયત્ન કરો.
+            </p>
+        </div>
+    </div>
+
+    <!-- ૨. Subscription Deactive Screen (Hidden by default) -->
+    <div id="deactive-screen" class="hidden fixed inset-0 bg-gray-900/90 text-white z-40 flex flex-col items-center justify-center p-6 text-center">
+        <div class="bg-white text-gray-800 p-8 rounded-3xl max-w-md shadow-2xl space-y-4">
+            <i class="fa-solid fa-circle-exclamation text-6xl text-red-500"></i>
+            <h2 class="text-xl font-bold text-red-600">સબ્સ્ક્રિપ્શન નિષ્ક્રિય છે (Deactive)</h2>
+            <p class="text-gray-600 text-sm">
+                આ ગ્રામ પંચાયતની વેબસાઇટ સેવા હાલ પૂરતી સ્થગિત કરવામાં આવી છે.
+            </p>
+        </div>
+    </div>
+
     <div class="max-w-4xl mx-auto space-y-6">
+        <!-- Back Home Link -->
+        <div class="flex justify-between items-center">
+            <a id="back-home-btn" href="index.html" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-2 rounded-xl shadow transition flex items-center gap-1.5">
+                <i class="fa-solid fa-arrow-left"></i> મુખ્ય પૃષ્ઠ
+            </a>
+        </div>
+
         <!-- Header -->
         <div class="bg-emerald-700 text-white p-6 rounded-2xl shadow-lg text-center space-y-2">
             <h1 class="text-2xl font-bold flex items-center justify-center gap-2">
@@ -29,78 +58,114 @@
         </div>
     </div>
 
-    <!-- Firebase Direct Config (404 Error ની કોઈ શક્યતા નહીં) -->
+    <!-- Firebase Direct Config & Security Guards -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // તમારી ફાયરબેઝ કોન્ફિગ કી (જે તમારી firebase-config.js માં છે તે જ અહીં મૂકો)
-const firebaseConfig = {
-  apiKey: "AIzaSyCMhWWI_6oxPIVEQEVlq2SIBf72EI2o8NI",
-  authDomain: "gram-panchayat-33c86.firebaseapp.com",
-  projectId: "gram-panchayat-33c86",
-  storageBucket: "gram-panchayat-33c86.firebasestorage.app",
-  messagingSenderId: "1025176315779",
-  appId: "1:1025176315779:web:a24ca10a06c55edcc8f8b6",
-  measurementId: "G-TQBSXCWNBV"
-};
+        const firebaseConfig = {
+            apiKey: "AIzaSyCMhWWI_6oxPIVEQEVlq2SIBf72EI2o8NI",
+            authDomain: "gram-panchayat-33c86.firebaseapp.com",
+            projectId: "gram-panchayat-33c86",
+            storageBucket: "gram-panchayat-33c86.firebasestorage.app",
+            messagingSenderId: "1025176315779",
+            appId: "1:1025176315779:web:a24ca10a06c55edcc8f8b6",
+            measurementId: "G-TQBSXCWNBV"
+        };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        const urlParams = new URLSearchParams(window.location.search);
+        const panchayatId = urlParams.get('id') || "ahmedabad_daskroi_motapipalva";
+
+        // મુખ્ય પૃષ્ઠ લિંક સાથે પંચાયત ID જાળવી રાખવો
+        document.getElementById("back-home-btn").href = `index.html?id=${panchayatId}`;
+
         const container = document.getElementById("public-glance-container");
 
-        // Real-time Data Fetching
-        onSnapshot(collection(db, "village_glance"), (snapshot) => {
-            container.innerHTML = "";
+        async function verifyAndLoad() {
+            try {
+                // 1. Global Maintenance Check
+                const maintSnap = await getDoc(doc(db, "system_settings", "global_config"));
+                if (maintSnap.exists() && maintSnap.data().isMaintenance) {
+                    document.getElementById("maintenance-screen").classList.remove("hidden");
+                    if (maintSnap.data().maintenanceMessage) {
+                        document.getElementById("maintenance-msg-text").textContent = maintSnap.data().maintenanceMessage;
+                    }
+                    return;
+                }
 
-            if (snapshot.empty) {
-                container.innerHTML = `<div class="bg-white p-6 rounded-xl shadow text-center text-gray-500 text-xs">હાલમાં કોઈ માહિતી ઉપલબ્ધ નથી.</div>`;
-                return;
+                // 2. Panchayat Active Status Check
+                const pSnap = await getDoc(doc(db, "panchayats", panchayatId));
+                if (pSnap.exists() && pSnap.data().isActive === false) {
+                    document.getElementById("deactive-screen").classList.remove("hidden");
+                    return;
+                }
+
+                // 3. Load Glance Data
+                loadGlanceData();
+            } catch (err) {
+                console.error("Verification error:", err);
+                container.innerHTML = `<div class="bg-white p-6 rounded-xl shadow text-center text-red-500 text-xs">સિસ્ટમ વેરિફિકેશનમાં ભૂલ આવી.</div>`;
             }
+        }
 
-            let sections = {};
-            snapshot.forEach(docSnap => {
-                const data = docSnap.data();
-                const secName = data.sectionName || "અન્ય માહિતી";
-                if (!sections[secName]) sections[secName] = [];
-                sections[secName].push(data);
+        // Real-time Data Fetching with Panchayat Scope
+        function loadGlanceData() {
+            onSnapshot(collection(db, "panchayats", panchayatId, "village_glance"), (snapshot) => {
+                container.innerHTML = "";
+
+                if (snapshot.empty) {
+                    container.innerHTML = `<div class="bg-white p-6 rounded-xl shadow text-center text-gray-500 text-xs">હાલમાં કોઈ માહિતી ઉપલબ્ધ નથી.</div>`;
+                    return;
+                }
+
+                let sections = {};
+                snapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    const secName = data.sectionName || "અન્ય માહિતી";
+                    if (!sections[secName]) sections[secName] = [];
+                    sections[secName].push(data);
+                });
+
+                for (let sectionName in sections) {
+                    let rowsHtml = sections[sectionName].map(item => `
+                        <tr class="border-b hover:bg-gray-50 text-xs">
+                            <td class="p-3 font-semibold text-gray-800 w-1/3">${item.title || '-'}</td>
+                            <td class="p-3 text-emerald-700 font-bold w-1/3">${item.value || '-'}</td>
+                            <td class="p-3 text-gray-600 text-[11px] w-1/3">${item.extraInfo || '-'}</td>
+                        </tr>
+                    `).join("");
+
+                    container.innerHTML += `
+                        <div class="bg-white rounded-xl shadow-md border overflow-hidden mb-4">
+                            <div class="bg-emerald-800 text-white px-4 py-3 font-bold text-sm flex items-center gap-2">
+                                <i class="fa-solid fa-folder-open text-amber-300"></i> ${sectionName}
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr class="bg-emerald-50 text-emerald-900 text-xs border-b">
+                                            <th class="p-3">વિગત / સુવિધા</th>
+                                            <th class="p-3">આંકડો / મુખ્ય માહિતી</th>
+                                            <th class="p-3">વધારાની વિગત</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${rowsHtml}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    `;
+                }
+            }, (error) => {
+                console.error("Glance Load Error:", error);
+                container.innerHTML = `<div class="bg-white p-6 rounded-xl shadow text-center text-red-500 text-xs">માહિતી લોડ કરવામાં એરર આવી: ${error.message}</div>`;
             });
+        }
 
-            for (let sectionName in sections) {
-                let rowsHtml = sections[sectionName].map(item => `
-                    <tr class="border-b hover:bg-gray-50 text-xs">
-                        <td class="p-3 font-semibold text-gray-800 w-1/3">${item.title || '-'}</td>
-                        <td class="p-3 text-emerald-700 font-bold w-1/3">${item.value || '-'}</td>
-                        <td class="p-3 text-gray-600 text-[11px] w-1/3">${item.extraInfo || '-'}</td>
-                    </tr>
-                `).join("");
-
-                container.innerHTML += `
-                    <div class="bg-white rounded-xl shadow-md border overflow-hidden mb-4">
-                        <div class="bg-emerald-800 text-white px-4 py-3 font-bold text-sm flex items-center gap-2">
-                            <i class="fa-solid fa-folder-open text-amber-300"></i> ${sectionName}
-                        </div>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse">
-                                <thead>
-                                    <tr class="bg-emerald-50 text-emerald-900 text-xs border-b">
-                                        <th class="p-3">વિગત / સુવિધા</th>
-                                        <th class="p-3">આંકડો / મુખ્ય માહિતી</th>
-                                        <th class="p-3">વધારાની વિગત</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${rowsHtml}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                `;
-            }
-        }, (error) => {
-            console.error("Glance Load Error:", error);
-            container.innerHTML = `<div class="bg-white p-6 rounded-xl shadow text-center text-red-500 text-xs">માહિતી લોડ કરવામાં એરર આવી: ${error.message}</div>`;
-        });
+        verifyAndLoad();
     </script>
 </body>
 </html>
