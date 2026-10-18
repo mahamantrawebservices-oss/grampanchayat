@@ -16,6 +16,34 @@
 </head>
 <body class="bg-[#D7E0F7] min-h-screen flex flex-col font-sans text-gray-800">
 
+<!-- ၁. Developer Maintenance Screen (Hidden by default) -->
+<div id="maintenance-screen" class="hidden fixed inset-0 bg-slate-900 text-white z-50 flex flex-col items-center justify-center p-6 text-center">
+    <div class="bg-slate-800 p-8 rounded-3xl border border-slate-700 max-w-lg shadow-2xl space-y-4">
+        <i class="fa-solid fa-screwdriver-wrench text-6xl text-amber-400 animate-bounce"></i>
+        <h2 class="text-2xl font-bold text-amber-400">સિસ્ટમ મેન્ટેનન્સ ચાલુ છે</h2>
+        <p id="maintenance-msg-text" class="text-gray-300 text-sm">
+            હાલમાં ટેકનિકલ સુધારા અર્થે સિસ્ટમ મેન્ટેનન્સ મોડમાં છે. કૃપા કરીને થોડીવાર પછી પ્રયત્ન કરો.
+        </p>
+        <div class="text-xs text-slate-500 pt-4 border-t border-slate-700">
+            ડેવલપર ટીમ દ્વારા સર્વર અપડેટ પ્રક્રિયા હેઠળ છે.
+        </div>
+    </div>
+</div>
+
+<!-- ૨. Subscription Expired / Deactive Screen (Hidden by default) -->
+<div id="deactive-screen" class="hidden fixed inset-0 bg-gray-900/90 text-white z-40 flex flex-col items-center justify-center p-6 text-center">
+    <div class="bg-white text-gray-800 p-8 rounded-3xl max-w-md shadow-2xl space-y-4">
+        <i class="fa-solid fa-circle-exclamation text-6xl text-red-500"></i>
+        <h2 class="text-xl font-bold text-red-600">સબ્સ્ક્રિપ્શન નિષ્ક્રિય છે (Deactive)</h2>
+        <p class="text-gray-600 text-sm">
+            આ ગ્રામ પંચાયતની વેબસાઇટ સેવા હાલ પૂરતી સ્થગિત કરવામાં આવી છે. કૃપા કરીને વહીવટી કચેરી અથવા એડમિનિસ્ટ્રેટરનો સંપર્ક કરો.
+        </p>
+    </div>
+</div>
+
+<!-- Main Content Wrapper -->
+<div id="main-content-wrapper" class="flex flex-col flex-1">
+
 <!-- ડાર્ક/રૉયલ પર્પલ ગ્રેડિયન્ટ પટ્ટી સાથેનું હેડર -->
 <header class="bg-gradient-to-r from-purple-900 via-indigo-900 to-purple-900 text-white shadow-lg sticky top-0 z-50">
     <div class="container mx-auto px-4 py-3 flex justify-between items-center">
@@ -149,10 +177,6 @@
     </div>
 </div>
 
-      
-
-
-
 <!-- ઇવેન્ટ્સ / આવનારા પ્રસંગો સેક્શન -->
 <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 my-6">
     <h3 class="font-bold text-gray-800 text-base md:text-lg mb-4 flex items-center gap-2 border-b pb-2">
@@ -163,63 +187,46 @@
     </div>
 </div>
 
-
-
-<!-- Disaster Management Section (Events Section ની નીચે) -->
+<!-- Disaster Management Section -->
 <section class="my-8 px-4 container mx-auto">
     <div class="bg-white p-6 rounded-2xl shadow-md border border-blue-100">
         <h2 class="text-xl font-bold text-gray-800 mb-4 pb-2 border-b flex items-center gap-2">
             🚨 આપત્તિ વ્યવસ્થાપન (Disaster Management)
         </h2>
-
-        <!-- 4 સુંદર બ્લૂ બટન્સ -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            
-            <!-- બટન ૧: અગત્યના સંપર્ક નંબર -->
             <button onclick="openDisasterPage('important_contacts', 'અગત્યના સંપર્ક નંબરો')" 
                 class="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-800 text-white font-bold py-3 px-4 rounded-xl shadow transition duration-300 transform hover:-translate-y-0.5">
                 📞 Important Contacts
             </button>
-
-            <!-- બટન ૨: મોક ડ્રિલ -->
             <button onclick="openDisasterPage('mock_drills', 'મોક ડ્રિલ (Mock Drills)')" 
                 class="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-800 text-white font-bold py-3 px-4 rounded-xl shadow transition duration-300 transform hover:-translate-y-0.5">
                 🛡️ Mock Drills
             </button>
-
-            <!-- બટન ૩: VDRMP -->
             <button onclick="openDisasterPage('vdrmp', 'VDRMP (ગામ આપત્તિ વ્યવસ્થાપન યોજના)')" 
                 class="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-800 text-white font-bold py-3 px-4 rounded-xl shadow transition duration-300 transform hover:-translate-y-0.5">
                 📜 VDRMP
             </button>
-
-            <!-- બટન ૪: વ્યવસ્થાપન ગેલેરી -->
             <button onclick="openDisasterPage('disaster_gallery', 'આપત્તિ વ્યવસ્થાપન ગેલેરી')" 
                 class="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-800 text-white font-bold py-3 px-4 rounded-xl shadow transition duration-300 transform hover:-translate-y-0.5">
                 🖼️ વ્યવસ્થાપન ગેલેરી
             </button>
-
         </div>
     </div>
 </section>
 
-<!-- પેજ/માહિતી દર્શાવવા માટેનું Dynamic Modal Modal Container -->
+<!-- પેજ/માહિતી દર્શાવવા માટેનું Dynamic Modal -->
 <div id="disaster-modal" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50 p-4">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden">
         <div class="bg-blue-700 text-white p-4 flex justify-between items-center">
             <h3 id="disaster-modal-title" class="font-bold text-lg"></h3>
             <button onclick="closeDisasterPage()" class="text-white hover:text-red-200 text-xl font-bold">&times;</button>
         </div>
-        <div id="disaster-modal-content" class="p-6 overflow-y-auto space-y-4 text-gray-800">
-            <!-- અહીં Admin પેનલમાંથી એડિટ કરેલી HTML/Text માહિતી દેખાશે -->
-        </div>
+        <div id="disaster-modal-content" class="p-6 overflow-y-auto space-y-4 text-gray-800"></div>
         <div class="p-3 bg-gray-100 border-t text-right">
             <button onclick="closeDisasterPage()" class="bg-gray-600 hover:bg-gray-700 text-white text-xs font-bold px-4 py-2 rounded">બંધ કરો</button>
         </div>
     </div>
 </div>
-
-
 
 <!-- ગામનો નક્શો Section -->
 <section class="my-8 px-4 container mx-auto">
@@ -227,8 +234,6 @@
         <h2 class="text-xl font-bold text-gray-800 mb-4 pb-2 border-b flex items-center gap-2">
             🗺️ ગામનો નક્શો અને સેટેલાઇટ મેપ
         </h2>
-
-        <!-- ક્લિક કરવાથી નવી ટેબમાં village-map.html ખુલશે -->
         <a href="village-map.html" target="_blank" class="group block relative overflow-hidden rounded-2xl shadow-lg border hover:shadow-2xl transition duration-300">
             <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=1200&q=80" 
                  alt="ગામનો નક્શો" 
@@ -240,59 +245,34 @@
             </div>
         </a>
     </div>
-</section>            
+</section>
 
-
-
-            
-
-
-
-            
-  </div>
-
-
-
-
-
-        
+</div>
         
         <!-- Right Column: Sidebar Info -->
         <div class="space-y-6">
             
-<!-- અગત્યની નોટિસ સેક્શન (Red Highlight & High Visibility) -->
+<!-- અગત્યની નોટિસ સેક્શન -->
 <div id="notices" class="bg-red-600 text-white p-4 rounded-xl shadow-lg border-l-4 border-red-800 space-y-2">
-    <!-- શીર્ષક -->
     <h4 class="font-bold text-white text-lg border-b border-red-400/50 pb-2 flex items-center gap-2">
         <i class="fa-solid fa-bell text-amber-300 animate-bounce"></i>
         <span>અગત્યની નોટિસ</span>
     </h4>
-    
-    <!-- ડાયનેમિકલી લોડ થતી નોટિસ લિસ્ટ -->
     <div id="notice-list" class="text-sm text-white font-medium space-y-2 leading-relaxed">
-        <!-- Dynamic Notices -->
         <p class="text-white/80">નોટિસ લોડ થઈ રહી છે...</p>
     </div>
 </div>
 
-
-
-            
-            <!-- Village Info Sections -->
-<!-- dynamic ગામ અને પંચાયત વિગત સેક્શન -->
+<!-- ગામ અને પંચાયત વિગત સેક્શન -->
 <div id="about" class="bg-white p-5 rounded-xl shadow-md space-y-4 border border-purple-100">
     <h4 class="font-bold text-purple-950 border-b border-purple-200 pb-2 text-lg flex items-center gap-2">
         <i class="fa-solid fa-square-poll-vertical text-purple-700"></i>
         <span>ગામ અને પંચાયત વિગત</span>
     </h4>
-    
-    <!-- Firebase માંથી મેનૂ આ આઈડી (village-details-menu-list) માં લોડ થશે -->
     <div id="village-details-menu-list" class="space-y-2">
         <p class="text-xs text-gray-400 p-2">મેનૂ લોડ થઈ રહ્યા છે...</p>
     </div>
 </div>
-
-
 
 <!-- 'મારૂ ગામ - એક નજરમાં' કાર્ડ -->
 <div class="bg-white p-5 rounded-xl shadow-md border border-gray-100 mt-4">
@@ -302,32 +282,21 @@
         </span>
     </h3>
     <p class="text-xs text-gray-600 mb-4">ગામની ભૌગોલિક માહિતી, શૈક્ષણિક સંસ્થાઓ, સહકારી મંડળીઓ અને અન્ય સુવિધાઓની વિગતવાર માહિતી જુઓ.</p>
-    
     <a href="glance.html" target="_blank" class="block w-full text-center bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-lg text-xs shadow transition flex items-center justify-center gap-2">
         <i class="fa-solid fa-external-link-alt"></i> Village at a Glance (ગામ એક નજરમાં) જુઓ
     </a>
 </div>
 
-
-
-
-
-            
         </div>
 
     </div>
 
-
-
-    
-  <!-- ફોટો ગેલેરી સેક્શન -->
-<section class="my-8 bg-white p-6 rounded-xl shadow-md border">
+<!-- ફોટો ગેલેરી સેક્શન -->
+<section class="my-8 bg-white p-6 rounded-xl shadow-md border container mx-auto">
     <h3 class="font-bold text-lg text-emerald-800 mb-4 border-b pb-2 flex items-center justify-between">
         <span>📸 ફોટો ગેલેરી</span>
         <span class="text-xs font-normal text-gray-500">(ફોટા પર ક્લિક કરી ફુલસ્ક્રીનમાં જુઓ)</span>
     </h3>
-
-    <!-- હોરિઝોન્ટલ સ્ક્રોલ ગેલેરી -->
     <div id="gallery-container" class="flex gap-4 overflow-x-auto scroll-smooth py-2 no-scrollbar">
         <p class="text-xs text-gray-500">ગેલેરી લોડ થઈ રહી છે...</p>
     </div>
@@ -339,12 +308,75 @@
     <img id="modal-img" src="" alt="Full Screen Image" class="max-h-[90vh] max-w-[90vw] object-contain rounded shadow-2xl">
 </div>
 
-    <!-- Footer -->
-    <footer class="bg-slate-900 text-white text-center py-6 text-sm">
-        <p>© <span id="year"></span> ગ્રામ પંચાયત. તમામ હકો અનામત છે.</p>
-    </footer>
+<!-- Footer -->
+<footer class="bg-slate-900 text-white text-center py-6 text-sm">
+    <p>© <span id="year"></span> ગ્રામ પંચાયત. તમામ હકો અનામત છે.</p>
+</footer>
 
-    <!-- Main JS logic -->
-    <script type="module" src="js/main.js"></script>
+<!-- DIRECT EMBEDDED FIREBASE SCRIPT WITH MAINTENANCE & ACTIVE CHECK GUARDS -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCMhWWI_6oxPIVEQEVlq2SIBf72EI2o8NI",
+        authDomain: "gram-panchayat-33c86.firebaseapp.com",
+        projectId: "gram-panchayat-33c86",
+        storageBucket: "gram-panchayat-33c86.firebasestorage.app",
+        messagingSenderId: "1025176315779",
+        appId: "1:1025176315779:web:a24ca10a06c55edcc8f8b6",
+        measurementId: "G-TQBSXCWNBV"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const panchayatId = urlParams.get('id') || "ahmedabad_daskroi_motapipalva"; // Default demo ID
+
+    // Step 1: Global Developer Maintenance Mode Guard Check
+    onSnapshot(doc(db, "system_settings", "global_config"), (maintSnap) => {
+        if (maintSnap.exists()) {
+            const config = maintSnap.data();
+            if (config.isMaintenance) {
+                document.getElementById("maintenance-screen").classList.remove("hidden");
+                if (config.maintenanceMessage) {
+                    document.getElementById("maintenance-msg-text").textContent = config.maintenanceMessage;
+                }
+                return;
+            } else {
+                document.getElementById("maintenance-screen").classList.add("hidden");
+            }
+        }
+
+        // Step 2: Panchayat Specific Active Status Validation
+        onSnapshot(doc(db, "panchayats", panchayatId), (pSnap) => {
+            if (!pSnap.exists()) {
+                console.warn("Panchayat data not found in Firestore.");
+                return;
+            }
+
+            const pData = pSnap.data();
+
+            // Check if Super Admin set isActive to false
+            if (pData.isActive === false) {
+                document.getElementById("deactive-screen").classList.remove("hidden");
+                return;
+            } else {
+                document.getElementById("deactive-screen").classList.add("hidden");
+            }
+
+            // Update Header Title & Names dynamically
+            if (pData.panchayatName) {
+                document.getElementById("gp-name").textContent = pData.panchayatName + " ગ્રામ પંચાયત";
+                document.getElementById("site-title").textContent = pData.panchayatName + " ગ્રામ પંચાયત ડિજિટલ પોર્ટલ";
+                const bannerName = document.getElementById("banner-gp-name");
+                if (bannerName) bannerName.textContent = pData.panchayatName;
+            }
+        });
+    });
+</script>
+<!-- Main JS logic -->
+<script type="module" src="js/main.js"></script>
 </body>
 </html>
