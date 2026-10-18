@@ -612,7 +612,7 @@
         
         <!-- ૧. અધિકારી વિગતો -->
         <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
-            <h4 class="font-bold text-gray-800 border-b pb-1">૧. જાહેર માહિતી અધિકારીની વિગતો અને લિંક્સ</h4>
+            <h4 class="font-bold text-gray-800 border-b pb-1">૧. જાહેર માહિતી અધિકારીની વિગતો</h4>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div>
                     <label class="block font-medium text-gray-700 mb-1">તલાટી કમ મંત્રીનું નામ</label>
@@ -626,10 +626,6 @@
                     <label class="block font-medium text-gray-700 mb-1">પ્રથમ અપીલ અધિકારીશ્રી</label>
                     <input type="text" id="off-appeal" class="w-full border p-2 rounded bg-white" placeholder="અધિકારીનું નામ" required>
                 </div>
-            </div>
-            <div class="mt-3">
-                <label class="block font-medium text-gray-700 mb-1">ગામના વિકાસ કામોના પેજની લિંક (URL):</label>
-                <input type="url" id="link-dev-input" class="w-full border p-2 rounded bg-white" placeholder="https://...">
             </div>
         </div>
 
@@ -654,12 +650,24 @@
             <button type="button" onclick="addPropRow()" class="bg-blue-600 text-white px-3 py-1 rounded text-[11px] font-bold">+ મિલકત ઉમેરો</button>
         </div>
 
+        <!-- ૫. પેજના સૌથી નીચે દેખાય તેવી વધારાની અન્ય માહિતી (Admin Custom Input) -->
+        <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
+            <h4 class="font-bold text-gray-800 border-b pb-1">૫. પેજની સૌથી નીચે ઉમેરવાની અન્ય માહિતી (વૈકલ્પિક)</h4>
+            <div>
+                <label class="block font-medium text-gray-700 mb-1">શિર્ષક (Title):</label>
+                <input type="text" id="extra-title-input" class="w-full border p-2 rounded bg-white" placeholder="દા.ત. વિશેષ નોંધ અથવા અન્ય વિગત">
+            </div>
+            <div>
+                <label class="block font-medium text-gray-700 mb-1">માહિતી / લખાણ (Content):</label>
+                <textarea id="extra-content-input" rows="3" class="w-full border p-2 rounded bg-white" placeholder="અહીં વિગતવાર લખાણ લખો..."></textarea>
+            </div>
+        </div>
+
         <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white p-3 rounded-lg font-bold text-sm shadow transition">
             બધી માહિતી સેવ / અપડેટ કરો
         </button>
     </form>
 </div>
-
 
 
 
