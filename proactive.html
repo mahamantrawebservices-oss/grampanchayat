@@ -361,65 +361,82 @@
 
     </div>
 
-    <!-- Firebase Real-time Loader -->
-    <script type="module">
-        import { db } from "./js/firebase-config.js";
-        import { doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+ <!-- Firebase Real-time Loader with Direct Configuration -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        onSnapshot(doc(db, "proactive_disclosure", "main_data"), (docSnap) => {
-            if (!docSnap.exists()) return;
-            const data = docSnap.data();
+    // તમારી Firebase કી અહીં સીધી જ મૂકી દો (એટલે GitHub પર 404 ક્યારેય નહીં આવે)
+      const firebaseConfig = {
+  apiKey: "AIzaSyCMhWWI_6oxPIVEQEVlq2SIBf72EI2o8NI",
+  authDomain: "gram-panchayat-33c86.firebaseapp.com",
+  projectId: "gram-panchayat-33c86",
+  storageBucket: "gram-panchayat-33c86.firebasestorage.app",
+  messagingSenderId: "1025176315779",
+  appId: "1:1025176315779:web:a24ca10a06c55edcc8f8b6",
+  measurementId: "G-TQBSXCWNBV"
+};
 
-            const off = data.officer || {};
-            document.getElementById("public-officer-box").innerHTML = `
-                <p><b>નામ:</b> ${off.name || '-'}</p>
-                <p><b>હોદ્દો:</b> જાહેર માહિતી અધિકારી તથા તલાટી કમ મંત્રી</p>
-                <p><b>ફોન નંબર:</b> ${off.phone || '-'}</p>
-                <p><b>મળવાના દિવસો:</b> સોમવારથી શુક્રવાર તથા પ્રથમ અને ત્રીજો શનિવાર</p>
-                <p><b>સમય:</b> ૧૦:૩૦ કલાક થી ૧૮:૧૦ કલાક સુધી</p>
-                <p><b>પ્રથમ અપીલ અધિકારી:</b> ${off.appealOfficer || 'શ્રી તાલુકા વિકાસ અધિકારી સાહેબ, તાલુકા પંચાયત કચેરી'}</p>
-            `;
+    // Firebase Initialize
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-            if (data.extraTitle && data.extraContent) {
-                document.getElementById("extra-info-section").classList.remove("hidden");
-                document.getElementById("extra-info-title").innerHTML = `<i class="fa-solid fa-circle-plus text-emerald-600"></i> ${data.extraTitle}`;
-                document.getElementById("extra-info-content").textContent = data.extraContent;
-            } else {
-                document.getElementById("extra-info-section").classList.add("hidden");
-            }
+    // Real-time Data Listener
+    onSnapshot(doc(db, "proactive_disclosure", "main_data"), (docSnap) => {
+        if (!docSnap.exists()) return;
+        const data = docSnap.data();
 
-            const renderTable = (id, list, mapper) => {
-                const el = document.getElementById(id);
-                if (el) el.innerHTML = list && list.length ? list.map(mapper).join("") : `<tr><td colspan="10" class="p-3 text-center text-gray-500">માહિતી ઉપલબ્ધ નથી</td></tr>`;
-            };
+        const off = data.officer || {};
+        document.getElementById("public-officer-box").innerHTML = `
+            <p><b>નામ:</b> ${off.name || '-'}</p>
+            <p><b>હોદ્દો:</b> જાહેર માહિતી અધિકારી તથા તલાટી કમ મંત્રી</p>
+            <p><b>ફોન નંબર:</b> ${off.phone || '-'}</p>
+            <p><b>મળવાના દિવસો:</b> સોમવારથી શુક્રવાર તથા પ્રથમ અને ત્રીજો શનિવાર</p>
+            <p><b>સમય:</b> ૧૦:૩૦ કલાક થી ૧૮:૧૦ કલાક સુધી</p>
+            <p><b>પ્રથમ અપીલ અધિકારી:</b> ${off.appealOfficer || 'શ્રી તાલુકા વિકાસ અધિકારી સાહેબ, તાલુકા પંચાયત કચેરી'}</p>
+        `;
 
-            renderTable("public-population-table", data.population, (item, idx) => `
-                <tr class="border-b hover:bg-gray-50">
-                    <td class="p-2.5 font-semibold">${idx + 1}</td>
-                    <td class="p-2.5">${item.title || '-'}</td>
-                    <td class="p-2.5">${item.female || '-'}</td>
-                    <td class="p-2.5">${item.male || '-'}</td>
-                    <td class="p-2.5 font-bold text-emerald-700">${item.total || '-'}</td>
-                </tr>
-            `);
+        if (data.extraTitle && data.extraContent) {
+            document.getElementById("extra-info-section").classList.remove("hidden");
+            document.getElementById("extra-info-title").innerHTML = `<i class="fa-solid fa-circle-plus text-emerald-600"></i> ${data.extraTitle}`;
+            document.getElementById("extra-info-content").textContent = data.extraContent;
+        } else {
+            document.getElementById("extra-info-section").classList.add("hidden");
+        }
 
-            renderTable("public-water-table", data.water, item => `
-                <tr class="border-b hover:bg-gray-50">
-                    <td class="p-2.5 font-semibold">${item.source || '-'}</td>
-                    <td class="p-2.5">${item.count || '-'}</td>
-                    <td class="p-2.5">${item.area || '-'}</td>
-                    <td class="p-2.5">${item.capacity || '-'}</td>
-                </tr>
-            `);
+        const renderTable = (id, list, mapper) => {
+            const el = document.getElementById(id);
+            if (el) el.innerHTML = list && list.length ? list.map(mapper).join("") : `<tr><td colspan="10" class="p-3 text-center text-gray-500">માહિતી ઉપલબ્ધ નથી</td></tr>`;
+        };
 
-            renderTable("public-property-table", data.property, item => `
-                <tr class="border-b hover:bg-gray-50">
-                    <td class="p-2.5 font-semibold">${item.name || '-'}</td>
-                    <td class="p-2.5">${item.count || '-'}</td>
-                    <td class="p-2.5">${item.detail || '-'}</td>
-                </tr>
-            `);
-        });
-    </script>
+        renderTable("public-population-table", data.population, (item, idx) => `
+            <tr class="border-b hover:bg-gray-50">
+                <td class="p-2.5 font-semibold">${idx + 1}</td>
+                <td class="p-2.5">${item.title || '-'}</td>
+                <td class="p-2.5">${item.female || '-'}</td>
+                <td class="p-2.5">${item.male || '-'}</td>
+                <td class="p-2.5 font-bold text-emerald-700">${item.total || '-'}</td>
+            </tr>
+        `);
+
+        renderTable("public-water-table", data.water, item => `
+            <tr class="border-b hover:bg-gray-50">
+                <td class="p-2.5 font-semibold">${item.source || '-'}</td>
+                <td class="p-2.5">${item.count || '-'}</td>
+                <td class="p-2.5">${item.area || '-'}</td>
+                <td class="p-2.5">${item.capacity || '-'}</td>
+            </tr>
+        `);
+
+        renderTable("public-property-table", data.property, item => `
+            <tr class="border-b hover:bg-gray-50">
+                <td class="p-2.5 font-semibold">${item.name || '-'}</td>
+                <td class="p-2.5">${item.count || '-'}</td>
+                <td class="p-2.5">${item.detail || '-'}</td>
+            </tr>
+        `);
+    });
+</script>
+
 </body>
 </html>
