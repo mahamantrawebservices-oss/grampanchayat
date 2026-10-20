@@ -15,28 +15,38 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// URL માંથી પંચાયત આઈડી વાંચવું
-const urlParams = new URLSearchParams(window.location.search);
-const currentPanchayatId = urlParams.get('id');
-
+let currentPanchayatId = null;
 let currentPanchayatData = null;
 
-// પંચાયત ચકાસણી અને સુપર એડમિન લોગિન સિસ્ટમ
+// Page load thavathi URL athva Storage mathi ID check karvo
 async function initAdminAuth() {
-    if (!currentPanchayatId) {
-        alert("પંચાયત આઈડી મળ્યો નથી! કૃપા કરીને સુપર એડમિન પેનલ પરથી લિંક ખોલો.");
-        return;
-    }
+    const urlParams = new URLSearchParams(window.location.search);
+    currentPanchayatId = urlParams.get('id');
 
+    if (currentPanchayatId) {
+        await verifyAndSetupPanchayat(currentPanchayatId);
+    } else {
+        const titleEl = document.getElementById("panchayat-login-title");
+        if (titleEl) {
+            titleEl.textContent = "કૃપા કરીને તમારો પંચાયત આઈડી અને પાસવર્ડ નાખો";
+        }
+        showLoginModal();
+    }
+}
+
+// Panchayat ID verify karvani function
+async function verifyAndSetupPanchayat(pId) {
     try {
-        const pRef = doc(db, "panchayats", currentPanchayatId);
+        const pRef = doc(db, "panchayats", pId);
         const pSnap = await getDoc(pRef);
 
         if (!pSnap.exists()) {
-            alert("આ પંચાયત સિસ્ટમમાં નોંધાયેલ નથી!");
-            return;
+            alert("આ પંચાયત આઈડી સિસ્ટમમાં મળ્યો નથી! કૃપા કરીને સાચો આઈડી નાખો.");
+            showLoginModal();
+            return false;
         }
 
+        currentPanchayatId = pId;
         currentPanchayatData = pSnap.data();
         
         const titleEl = document.getElementById("panchayat-login-title");
@@ -49,16 +59,16 @@ async function initAdminAuth() {
             headerTitle.textContent = `${currentPanchayatData.panchayatName} - એડમિન પેનલ`;
         }
 
-        // અગાઉ લોગિન થયેલ સેશન ચકાસવું
         const savedSession = sessionStorage.getItem(`panchayat_session_${currentPanchayatId}`);
         if (savedSession === "true") {
             showDashboard();
         } else {
             showLoginModal();
         }
-
+        return true;
     } catch (err) {
         console.error("Error verifying panchayat:", err);
+        return false;
     }
 }
 
@@ -73,20 +83,34 @@ function showDashboard() {
     loadAllAdminData();
 }
 
-// સુપર એડમિન પેનલના પાસવર્ડ સાથે ડાયનેમિક લોગિન સબમિટ
+// Login Form Submit Handler
 document.getElementById("admin-login-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
+    const enteredIdOrName = document.getElementById("login-email")?.value.trim();
     const enteredPass = document.getElementById("login-password")?.value.trim();
 
+    if (!enteredIdOrName || !enteredPass) {
+        alert("બધા જ ખાના ભરવા જરૂરી છે!");
+        return;
+    }
+
+    if (!currentPanchayatId) {
+        const found = await verifyAndSetupPanchayat(enteredIdOrName);
+        if (!found) {
+            alert("આ આઈડીવાળી કોઈ પંચાયત મળી નથી!");
+            return;
+        }
+    }
+
     if (!currentPanchayatData) {
-        alert("પંચાયત ડેટા લોડ થયો નથી.");
+        alert("પંચાયતનો ડેટા લોડ થયો નથી.");
         return;
     }
 
     const correctPassword = currentPanchayatData.adminPassword;
 
     if (!correctPassword) {
-        alert("આ પંચાયત માટે સુપર એડમિન પરથી કોઈ પાસવર્ડ રાખેલ નથી! કૃપા કરીને સુપર એડમિન પેનલમાં પાસવર્ડ સેટ કરો.");
+        alert("આ પંચાયત માટે સુપર એડમિન દ્વારા કોઈ પાસવર્ડ રાખેલ નથી!");
         return;
     }
 
@@ -94,17 +118,19 @@ document.getElementById("admin-login-form")?.addEventListener("submit", async (e
         sessionStorage.setItem(`panchayat_session_${currentPanchayatId}`, "true");
         showDashboard();
     } else {
-        alert("ખોટો પાસવર્ડ! સુપર એડમિન પેનલ પર રાખેલો પાસવર્ડ દાખલ કરો.");
+        alert("ખોટો પાસવર્ડ! કૃપા કરીને સુપર એડમિન પેનલ પરથી પાસવર્ડ ચકાસો.");
     }
 });
 
 // Logout Button
 document.getElementById("logout-btn")?.addEventListener("click", () => {
-    sessionStorage.removeItem(`panchayat_session_${currentPanchayatId}`);
-    showLoginModal();
+    if (currentPanchayatId) {
+        sessionStorage.removeItem(`panchayat_session_${currentPanchayatId}`);
+    }
+    window.location.href = window.location.pathname;
 });
 
-// તમામ ડેટા એકસાથે લોડ કરવાનું કોલબેક
+// તમામ ડેટા લોડ કરવાનું કોલબેક
 function loadAllAdminData() {
     loadAdminComplaints();
     loadAdminGallery();
@@ -240,7 +266,7 @@ window.deletePost = async (id) => {
     if (confirm("શું તમે ખરેખર આ પોસ્ટ ડિલીટ કરવા માંગો છો?")) {
         try {
             await deleteDoc(doc(db, "panchayats", currentPanchayatId, "posts", id));
-            alert("પોસ્ટ ડિલીટ થઈ ગઈ!");
+            alert("પોસ્ટ સફળતાપૂર્વક ડિલીટ થઈ ગઈ!");
             if (document.getElementById('edit-post-id').value === id) resetPostForm();
         } catch (err) {
             console.error("Delete error:", err);
@@ -349,7 +375,7 @@ window.deleteNotice = async (id) => {
     if (confirm("શું તમે ખરેખર આ નોટિસ ડિલીટ કરવા માંગો છો?")) {
         try {
             await deleteDoc(doc(db, "panchayats", currentPanchayatId, "notices", id));
-            alert("નોટિસ ડિલીટ થઈ ગઈ!");
+            alert("નોટિસ સફળતાપૂર્વક ડિલીટ થઈ ગઈ!");
             if (document.getElementById('edit-notice-id').value === id) resetNoticeForm();
         } catch (err) {
             console.error("Delete error:", err);
@@ -368,7 +394,7 @@ document.getElementById("gallery-form")?.addEventListener("submit", async (e) =>
         title, imageUrl: url, createdAt: new Date()
     });
 
-    alert("ફોટો ગેલેરીમાં ઉમેરાઈ ગયો!");
+    alert("ફોટો ગેલેરીમાં સફળતાપૂર્વક ઉમેરાઈ ગયો!");
     e.target.reset();
     loadAdminGallery();
 });
@@ -406,7 +432,7 @@ async function loadAdminGallery() {
             const docId = e.target.getAttribute("data-id");
             if (confirm("શું તમે આ ફોટો ગેલેરીમાંથી કાઢી નાખવા માંગો છો?")) {
                 await deleteDoc(doc(db, "panchayats", currentPanchayatId, "gallery", docId));
-                alert("ફોટો ડિલીટ થઈ ગયો છે.");
+                alert("ફોટો સફળતાપૂર્વક ડિલીટ થઈ ગયો છે.");
                 loadAdminGallery();
             }
         });
@@ -629,7 +655,7 @@ async function loadAdminComplaints() {
         sel.addEventListener("change", async (e) => {
             const id = e.target.getAttribute("data-id");
             await setDoc(doc(db, "panchayats", currentPanchayatId, "complaints", id), { status: e.target.value }, { merge: true });
-            alert("સ્ટેટસ અપડેટ થઈ ગયું!");
+            alert("ફરિયાદનું સ્ટેટસ સફળતાપૂર્વક અપડેટ થઈ ગયું!");
             loadAdminComplaints();
         });
     });
@@ -724,7 +750,7 @@ document.getElementById("download-pdf-btn")?.addEventListener("click", async () 
         await html2pdf().set(opt).from(reportContainer).save();
     } catch (err) {
         console.error("PDF જનરેટ કરવામાં ભૂલ:", err);
-        alert("PDF ડ્રોનલોડ કરવામાં સમસ્યા આવી!");
+        alert("PDF ડાઉનલોડ કરવામાં સમસ્યા આવી!");
     } finally {
         document.body.removeChild(reportContainer);
     }
@@ -749,7 +775,7 @@ document.getElementById("save-meta-btn")?.addEventListener("click", async () => 
     const term = document.getElementById("admin-term-input").value;
     const note = document.getElementById("admin-note-input").value;
     await setDoc(doc(db, "panchayats", currentPanchayatId, "panchayat_meta", "staff_page"), { term, note }, { merge: true });
-    alert("મુદત અને નોંધ સાચવી લેવાયેલ છે!");
+    alert("મુદત અને નોંધ સફળતાપૂર્વક સાચવી લેવાયેલ છે!");
 });
 
 // ૮. સ્ટાફ અને કમિટી
@@ -812,7 +838,7 @@ async function loadAdminStaffAndCommittee() {
             const col = e.target.getAttribute("data-col");
             if (confirm("શું તમે આ સભ્ય/કર્મચારીને કાઢી નાખવા માંગો છો?")) {
                 await deleteDoc(doc(db, "panchayats", currentPanchayatId, col, id));
-                alert("ડિલીટ થઈ ગયું છે.");
+                alert("સફળતાપૂર્વક ડિલીટ થઈ ગયું છે.");
                 loadAdminStaffAndCommittee();
             }
         });
@@ -835,7 +861,7 @@ document.getElementById("add-member-staff-form")?.addEventListener("submit", asy
 
     if (editId) {
         await setDoc(doc(db, "panchayats", currentPanchayatId, targetCol, editId), payload, { merge: true });
-        alert("વિગત અપડેટ થઈ ગઈ છે!");
+        alert("વિગત સફળતાપૂર્વક અપડેટ થઈ ગઈ છે!");
     } else {
         await addDoc(collection(db, "panchayats", currentPanchayatId, targetCol), payload);
         alert("સફળતાપૂર્વક ઉમેરાઈ ગયું!");
@@ -880,7 +906,7 @@ async function loadAdminSchedule() {
                 const id = e.target.getAttribute("data-id");
                 if (confirm("શું તમે આ સમય પત્રક ડિલીટ કરવા માંગો છો?")) {
                     await deleteDoc(doc(db, "panchayats", currentPanchayatId, "panchayat_schedule", id));
-                    alert("સમય પત્રક ડિલીટ થઈ ગયું!");
+                    alert("સમય પત્રક સફળતાપૂર્વક ડિલીટ થઈ ગયું!");
                     loadAdminSchedule();
                 }
             });
@@ -904,7 +930,7 @@ document.getElementById("add-schedule-form")?.addEventListener("submit", async (
 
     try {
         await addDoc(collection(db, "panchayats", currentPanchayatId, "panchayat_schedule"), payload);
-        alert("સમય પત્રક ઉમેરાઈ ગયું!");
+        alert("સમય પત્રક સફળતાપૂર્વક ઉમેરાઈ ગયું!");
         e.target.reset();
         loadAdminSchedule();
     } catch (error) {
@@ -1047,7 +1073,7 @@ window.deleteCommittee = async (id) => {
     if (confirm("શું તમે આ સમિતિ ડિલીટ કરવા માંગો છો?")) {
         try {
             await deleteDoc(doc(db, "panchayats", currentPanchayatId, "active_committees", id));
-            alert("સમિતિ ડિલીટ થઈ ગઈ!");
+            alert("સમિતિ સફળતાપૂર્વક ડિલીટ થઈ ગઈ!");
             if (document.getElementById('edit-committee-id').value === id) resetCommitteeForm();
         } catch (err) {
             console.error("Delete error:", err);
@@ -1114,7 +1140,7 @@ async function loadAdminCustomButtons() {
                 const id = e.target.getAttribute("data-id");
                 if (confirm("શું તમે આ બટન ડિલીટ કરવા માંગો છો?")) {
                     await deleteDoc(doc(db, "panchayats", currentPanchayatId, "custom_pages", id));
-                    alert("બટન ડિલીટ થઈ ગયું!");
+                    alert("બટન સફળતાપૂર્વક ડિલીટ થઈ ગયું!");
                     loadAdminCustomButtons();
                 }
             });
@@ -1134,7 +1160,7 @@ document.getElementById("add-page-button-form")?.addEventListener("submit", asyn
         await addDoc(collection(db, "panchayats", currentPanchayatId, "custom_pages"), {
             buttonTitle: title, htmlContent, createdAt: Date.now()
         });
-        alert("નવું બટન અને પેજ ઉમેરાઈ ગયું!");
+        alert("નવું બટન અને પેજ સફળતાપૂર્વક ઉમેરાઈ ગયું!");
         e.target.reset();
         loadAdminCustomButtons();
     } catch (err) {
@@ -1175,7 +1201,7 @@ async function loadAdminEvents() {
                 const id = e.target.getAttribute("data-id");
                 if (confirm("શું તમે આ ઇવેન્ટ ડિલીટ કરવા માંગો છો?")) {
                     await deleteDoc(doc(db, "panchayats", currentPanchayatId, "events", id));
-                    alert("ઇવેન્ટ ડિલીટ થઈ ગઈ!");
+                    alert("ઇવેન્ટ સફળતાપૂર્વક ડિલીટ થઈ ગઈ!");
                     loadAdminEvents();
                 }
             });
@@ -1196,7 +1222,7 @@ document.getElementById("event-form")?.addEventListener("submit", async (e) => {
         await addDoc(collection(db, "panchayats", currentPanchayatId, "events"), {
             eventName: name, eventDate: date, eventLocation: location, createdAt: Date.now()
         });
-        alert("નવી ઇવેન્ટ ઉમેરાઈ ગઈ!");
+        alert("નવી ઇવેન્ટ સફળતાપૂર્વક ઉમેરાઈ ગઈ!");
         e.target.reset();
         loadAdminEvents();
     } catch (err) {
@@ -1234,9 +1260,9 @@ if (disasterForm && disasterSelect && disasterTextarea) {
                 content, updatedAt: new Date()
             }, { merge: true });
 
-            alert('✅ માહિતી અપડેટ થઈ ગઈ!');
+            alert('✅ માહિતી સફળતાપૂર્વક અપડેટ થઈ ગઈ!');
         } catch (error) {
-            alert('❌ સેવ કરવામાં સમસ્યા આવી!');
+            alert('❌ માહિતી સેવ કરવામાં સમસ્યા આવી!');
         }
     });
 }
@@ -1288,12 +1314,12 @@ document.getElementById("add-glance-form")?.addEventListener("submit", async (e)
             await updateDoc(doc(db, "panchayats", currentPanchayatId, "village_glance", editId), {
                 sectionName, title, value, extraInfo, updatedAt: new Date()
             });
-            alert("માહિતી અપડેટ થઈ ગઈ!");
+            alert("માહિતી સફળતાપૂર્વક અપડેટ થઈ ગઈ!");
         } else {
             await addDoc(collection(db, "panchayats", currentPanchayatId, "village_glance"), {
                 sectionName, title, value, extraInfo, createdAt: new Date()
             });
-            alert("માહિતી ઉમેરાઈ ગઈ!");
+            alert("માહિતી સફળતાપૂર્વક ઉમેરાઈ ગઈ!");
         }
         resetGlanceForm();
     } catch (error) {
@@ -1338,7 +1364,7 @@ window.deleteGlance = async (id) => {
     if (confirm("શું તમે આ માહિતી ડિલીટ કરવા માંગો છો?")) {
         try {
             await deleteDoc(doc(db, "panchayats", currentPanchayatId, "village_glance", id));
-            alert("માહિતી ડિલીટ થઈ ગઈ!");
+            alert("માહિતી સફળતાપૂર્વક ડિલીટ થઈ ગઈ!");
         } catch (err) {
             alert("ડિલીટ કરવામાં ભૂલ આવી.");
         }
@@ -1425,7 +1451,7 @@ window.deleteFeedback = async (id) => {
     if (confirm("શું તમે આ પ્રતિસાદ ડિલીટ કરવા માંગો છો?")) {
         try {
             await deleteDoc(doc(db, "panchayats", currentPanchayatId, "user_feedbacks", id));
-            alert("પ્રતિસાદ ડિલીટ થઈ ગયો!");
+            alert("પ્રતિસાદ સફળતાપૂર્વક ડિલીટ થઈ ગયો!");
         } catch (err) {
             alert("ડિલીટ કરવામાં ભૂલ આવી.");
         }
@@ -1536,5 +1562,5 @@ document.getElementById("proactive-admin-form")?.addEventListener("submit", asyn
     }
 });
 
-// શરૂઆતમાં ઓથોન્ટિકેશન શરૂ કરવું
+// ઓથોન્ટિકેશન શરૂ કરવું
 initAdminAuth();
