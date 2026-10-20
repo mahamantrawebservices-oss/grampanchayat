@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // Direct Firebase Configuration Key
 const firebaseConfig = {
@@ -60,7 +60,7 @@ saveMaintBtn?.addEventListener("click", async () => {
     }
 });
 
-// 2. Add New Panchayat Form Handler
+// 2. Add New Panchayat Form Handler (With Admin Password)
 const addForm = document.getElementById("add-panchayat-form");
 addForm?.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -69,6 +69,7 @@ addForm?.addEventListener("submit", async (e) => {
         const taluka = document.getElementById("p-taluka").value.trim();
         const panchayatName = document.getElementById("p-name").value.trim();
         const phone = document.getElementById("p-phone").value.trim();
+        const adminPassword = document.getElementById("p-password").value.trim();
         const isActive = document.getElementById("p-status").value === "true";
 
         const docId = generateDocId(district, taluka, panchayatName);
@@ -78,6 +79,7 @@ addForm?.addEventListener("submit", async (e) => {
             taluka,
             panchayatName,
             phone,
+            adminPassword,
             isActive,
             createdAt: new Date()
         });
@@ -119,12 +121,22 @@ function renderPanchayatTable(list) {
 
     tbody.innerHTML = list.map(item => {
         const shareUrl = `${baseUrl}?id=${item.id}`;
+        const passwordDisplay = item.adminPassword || "નથી રાખેલ";
+
         return `
             <tr class="border-b hover:bg-slate-50">
                 <td class="p-2.5 font-semibold text-gray-800">${item.district || '-'} / ${item.taluka || '-'}</td>
                 <td class="p-2.5 font-bold text-emerald-800">
                     ${item.panchayatName || '-'}
-                    <div class="text-[10px] text-gray-500 font-normal">ફોન: ${item.phone || '-'}</div>
+                    <div class="text-[10px] text-gray-500 font-normal mt-0.5">
+                        ફોન: ${item.phone || '-'}
+                    </div>
+                    <div class="text-[11px] text-purple-700 font-mono mt-0.5 flex items-center gap-1">
+                        🔑 પાસવર્ડ: <strong>${passwordDisplay}</strong>
+                        <button onclick="changePanchayatPassword('${item.id}', '${item.panchayatName}', '${item.adminPassword || ''}')" class="text-xs text-blue-600 hover:underline ml-1 font-sans" title="પાસવર્ડ બદલો">
+                            (બદલો)
+                        </button>
+                    </div>
                 </td>
                 <td class="p-2.5 text-center">
                     <button onclick="togglePanchayatStatus('${item.id}', ${item.isActive})" 
@@ -132,7 +144,7 @@ function renderPanchayatTable(list) {
                         ${item.isActive ? 'Active (ON)' : 'Deactive (OFF)'}
                     </button>
                 </td>
-                <td class="p-2.5 text-center space-x-1">
+                <td class="p-2.5 text-center space-x-1 space-y-1">
                     <a href="${shareUrl}" target="_blank" class="inline-block bg-blue-50 text-blue-700 border border-blue-200 px-2 py-1 rounded font-bold hover:bg-blue-100 text-[11px]" title="વેબસાઇટ ખોલો">
                         <i class="fa-solid fa-arrow-up-right-from-square"></i> ખોલો
                     </a>
@@ -142,6 +154,9 @@ function renderPanchayatTable(list) {
                     <a href="admin.html?id=${item.id}" target="_blank" class="inline-block bg-purple-50 text-purple-700 border border-purple-200 px-2 py-1 rounded font-bold hover:bg-purple-100 text-[11px]" title="એડમિન કંટ્રોલ પેનલ">
                         <i class="fa-solid fa-gear"></i> એડમિન
                     </a>
+                    <button onclick="deletePanchayat('${item.id}', '${item.panchayatName}')" class="bg-red-50 text-red-700 border border-red-200 px-2 py-1 rounded font-bold hover:bg-red-100 text-[11px]" title="પંચાયત ડિલીટ કરો">
+                        <i class="fa-solid fa-trash"></i> ડિલીટ
+                    </button>
                 </td>
             </tr>
         `;
@@ -156,6 +171,41 @@ window.togglePanchayatStatus = async (id, currentStatus) => {
         });
     } catch (err) {
         console.error("Error updating status:", err);
+    }
+};
+
+// Global function to Change Panchayat Admin Password
+window.changePanchayatPassword = async (id, panchayatName, oldPassword) => {
+    const newPassword = prompt(`"${panchayatName}" માટે નવો એડમિન પાસવર્ડ દાખલ કરો:`, oldPassword);
+    if (newPassword !== null) {
+        const trimmed = newPassword.trim();
+        if (!trimmed) {
+            alert("પાસવર્ડ ખાલી રાખી શકાતો નથી!");
+            return;
+        }
+        try {
+            await updateDoc(doc(db, "panchayats", id), {
+                adminPassword: trimmed
+            });
+            alert(`"${panchayatName}" નો પાસવર્ડ સફળતાપૂર્વક અપડેટ થઈ ગયો!`);
+        } catch (err) {
+            console.error("Error updating password:", err);
+            alert("પાસવર્ડ અપડેટ કરવામાં ભૂલ આવી: " + err.message);
+        }
+    }
+};
+
+// Global function to Delete Panchayat
+window.deletePanchayat = async (id, panchayatName) => {
+    const confirmed = confirm(`શું તમે ખરેખર "${panchayatName}" પંચાયતને કાયમી ધોરણે ડિલીટ કરવા માગો છો?\n\nઆ પ્રક્રિયા પાછી ખેંચી શકાશે નહીં.`);
+    if (confirmed) {
+        try {
+            await deleteDoc(doc(db, "panchayats", id));
+            alert(`"${panchayatName}" પંચાયત સફળતાપૂર્વક ડિલીટ થઈ ગઈ!`);
+        } catch (err) {
+            console.error("Error deleting panchayat:", err);
+            alert("પંચાયત ડિલીટ કરવામાં ભૂલ આવી: " + err.message);
+        }
     }
 };
 
