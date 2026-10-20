@@ -157,6 +157,15 @@ window.copyPanchayatLink = (link) => {
     });
 };
 
+
+// Helper for generating unique ID safely
+function generateDocId(district, taluka, panchayat) {
+    const cleanStr = (str) => str ? str.toLowerCase().trim().replace(/\s+/g, "_").replace(/[^\w_]/g, "") : "";
+    return `${cleanStr(district)}_${cleanStr(taluka)}_${cleanStr(panchayat)}_${Date.now()}`;
+}
+
+
+
 // Filter Search
 document.getElementById("search-input")?.addEventListener("input", (e) => {
     const query = e.target.value.toLowerCase();
