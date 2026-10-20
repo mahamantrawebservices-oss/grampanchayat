@@ -39,16 +39,13 @@ saveMaintBtn?.addEventListener("click", async () => {
     }
 });
 
-// Helper for generating unique ID based on District, Taluka & Panchayat Name
+// Helper for generating unique ID safely (ફક્ત એક જ વાર ડિક્લેર કરેલું છે)
 function generateDocId(district, taluka, panchayat) {
-    return `${district}_${taluka}_${panchayat}`
-        .toLowerCase()
-        .trim()
-        .replace(/\s+/g, "_")
-        .replace(/[^\w_]/g, "");
+    const cleanStr = (str) => str ? str.toLowerCase().trim().replace(/\s+/g, "_").replace(/[^\w_]/g, "") : "";
+    return `${cleanStr(district)}_${cleanStr(taluka)}_${cleanStr(panchayat)}_${Date.now()}`;
 }
 
-// 2. Add New Panchayat
+// 2. Add New Panchayat Form Handler
 const addForm = document.getElementById("add-panchayat-form");
 addForm?.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -68,7 +65,7 @@ addForm?.addEventListener("submit", async (e) => {
             phone,
             isActive,
             createdAt: new Date()
-        }, { merge: true });
+        });
 
         alert(`${panchayatName} ગ્રામ પંચાયત સફળતાપૂર્વક ઉમેરાઈ ગઈ!`);
         addForm.reset();
@@ -103,7 +100,6 @@ function renderPanchayatTable(list) {
         return;
     }
 
-    // Dynamic base URL for index.html
     const baseUrl = window.location.origin + window.location.pathname.replace("super-admin.html", "index.html");
 
     tbody.innerHTML = list.map(item => {
@@ -156,15 +152,6 @@ window.copyPanchayatLink = (link) => {
         console.error("Copy failed:", err);
     });
 };
-
-
-// Helper for generating unique ID safely
-function generateDocId(district, taluka, panchayat) {
-    const cleanStr = (str) => str ? str.toLowerCase().trim().replace(/\s+/g, "_").replace(/[^\w_]/g, "") : "";
-    return `${cleanStr(district)}_${cleanStr(taluka)}_${cleanStr(panchayat)}_${Date.now()}`;
-}
-
-
 
 // Filter Search
 document.getElementById("search-input")?.addEventListener("input", (e) => {
