@@ -39,10 +39,11 @@ saveMaintBtn?.addEventListener("click", async () => {
     }
 });
 
-// Helper for generating unique ID
+// Helper for generating unique ID based on District, Taluka & Panchayat Name
 function generateDocId(district, taluka, panchayat) {
     return `${district}_${taluka}_${panchayat}`
         .toLowerCase()
+        .trim()
         .replace(/\s+/g, "_")
         .replace(/[^\w_]/g, "");
 }
@@ -60,7 +61,6 @@ addForm?.addEventListener("submit", async (e) => {
 
         const docId = generateDocId(district, taluka, panchayatName);
 
-        // Fixed double doc() syntax error here
         await setDoc(doc(db, "panchayats", docId), {
             district,
             taluka,
@@ -68,13 +68,13 @@ addForm?.addEventListener("submit", async (e) => {
             phone,
             isActive,
             createdAt: new Date()
-        });
+        }, { merge: true });
 
         alert(`${panchayatName} ગ્રામ પંચાયત સફળતાપૂર્વક ઉમેરાઈ ગઈ!`);
         addForm.reset();
     } catch (err) {
         console.error("Error adding panchayat:", err);
-        alert("પંચાયત ઉમેરવામાં ભૂલ આવી.");
+        alert("પંચાયત ઉમેરવામાં ભૂલ આવી: " + err.message);
     }
 });
 
@@ -99,28 +99,42 @@ function renderPanchayatTable(list) {
     if (!tbody) return;
 
     if (!list.length) {
-        tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-500">કોઈ પંચાયત મળી નથી.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-500">કોઈ પંચાયત મળી નથી.</td></tr>`;
         return;
     }
 
-    tbody.innerHTML = list.map(item => `
-        <tr class="border-b hover:bg-slate-50">
-            <td class="p-2.5 font-semibold text-gray-800">${item.district || '-'} / ${item.taluka || '-'}</td>
-            <td class="p-2.5 font-bold text-emerald-800">${item.panchayatName || '-'}</td>
-            <td class="p-2.5 text-gray-600">${item.phone || '-'}</td>
-            <td class="p-2.5 text-center">
-                <button onclick="togglePanchayatStatus('${item.id}', ${item.isActive})" 
-                    class="px-3 py-1 rounded-full text-[10px] font-bold shadow ${item.isActive ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-red-100 text-red-800 border border-red-300'}">
-                    ${item.isActive ? 'Active (ON)' : 'Deactive (OFF)'}
-                </button>
-            </td>
-            <td class="p-2.5 text-center">
-                <a href="proactive.html?id=${item.id}" target="_blank" class="text-blue-600 hover:underline font-bold">
-                    <i class="fa-solid fa-arrow-up-right-from-square"></i> જુઓ
-                </a>
-            </td>
-        </tr>
-    `).join("");
+    // Dynamic base URL for index.html
+    const baseUrl = window.location.origin + window.location.pathname.replace("super-admin.html", "index.html");
+
+    tbody.innerHTML = list.map(item => {
+        const shareUrl = `${baseUrl}?id=${item.id}`;
+        return `
+            <tr class="border-b hover:bg-slate-50">
+                <td class="p-2.5 font-semibold text-gray-800">${item.district || '-'} / ${item.taluka || '-'}</td>
+                <td class="p-2.5 font-bold text-emerald-800">
+                    ${item.panchayatName || '-'}
+                    <div class="text-[10px] text-gray-500 font-normal">ફોન: ${item.phone || '-'} | ID: ${item.id}</div>
+                </td>
+                <td class="p-2.5 text-center">
+                    <button onclick="togglePanchayatStatus('${item.id}', ${item.isActive})" 
+                        class="px-3 py-1 rounded-full text-[10px] font-bold shadow transition ${item.isActive ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-red-100 text-red-800 border border-red-300'}">
+                        ${item.isActive ? 'Active (ON)' : 'Deactive (OFF)'}
+                    </button>
+                </td>
+                <td class="p-2.5 text-center space-x-1">
+                    <a href="${shareUrl}" target="_blank" class="inline-block bg-blue-50 text-blue-700 border border-blue-200 px-2 py-1 rounded font-bold hover:bg-blue-100 text-[11px]" title="વેબસાઇટ ખોલો">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i> ખોલો
+                    </a>
+                    <button onclick="copyPanchayatLink('${shareUrl}')" class="bg-slate-100 text-slate-700 border border-slate-300 px-2 py-1 rounded font-bold hover:bg-slate-200 text-[11px]" title="લિંક કોપી કરો">
+                        <i class="fa-solid fa-copy"></i> લિંક કોપી
+                    </button>
+                    <a href="admin.html?id=${item.id}" target="_blank" class="inline-block bg-purple-50 text-purple-700 border border-purple-200 px-2 py-1 rounded font-bold hover:bg-purple-100 text-[11px]" title="એડમિન કંટ્રોલ પેનલ">
+                        <i class="fa-solid fa-gear"></i> એડમિન
+                    </a>
+                </td>
+            </tr>
+        `;
+    }).join("");
 }
 
 // Global function to toggle active status
@@ -132,6 +146,15 @@ window.togglePanchayatStatus = async (id, currentStatus) => {
     } catch (err) {
         console.error("Error updating status:", err);
     }
+};
+
+// Global function to Copy Shareable Link
+window.copyPanchayatLink = (link) => {
+    navigator.clipboard.writeText(link).then(() => {
+        alert("ગ્રામ પંચાયતની વેબસાઇટ લિંક કોપી થઈ ગઈ છે!\n\n" + link);
+    }).catch(err => {
+        console.error("Copy failed:", err);
+    });
 };
 
 // Filter Search
