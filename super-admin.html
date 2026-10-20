@@ -478,24 +478,45 @@
             }
         };
 
-        // ડિલીટ કરવા માટે સુપર એડમિન પાસવર્ડ કન્ફર્મેશન સુરક્ષા
+       // પંચાયત અને તેનો બધો જ ડેટા (sub-collections) ફાયરબેઝમાંથી ડિલીટ કરવા માટેનું ફંક્શન
         window.deletePanchayat = async (id, panchayatName) => {
-            const confirmed = confirm(`ચેતવણી: શું તમે ખરેખર "${panchayatName}" પંચાયતને કાયમી ધોરણે ડિલીટ કરવા માગો છો?\n\nઆ પ્રક્રિયા પાછી ખેંચી શકાશે નહીં.`);
+            const confirmed = confirm(`ચેતવણી: શું તમે ખરેખર "${panchayatName}" પંચાયત અને તેનો આખો ડેટા કાયમી ધોરણે ડિલીટ કરવા માગો છો?\n\nઆ પ્રક્રિયા પાછી ખેંચી શકાશે નહીં.`);
             if (confirmed) {
-                const superPass = prompt(`સુરક્ષા ખાતર તમારા 'સુપર એડમિન પાસવર્ડ' (Super Admin Password) દાખલ કરો:`);
+                const superPass = prompt(`સુરક્ષા ખાતર તમારો 'સુપર એડમિન પાસવર્ડ' દાખલ કરો:`);
                 if (superPass !== null) {
                     try {
                         const snap = await getDoc(doc(db, "system_settings", "super_admin"));
                         const correctPass = snap.exists() ? snap.data().password : "admin123";
 
                         if (superPass.trim() === correctPass) {
+                            // ૧. પંચાયતની અંદરની તમામ સબ-કલેક્શન્સની યાદી
+                            const subCollectionsList = [
+                                "posts", "notices", "gallery", "village_details", 
+                                "complaints", "panchayat_meta", "panchayat_committee", 
+                                "panchayat_staff", "panchayat_schedule", "active_committees", 
+                                "settings", "custom_pages", "events", "disaster_management", 
+                                "village_map_settings", "village_glance", "contact_info", 
+                                "user_feedbacks", "proactive_disclosure"
+                            ];
+
+                            // ૨. બધી જ સબ-કલેક્શન્સના ડોક્યુમેન્ટ્સ ડિલીટ કરવા
+                            for (const subCol of subCollectionsList) {
+                                const subColRef = collection(db, "panchayats", id, subCol);
+                                const subSnap = await getDocs(subColRef);
+                                
+                                const deletePromises = subSnap.docs.map(subDoc => deleteDoc(subDoc.ref));
+                                await Promise.all(deletePromises);
+                            }
+
+                            // ૩. છેલ્લે મુખ્ય પંચાયતનું ડોક્યુમેન્ટ ડિલીટ કરવું
                             await deleteDoc(doc(db, "panchayats", id));
-                            alert(`"${panchayatName}" પંચાયત સફળતાપૂર્વક ડિલીટ થઈ ગઈ!`);
+
+                            alert(`"${panchayatName}" પંચાયત અને તેનો બધો ડેટા સફળતાપૂર્વક ડિલીટ થઈ ગયો છે!`);
                         } else {
                             alert("ખોટો સુપર એડમિન પાસવર્ડ! પંચાયત ડિલીટ કરવામાં આવી નથી.");
                         }
                     } catch (err) {
-                        console.error("Error deleting panchayat:", err);
+                        console.error("Error deleting panchayat and sub-data:", err);
                         alert("પંચાયત ડિલીટ કરવામાં ભૂલ આવી: " + err.message);
                     }
                 }
