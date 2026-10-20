@@ -1,5 +1,26 @@
-import { db } from "./js/firebase-config.js";
-import { doc, setDoc, getDoc, collection, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+// Direct Firebase Configuration Key
+const firebaseConfig = {
+    apiKey: "AIzaSyCMhWWI_6oxPIVEQEVlq2SIBf72EI2o8NI",
+    authDomain: "gram-panchayat-33c86.firebaseapp.com",
+    projectId: "gram-panchayat-33c86",
+    storageBucket: "gram-panchayat-33c86.firebasestorage.app",
+    messagingSenderId: "1025176315779",
+    appId: "1:1025176315779:web:a24ca10a06c55edcc8f8b6",
+    measurementId: "G-TQBSXCWNBV"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// Helper for Unique Document ID Generation
+function generateDocId(district, taluka, panchayat) {
+    const cleanStr = (str) => str ? str.toLowerCase().trim().replace(/\s+/g, "_").replace(/[^\w_]/g, "") : "";
+    return `${cleanStr(district)}_${cleanStr(taluka)}_${cleanStr(panchayat)}_${Date.now()}`;
+}
 
 // 1. Maintenance Mode Manager
 const maintModeSelect = document.getElementById("maint-mode-select");
@@ -12,8 +33,8 @@ async function loadMaintenanceSettings() {
         const snap = await getDoc(doc(db, "system_settings", "global_config"));
         if (snap.exists()) {
             const data = snap.data();
-            maintModeSelect.value = data.isMaintenance ? "true" : "false";
-            maintMsgInput.value = data.maintenanceMessage || "";
+            if (maintModeSelect) maintModeSelect.value = data.isMaintenance ? "true" : "false";
+            if (maintMsgInput) maintMsgInput.value = data.maintenanceMessage || "";
         }
     } catch (err) {
         console.error("Error loading system settings:", err);
@@ -38,12 +59,6 @@ saveMaintBtn?.addEventListener("click", async () => {
         alert("સેટિંગ્સ સેવ કરવામાં ભૂલ આવી.");
     }
 });
-
-// Helper for generating unique ID safely (ફક્ત એક જ વાર ડિક્લેર કરેલું છે)
-function generateDocId(district, taluka, panchayat) {
-    const cleanStr = (str) => str ? str.toLowerCase().trim().replace(/\s+/g, "_").replace(/[^\w_]/g, "") : "";
-    return `${cleanStr(district)}_${cleanStr(taluka)}_${cleanStr(panchayat)}_${Date.now()}`;
-}
 
 // 2. Add New Panchayat Form Handler
 const addForm = document.getElementById("add-panchayat-form");
@@ -109,7 +124,7 @@ function renderPanchayatTable(list) {
                 <td class="p-2.5 font-semibold text-gray-800">${item.district || '-'} / ${item.taluka || '-'}</td>
                 <td class="p-2.5 font-bold text-emerald-800">
                     ${item.panchayatName || '-'}
-                    <div class="text-[10px] text-gray-500 font-normal">ફોન: ${item.phone || '-'} | ID: ${item.id}</div>
+                    <div class="text-[10px] text-gray-500 font-normal">ફોન: ${item.phone || '-'}</div>
                 </td>
                 <td class="p-2.5 text-center">
                     <button onclick="togglePanchayatStatus('${item.id}', ${item.isActive})" 
