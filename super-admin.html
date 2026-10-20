@@ -9,7 +9,24 @@
 </head>
 <body class="bg-slate-100 min-h-screen font-sans text-gray-800 p-4 md:p-8">
 
-    <div class="max-w-6xl mx-auto space-y-6">
+    <!-- Super Admin Login Modal (Firebase માંથી પાસવર્ડ ચકાસવા માટે) -->
+    <div id="super-login-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl w-96 space-y-4">
+            <h2 class="text-xl font-bold text-slate-800 text-center flex items-center justify-center gap-2">
+                <i class="fa-solid fa-lock text-amber-500"></i> સુપર એડમિન લૉગિન
+            </h2>
+            <p class="text-xs text-slate-500 text-center">કૃપા કરીને કંટ્રોલ પેનલ ઍક્સેસ કરવા માટે સુપર એડમિન પાસવર્ડ દાખલ કરો.</p>
+            <form id="super-login-form" class="space-y-3">
+                <input type="password" id="super-pass-input" placeholder="સુપર એડમિન પાસવર્ડ" required class="w-full border p-2.5 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500 outline-none">
+                <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold p-2.5 rounded-lg text-xs transition">
+                    લૉગિન કરો
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Super Admin Dashboard (Hidden initially) -->
+    <div id="super-dashboard" class="max-w-6xl mx-auto space-y-6 hidden">
 
         <!-- Header -->
         <div class="bg-slate-900 text-white p-6 rounded-2xl shadow-xl flex flex-col md:flex-row justify-between items-center gap-4">
@@ -19,10 +36,16 @@
                 </h1>
                 <p class="text-xs text-slate-400 mt-1">ગુજરાતની ગ્રામ પંચાયતોનું સેન્ટ્રલ મેનેજમેન્ટ અને વન-ટાઇમ લિંક કંટ્રોલ</p>
             </div>
-            <div class="flex gap-3">
+            <div class="flex items-center gap-3">
                 <span id="total-panchayats-count" class="bg-slate-800 px-4 py-2 rounded-xl text-xs font-semibold text-emerald-400 border border-slate-700">
                     કુલ પંચાયતો: ૦
                 </span>
+                <button id="change-super-pass-btn" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5" title="સુપર એડમિન પાસવર્ડ બદલો">
+                    <i class="fa-solid fa-key"></i> પાસવર્ડ બદલો
+                </button>
+                <button id="super-logout-btn" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-xl text-xs font-bold transition">
+                    લૉગઆઉટ
+                </button>
             </div>
         </div>
 
@@ -92,14 +115,28 @@
                 </form>
             </div>
 
-            <!-- List of Panchayats -->
+            <!-- List of Panchayats with District & Taluka Filters -->
             <div class="md:col-span-2 bg-white p-5 rounded-2xl shadow-md border space-y-4">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b pb-2">
-                    <h3 class="font-bold text-sm text-slate-800 flex items-center gap-2">
-                        <i class="fa-solid fa-list-check text-blue-600"></i> નોંધાયેલ ગ્રામ પંચાયતોની યાદી
-                    </h3>
-                    <div class="flex gap-2 text-xs">
-                        <input type="text" id="search-input" placeholder="શોધો (જિલ્લો/તાલુકો/ગામ)..." class="border p-1.5 rounded-lg w-48">
+                <div class="flex flex-col gap-3 border-b pb-3">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                        <h3 class="font-bold text-sm text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-list-check text-blue-600"></i> નોંધાયેલ ગ્રામ પંચાયતોની યાદી
+                        </h3>
+                        <input type="text" id="search-input" placeholder="નામથી શોધો..." class="border p-1.5 rounded-lg text-xs w-44">
+                    </div>
+                    
+                    <!-- Filters Row -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                        <div>
+                            <select id="filter-district" class="w-full border p-1.5 rounded-lg bg-gray-50 font-medium">
+                                <option value="">તમામ જિલ્લાઓ (All Districts)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <select id="filter-taluka" class="w-full border p-1.5 rounded-lg bg-gray-50 font-medium">
+                                <option value="">તમામ તાલુકાઓ (All Talukas)</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
@@ -108,7 +145,7 @@
                         <thead>
                             <tr class="bg-slate-100 text-slate-700 border-b">
                                 <th class="p-2.5">જિલ્લો / તાલુકો</th>
-                                <th class="p-2.5">ગ્રામ પંચાયત & પાસવર્ડ</th>
+                                <th class="p-2.5">પંચાયત ID & નામ & પાસવર્ડ</th>
                                 <th class="p-2.5 text-center">સ્ટેટસ</th>
                                 <th class="p-2.5 text-center">કંટ્રોલ & એક્શન</th>
                             </tr>
@@ -124,12 +161,11 @@
 
     </div>
 
-    <!-- INLINE FIREBASE & LOGIC SCRIPT (No 404 Error) -->
+    <!-- INLINE FIREBASE & LOGIC SCRIPT -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // Direct Firebase Configuration Key
         const firebaseConfig = {
             apiKey: "AIzaSyCMhWWI_6oxPIVEQEVlq2SIBf72EI2o8NI",
             authDomain: "gram-panchayat-33c86.firebaseapp.com",
@@ -140,9 +176,80 @@
             measurementId: "G-TQBSXCWNBV"
         };
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+
+        // --- Super Admin Password & Session Management ---
+        const superLoginModal = document.getElementById("super-login-modal");
+        const superDashboard = document.getElementById("super-dashboard");
+        const superLoginForm = document.getElementById("super-login-form");
+        const superPassInput = document.getElementById("super-pass-input");
+        const superLogoutBtn = document.getElementById("super-logout-btn");
+        const changeSuperPassBtn = document.getElementById("change-super-pass-btn");
+
+        async function checkSuperAuth() {
+            try {
+                // Firebase માંથી સુપર એડમિન પાસવર્ડ મેળવો (જો ન હોય તો ડિફોલ્ટ admin123 રાખવો)
+                const snap = await getDoc(doc(db, "system_settings", "super_admin"));
+                let correctPass = "admin123";
+                if (snap.exists() && snap.data().password) {
+                    correctPass = snap.data().password;
+                } else {
+                    // પહેલીવાર માટે ડિફોલ્ટ સેવ કરો
+                    await setDoc(doc(db, "system_settings", "super_admin"), { password: "admin123" }, { merge: true });
+                }
+
+                if (sessionStorage.getItem("super_admin_logged") === "true") {
+                    superLoginModal.classList.add("hidden");
+                    superDashboard.classList.remove("hidden");
+                    loadMaintenanceSettings();
+                } else {
+                    superLoginModal.classList.remove("hidden");
+                    superDashboard.classList.add("hidden");
+                }
+            } catch (err) {
+                console.error("Auth check error:", err);
+            }
+        }
+
+        superLoginForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const entered = superPassInput.value.trim();
+            const snap = await getDoc(doc(db, "system_settings", "super_admin"));
+            const correctPass = snap.exists() ? snap.data().password : "admin123";
+
+            if (entered === correctPass) {
+                sessionStorage.setItem("super_admin_logged", "true");
+                superLoginModal.classList.add("hidden");
+                superDashboard.classList.remove("hidden");
+                loadMaintenanceSettings();
+                superPassInput.value = "";
+            } else {
+                alert("ખોટો સુપર એડમિન પાસવર્ડ!");
+            }
+        });
+
+        superLogoutBtn.addEventListener("click", () => {
+            sessionStorage.removeItem("super_admin_logged");
+            checkSuperAuth();
+        });
+
+        changeSuperPassBtn.addEventListener("click", async () => {
+            const snap = await getDoc(doc(db, "system_settings", "super_admin"));
+            const currentPass = snap.exists() ? snap.data().password : "admin123";
+            const newPass = prompt("નવો સુપર એડમિન પાસવર્ડ દાખલ કરો:", currentPass);
+            if (newPass !== null) {
+                const trimmed = newPass.trim();
+                if (!trimmed) {
+                    alert("પાસવર્ડ ખાલી રાખી શકાતો નથી!");
+                    return;
+                }
+                await setDoc(doc(db, "system_settings", "super_admin"), { password: trimmed }, { merge: true });
+                alert("સુપર એડમિન પાસવર્ડ સફળતાપૂર્વક બદલાઈ ગયો!");
+            }
+        });
+
+        checkSuperAuth();
 
         // Helper for Unique Document ID Generation
         function generateDocId(district, taluka, panchayat) {
@@ -155,7 +262,6 @@
         const maintMsgInput = document.getElementById("maint-msg-input");
         const saveMaintBtn = document.getElementById("save-maint-btn");
 
-        // Load existing maintenance settings
         async function loadMaintenanceSettings() {
             try {
                 const snap = await getDoc(doc(db, "system_settings", "global_config"));
@@ -169,7 +275,6 @@
             }
         }
 
-        // Save maintenance settings
         saveMaintBtn?.addEventListener("click", async () => {
             try {
                 const isMaintenance = maintModeSelect.value === "true";
@@ -179,7 +284,7 @@
                     isMaintenance,
                     maintenanceMessage,
                     updatedAt: new Date()
-                });
+                }, { merge: true });
 
                 alert("ડેવલપર મેન્ટેનન્સ સેટિંગ્સ સફળતાપૂર્વક સેવ થઈ ગયા!");
             } catch (err) {
@@ -188,7 +293,7 @@
             }
         });
 
-        // 2. Add New Panchayat Form Handler (With Admin Password)
+        // 2. Add New Panchayat Form Handler
         const addForm = document.getElementById("add-panchayat-form");
         addForm?.addEventListener("submit", async (e) => {
             e.preventDefault();
@@ -220,8 +325,11 @@
             }
         });
 
-        // 3. Real-time List Render & Toggle Status
+        // 3. Real-time List Render & Filters
         let allPanchayats = [];
+        const filterDistrict = document.getElementById("filter-district");
+        const filterTaluka = document.getElementById("filter-taluka");
+        const searchInput = document.getElementById("search-input");
 
         onSnapshot(collection(db, "panchayats"), (snapshot) => {
             allPanchayats = [];
@@ -233,8 +341,57 @@
             if (totalCountEl) {
                 totalCountEl.textContent = `કુલ પંચાયતો: ${allPanchayats.length}`;
             }
-            renderPanchayatTable(allPanchayats);
+
+            updateDropdownFilters();
+            filterAndRenderTable();
         });
+
+        function updateDropdownFilters() {
+            const districts = [...new Set(allPanchayats.map(p => p.district).filter(Boolean))].sort();
+            const currentDist = filterDistrict.value;
+
+            filterDistrict.innerHTML = `<option value="">તમામ જિલ્લાઓ (All Districts)</option>` + 
+                districts.map(d => `<option value="${d}" ${d === currentDist ? 'selected' : ''}>${d}</option>`).join("");
+
+            updateTalukaDropdown();
+        }
+
+        function updateTalukaDropdown() {
+            const selectedDist = filterDistrict.value;
+            const talukas = [...new Set(allPanchayats
+                .filter(p => !selectedDist || p.district === selectedDist)
+                .map(p => p.taluka).filter(Boolean))].sort();
+            
+            const currentTaluka = filterTaluka.value;
+
+            filterTaluka.innerHTML = `<option value="">તમામ તાલુકાઓ (All Talukas)</option>` + 
+                talukas.map(t => `<option value="${t}" ${t === currentTaluka ? 'selected' : ''}>${t}</option>`).join("");
+        }
+
+        filterDistrict.addEventListener("change", () => {
+            updateTalukaDropdown();
+            filterAndRenderTable();
+        });
+
+        filterTaluka.addEventListener("change", filterAndRenderTable);
+        searchInput.addEventListener("input", filterAndRenderTable);
+
+        function filterAndRenderTable() {
+            const distVal = filterDistrict.value;
+            const talukaVal = filterTaluka.value;
+            const query = searchInput.value.toLowerCase().trim();
+
+            const filtered = allPanchayats.filter(p => {
+                const matchDist = !distVal || p.district === distVal;
+                const matchTaluka = !talukaVal || p.taluka === talukaVal;
+                const matchSearch = !query || 
+                    (p.panchayatName && p.panchayatName.toLowerCase().includes(query)) ||
+                    (p.id && p.id.toLowerCase().includes(query));
+                return matchDist && matchTaluka && matchSearch;
+            });
+
+            renderPanchayatTable(filtered);
+        }
 
         function renderPanchayatTable(list) {
             const tbody = document.getElementById("panchayat-table-body");
@@ -256,6 +413,9 @@
                         <td class="p-2.5 font-semibold text-gray-800">${item.district || '-'} / ${item.taluka || '-'}</td>
                         <td class="p-2.5 font-bold text-emerald-800">
                             ${item.panchayatName || '-'}
+                            <div class="text-[10px] text-indigo-600 font-mono mt-0.5" title="પંચાયત આઈડી">
+                                🆔 ID: <span class="select-all">${item.id}</span>
+                            </div>
                             <div class="text-[10px] text-gray-500 font-normal mt-0.5">
                                 ફોન: ${item.phone || '-'}
                             </div>
@@ -280,7 +440,7 @@
                                 <i class="fa-solid fa-copy"></i> લિંક કોપી
                             </button>
                             <a href="admin.html?id=${item.id}" target="_blank" class="inline-block bg-purple-50 text-purple-700 border border-purple-200 px-2 py-1 rounded font-bold hover:bg-purple-100 text-[11px]" title="એડમિન કંટ્રોલ પેનલ">
-                                <i class="fa-solid fa-gear"></i> એડમિન
+                                <i class="fa-solid fa-gear"></i> એડિન
                             </a>
                             <button onclick="deletePanchayat('${item.id}', '${item.panchayatName}')" class="bg-red-50 text-red-700 border border-red-200 px-2 py-1 rounded font-bold hover:bg-red-100 text-[11px]" title="પંચાયત ડિલીટ કરો">
                                 <i class="fa-solid fa-trash"></i> ડિલીટ
@@ -318,15 +478,26 @@
             }
         };
 
+        // ડિલીટ કરવા માટે સુપર એડમિન પાસવર્ડ કન્ફર્મેશન સુરક્ષા
         window.deletePanchayat = async (id, panchayatName) => {
-            const confirmed = confirm(`શું તમે ખરેખર "${panchayatName}" પંચાયતને કાયમી ધોરણે ડિલીટ કરવા માગો છો?\n\nઆ પ્રક્રિયા પાછી ખેંચી શકાશે નહીં.`);
+            const confirmed = confirm(`ચેતવણી: શું તમે ખરેખર "${panchayatName}" પંચાયતને કાયમી ધોરણે ડિલીટ કરવા માગો છો?\n\nઆ પ્રક્રિયા પાછી ખેંચી શકાશે નહીં.`);
             if (confirmed) {
-                try {
-                    await deleteDoc(doc(db, "panchayats", id));
-                    alert(`"${panchayatName}" પંચાયત સફળતાપૂર્વક ડિલીટ થઈ ગઈ!`);
-                } catch (err) {
-                    console.error("Error deleting panchayat:", err);
-                    alert("પંચાયત ડિલીટ કરવામાં ભૂલ આવી: " + err.message);
+                const superPass = prompt(`સુરક્ષા ખાતર તમારા 'સુપર એડમિન પાસવર્ડ' (Super Admin Password) દાખલ કરો:`);
+                if (superPass !== null) {
+                    try {
+                        const snap = await getDoc(doc(db, "system_settings", "super_admin"));
+                        const correctPass = snap.exists() ? snap.data().password : "admin123";
+
+                        if (superPass.trim() === correctPass) {
+                            await deleteDoc(doc(db, "panchayats", id));
+                            alert(`"${panchayatName}" પંચાયત સફળતાપૂર્વક ડિલીટ થઈ ગઈ!`);
+                        } else {
+                            alert("ખોટો સુપર એડમિન પાસવર્ડ! પંચાયત ડિલીટ કરવામાં આવી નથી.");
+                        }
+                    } catch (err) {
+                        console.error("Error deleting panchayat:", err);
+                        alert("પંચાયત ડિલીટ કરવામાં ભૂલ આવી: " + err.message);
+                    }
                 }
             }
         };
@@ -338,19 +509,6 @@
                 console.error("Copy failed:", err);
             });
         };
-
-        // Filter Search
-        document.getElementById("search-input")?.addEventListener("input", (e) => {
-            const query = e.target.value.toLowerCase();
-            const filtered = allPanchayats.filter(p => 
-                (p.district && p.district.toLowerCase().includes(query)) ||
-                (p.taluka && p.taluka.toLowerCase().includes(query)) ||
-                (p.panchayatName && p.panchayatName.toLowerCase().includes(query))
-            );
-            renderPanchayatTable(filtered);
-        });
-
-        loadMaintenanceSettings();
     </script>
 </body>
 </html>
