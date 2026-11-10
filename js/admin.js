@@ -814,87 +814,72 @@ document.getElementById("add-schedule-form")?.addEventListener("submit", async (
     }
 });
 
-// --- ૯. કાર્યરત સમિતિઓ મેનેજર ---
-async function loadActiveCommittees() {
-    const container = document.getElementById("admin-committees-list");
-    if (!container || !lgdCode) return;
-    
+// --- ૯. કાર્યરત સમિતિઓ સેવ અથવા અપડેટ કરવા માટેનું ફોર્મ સબમિટ હેન્ડલર ---
+document.getElementById("add-committee-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    // 🔒 સેફ્ટી ચેક: જો lgdCode કે panchayatId ગાયબ હોય તો URL માંથી પકડી લેવો
+    let currentLgdCode = typeof lgdCode !== 'undefined' ? lgdCode : null;
+    if (!currentLgdCode) {
+        const urlParams = new URLSearchParams(window.location.search);
+        currentLgdCode = urlParams.get('id') || localStorage.getItem("panchayatId") || "517045";
+    }
+
+    if (!currentLgdCode) {
+        alert("⚠️ ભૂલ: LGD Code (પંચાયત ID) મળ્યો નથી! કૃપા કરીને સુપર એડમિન પેનલમાંથી યોગ્ય લિંક દ્વારા પ્રવેશ કરો.");
+        return;
+    }
+
+    const editIdInput = document.getElementById("comm-edit-id");
+    const editId = editIdInput ? editIdInput.value : "";
+
+    // ફોર્મમાંથી સમિતિનું નામ મેળવવું
+    const committeeName = document.getElementById("comm-name")?.value.trim() || document.getElementById("committee-name")?.value.trim();
+
+    if (!committeeName) {
+        alert("⚠️ કૃપા કરીને સમિતિનું નામ અવશ્ય ભરો!");
+        return;
+    }
+
+    // નોંધ: જો તમારી પાસે સભ્યો (Members) ડાયનેમિક ઉમેરવાનું લોજિક હોય તો તે અહીં પડાશે
+    const payload = {
+        committeeName: committeeName,
+        updatedAt: new Date()
+    };
+
     try {
-        const snap = await getDocs(getPanchayatCol("active_committees"));
-        container.innerHTML = "";
-        
-        if (snap.empty) {
-            container.innerHTML = `<p class="text-xs text-gray-500 p-2">કોઈ કાર્યરત સમિતિ ઉપલબ્ધ નથી.</p>`;
-            return;
+        // ફાયરબેઝ પાથ સેટ કરવો: panchayats / {currentLgdCode} / active_committees
+        const committeeCollectionRef = collection(db, "panchayats", currentLgdCode, "active_committees");
+
+        if (editId) {
+            // જો એડિટ થતું હોય તો અપડેટ કરવું
+            const docRef = doc(db, "panchayats", currentLgdCode, "active_committees", editId);
+            await updateDoc(docRef, payload);
+            alert("✅ સમિતિ સફળતાપૂર્વક અપડેટ થઈ ગઈ!");
+
+            // એડિટ મોડ રીસેટ કરવો
+            editIdInput.value = "";
+            const submitBtn = e.target.querySelector("button[type='submit']");
+            if (submitBtn) {
+                submitBtn.innerText = "સમિતિ ઉમેરો";
+                submitBtn.classList.remove("bg-amber-600", "hover:bg-amber-700");
+                submitBtn.classList.add("bg-emerald-600", "hover:bg-emerald-700");
+            }
+        } else {
+            // નવું ઉમેરવું
+            payload.createdAt = new Date();
+            payload.members = []; // જો સભ્યો હોય તો અહીં એરે આવી શકે
+            await addDoc(committeeCollectionRef, payload);
+            alert("✅ નવી સમિતિ સફળતાપૂર્વક ઉમેરાઈ ગઈ!");
         }
 
-        snap.forEach(d => {
-            const item = d.data();
-            container.innerHTML += `
-                <div class="bg-gray-50 border p-2.5 rounded text-xs mb-1.5 shadow-sm space-y-1">
-                    <div class="flex justify-between items-center font-bold">
-                        <span class="text-gray-900">${item.committeeName || 'સમિતિ'} (${item.members ? item.members.length : 0} સભ્યો)</span>
-                        <div class="flex items-center gap-1">
-                            <button type="button" onclick="editActiveComm('${d.id}', '${encodeURIComponent(item.committeeName || '')}')" class="bg-amber-500 hover:bg-amber-600 text-white px-2 py-0.5 rounded text-[10px] font-bold shadow">
-                                એડિટ
-                            </button>
-                            <button type="button" onclick="deleteActiveComm('${d.id}')" class="bg-red-600 hover:bg-red-700 text-white px-2 py-0.5 rounded text-[10px] font-bold shadow">
-                                ડિલીટ
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-        });
+        e.target.reset();
+        loadActiveCommittees(); // લિસ્ટ રિફ્રેશ કરવું
     } catch (err) {
-        console.error("Load Active Committees Error:", err);
+        console.error("Save/Update Committee Error:", err);
+        alert("સેવ કરવામાં ટેકનિકલ ભૂલ આવી.");
     }
-}
-
-window.deleteActiveComm = async (id) => {
-    if (confirm("શું તમે આ સમિતિ ડિલીટ કરવા માંગો છો?")) {
-        try {
-            await deleteDoc(getPanchayatDoc("active_committees", id));
-            alert("સમિતિ ડિલીટ થઈ ગઈ!");
-            loadActiveCommittees();
-        } catch (err) {
-            console.error("Delete Error:", err);
-            alert("ડિલીટ કરવામાં ભૂલ આવી.");
-        }
-    }
-};
-
-// એડિટ કરવા માટે સમિતિની માહિતી ફોર્મમાં લોડ કરવાનું ફંક્શન
-window.editActiveComm = (id, committeeName) => {
-    // ધારણા છે કે સમિતિના નામ માટે એડમિન ફોર્મમાં 'comm-name' અથવા સમાન ID વાળું ઇનપુટ છે
-    const nameInput = document.getElementById("comm-name") || document.getElementById("committee-name");
-    if (nameInput) {
-        nameInput.value = decodeURIComponent(committeeName);
-    }
-
-    // એડિટ માટે ID સ્ટોર કરવા હાઇડન ઇનપુટ ઉમેરવું
-    let editIdInput = document.getElementById("comm-edit-id");
-    if (!editIdInput) {
-        editIdInput = document.createElement("input");
-        editIdInput.type = "hidden";
-        editIdInput.id = "comm-edit-id";
-        // જે ફોર્મ દ્વારા સમિતિ ઉમેરાતી હોય તેમાં આ અપપેન્ડ થશે
-        const formEl = document.getElementById("add-committee-form") || nameInput?.closest("form");
-        if (formEl) formEl.appendChild(editIdInput);
-    }
-    if (editIdInput) editIdInput.value = id;
-
-    // સબમિટ બટનનું નામ બદલીને "અપડેટ કરો" કરવું
-    const formEl = document.getElementById("add-committee-form") || nameInput?.closest("form");
-    const submitBtn = formEl?.querySelector("button[type='submit']");
-    if (submitBtn) {
-        submitBtn.innerText = "સમિતિ અપડેટ કરો";
-        submitBtn.classList.remove("bg-emerald-600", "hover:bg-emerald-700");
-        submitBtn.classList.add("bg-amber-600", "hover:bg-amber-700");
-    }
-
-    formEl?.scrollIntoView({ behavior: 'smooth' });
-};
+});
 // --- ૧૦. મિલકત વેરા લિંક ---
 async function loadAdminTaxLink() {
     if (!lgdCode) return;
