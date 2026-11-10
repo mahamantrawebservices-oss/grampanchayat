@@ -1,697 +1,1170 @@
-<!DOCTYPE html>
-<html lang="gu">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>પંચાયત એડમિન કંટ્રોલ પેનલ</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Quill Editor CSS & JS -->
-    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
-    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-</head>
-<!--<body class="bg-slate-100 font-sans">...-->
-    <body class="min-h-screen flex flex-col font-sans" style="background-color: #97B3DE;">
 
-    <!-- Login Modal -->
-    <div id="login-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-        <div class="bg-white p-8 rounded-xl shadow-2xl w-96">
-            <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">એડમિન લોગિન</h2>
-            <form id="admin-login-form" class="space-y-4">
-                <input type="email" id="login-email" placeholder="ઇમેઇલ" required class="w-full border p-2 rounded text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500">
-                <input type="password" id="login-password" placeholder="પાસવર્ડ" required class="w-full border p-2 rounded text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500">
-                <button type="submit" class="w-full bg-emerald-600 text-white font-bold py-2 rounded hover:bg-emerald-700 transition">લોગિન કરો</button>
-            </form>
-        </div>
-    </div>
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getFirestore, collection, onSnapshot, addDoc, updateDoc, getDocs, doc, setDoc, getDoc, deleteDoc, query, where, Timestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
-    <!-- Main Admin Dashboard -->
-    <div id="admin-dashboard" class="hidden min-h-screen flex flex-col">
+// --- સેન્ટ્રલ ફાયરબેઝ કન્ફિગરેશન ---
+const firebaseConfig = {
+    apiKey: "AIzaSyCMhWWI_6oxPIVEQEVlq2SIBf72EI2o8NI",
+    authDomain: "gram-panchayat-33c86.firebaseapp.com",
+    projectId: "gram-panchayat-33c86",
+    storageBucket: "gram-panchayat-33c86.firebasestorage.app",
+    messagingSenderId: "1025176315779",
+    appId: "1:1025176315779:web:a24ca10a06c55edcc8f8b6",
+    measurementId: "G-TQBSXCWNBV"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+// --- ૦. URL માંથી LGD Code પકડવો ---
+const urlParams = new URLSearchParams(window.location.search);
+const lgdCode = urlParams.get('id');
+
+if (!lgdCode) {
+    alert("⚠️ ભૂલ: LGD Code (પંચાયત ID) મળ્યો નથી! કૃપા કરીને સુપર એડમિન પેનલમાંથી યોગ્ય લિંક દ્વારા પ્રવેશ કરો.");
+}
+
+
+
+
+// LGD Code આધારિત Sub-Collection Helper
+function getPanchayatCol(subColName) {
+    return collection(db, "panchayats", lgdCode, subColName);
+}
+
+function getPanchayatDoc(subColName, docId) {
+    return doc(db, "panchayats", lgdCode, subColName, docId);
+}
+
+// --- LGD Code & Password આધારિત Custom Login System ---
+const loginModal = document.getElementById("login-modal");
+const adminDashboard = document.getElementById("admin-dashboard");
+const loginForm = document.getElementById("admin-login-form");
+
+async function checkAdminAuth() {
+    if (!lgdCode) return;
+    
+    if (sessionStorage.getItem(`admin_logged_${lgdCode}`) === "true") {
+        if (loginModal) loginModal.classList.add("hidden");
+        if (adminDashboard) adminDashboard.classList.remove("hidden");
+        initAdminPanel();
+    } else {
+        if (loginModal) loginModal.classList.remove("hidden");
+        if (adminDashboard) adminDashboard.classList.add("hidden");
+    }
+}
+
+loginForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const enteredPass = document.getElementById("login-password")?.value.trim();
+
+    try {
+        const panchayatDocRef = doc(db, "panchayats", lgdCode);
+        const snap = await getDoc(panchayatDocRef);
+
+        if (snap.exists()) {
+            const data = snap.data();
+            const correctPass = data.adminPassword || "admin123";
+
+            if (enteredPass === correctPass) {
+                sessionStorage.setItem(`admin_logged_${lgdCode}`, "true");
+                if (loginModal) loginModal.classList.add("hidden");
+                if (adminDashboard) adminDashboard.classList.remove("hidden");
+                alert("સફળતાપૂર્વક લૉગિન થઈ ગયું!");
+                initAdminPanel();
+            } else {
+                alert("ખોટો પાસવર્ડ! કૃપા કરીને સાચો પાસવર્ડ દાખલ કરો.");
+            }
+        } else {
+            alert("આ LGD Code વાળી પંચાયત મળી નથી.");
+        }
+    } catch (err) {
+        console.error("Login error:", err);
+        alert("લૉગિન કરવામાં ભૂલ આવી: " + err.message);
+    }
+});
+
+// Logout Button
+document.getElementById("logout-btn")?.addEventListener("click", () => {
+    sessionStorage.removeItem(`admin_logged_${lgdCode}`);
+    checkAdminAuth();
+});
+
+checkAdminAuth();
+
+// તમામ ફંક્શન્સને એકસાથે રન કરવા માટેનું ઇનિશિયલાઈઝર
+function initAdminPanel() {
+    loadWebsiteSettings();
+    loadAdminPosts();
+    loadNotices();
+    loadAdminGallery();
+    loadAdminMenuList();
+    loadAdminComplaints();
+    loadComplaintConfig();
+    loadAdminMeta();
+    loadAdminStaffAndCommittee();
+    loadAdminSchedule();
+    loadActiveCommittees();
+    loadAdminTaxLink();
+    loadAdminCustomButtons();
+    loadAdminEvents();
+    fetchDisasterContent();
+    fetchExistingMapLinks();
+    loadAdminGlanceList();
+    loadContactAdminData();
+    loadAdminFeedbacks();
+    loadProactiveAdminData();
+}
+
+// --- ૧. વેબસાઇટ સેટિંગ્સ લાઈવ પ્રીવ્યુ ---
+async function loadWebsiteSettings() {
+    if (!lgdCode) return;
+    const snap = await getDoc(getPanchayatDoc("settings", "general"));
+    if (snap.exists()) {
+        const data = snap.data();
+        if (document.getElementById("set-gp-name")) document.getElementById("set-gp-name").value = data.name || "";
+        if (document.getElementById("set-gp-tagline")) document.getElementById("set-gp-tagline").value = data.tagline || "";
         
-        <!-- Top Navigation Header -->
-        <header class="bg-emerald-900 text-white px-6 py-4 flex justify-between items-center shadow-md">
-            <h1 class="text-xl font-bold">ગ્રામ પંચાયત એડમિન પેનલ</h1>
-            <button id="logout-btn" class="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1.5 rounded transition font-bold">લોગઆઉટ</button>
-        </header>
+        const preview = document.getElementById("settings-preview");
+        if (preview) {
+            preview.innerHTML = `
+                <div class="bg-white p-2.5 rounded-lg border border-emerald-300 mt-2 text-xs">
+                    <p class="font-bold text-emerald-900">📌 વર્તમાન સેવ થયેલ વિગત:</p>
+                    <p><b>પંચાયત:</b> ${data.name || 'નથી સેટ કરી'}</p>
+                    <p><b>ટેગ લાઇન:</b> ${data.tagline || 'નથી સેટ કરી'}</p>
+                </div>
+            `;
+        }
+    }
+}
 
-        <!-- Main Grid Container -->
-        <main class="flex-1 container mx-auto px-4 py-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+document.getElementById("settings-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const name = document.getElementById("set-gp-name")?.value.trim();
+    const tagline = document.getElementById("set-gp-tagline")?.value.trim();
 
-            <!-- સેક્શન ૧: વેબસાઇટ સેટિંગ્સ -->
-            <div class="bg-emerald-50/70 border border-emerald-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[500px] overflow-y-auto">
-                <h3 class="font-bold border-b border-emerald-300 pb-2 text-emerald-900">૧. વેબસાઇટ સેટિંગ્સ</h3>
-                <form id="settings-form" class="space-y-3">
+    await setDoc(getPanchayatDoc("settings", "general"), { name, tagline, updatedAt: new Date() }, { merge: true });
+    alert("સેટિંગ્સ સફળતાપૂર્વક સેવ થઈ ગયા!");
+    loadWebsiteSettings();
+});
+
+// --- ૨. તાજી પોસ્ટ્સ અને ન્યૂઝ મેનેજર ---
+let postsCache = {};
+function loadAdminPosts() {
+    const container = document.getElementById("admin-posts-list");
+    if (!container || !lgdCode) return;
+
+    onSnapshot(getPanchayatCol("posts"), (snapshot) => {
+        container.innerHTML = "";
+        postsCache = {};
+        if (snapshot.empty) {
+            container.innerHTML = `<p class="text-xs text-gray-500 p-2">કોઈ પોસ્ટ કે ન્યૂઝ મળેલી નથી.</p>`;
+            return;
+        }
+        snapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            const id = docSnap.id;
+            postsCache[id] = data;
+
+            container.innerHTML += `
+                <div class="bg-gray-50 border p-2 rounded flex justify-between items-start text-xs mb-1">
                     <div>
-                        <label class="text-xs font-semibold text-emerald-950">પંચાયત નામ:</label>
-                        <input type="text" id="set-gp-name" class="w-full border border-emerald-300 p-2 rounded text-sm bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500" placeholder="દા.ત. ગ્રામ પંચાયત">
+                        <h5 class="font-bold text-emerald-800">${data.title}</h5>
+                        <p class="text-gray-600 text-[11px]">${data.desc || ''}</p>
                     </div>
+                    <div class="flex gap-1">
+                        <button onclick="editPost('${id}')" class="bg-blue-600 text-white px-2 py-0.5 rounded text-[10px]">એડિટ</button>
+                        <button onclick="deletePost('${id}')" class="bg-red-500 text-white px-2 py-0.5 rounded text-[10px]">ડિલીટ</button>
+                    </div>
+                </div>
+            `;
+        });
+    });
+}
+
+document.getElementById("add-post-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const editId = document.getElementById("edit-post-id").value;
+    const title = document.getElementById("post-title").value.trim();
+    const desc = document.getElementById("post-desc").value.trim();
+
+    if (editId) {
+        await updateDoc(getPanchayatDoc("posts", editId), { title, desc, updatedAt: new Date() });
+    } else {
+        await addDoc(getPanchayatCol("posts"), { title, desc, createdAt: new Date() });
+    }
+    document.getElementById("add-post-form").reset();
+    document.getElementById("edit-post-id").value = "";
+    alert("પોસ્ટ સાચવવામાં આવી!");
+});
+
+window.editPost = (id) => {
+    const data = postsCache[id];
+    if (!data) return;
+    document.getElementById('edit-post-id').value = id;
+    document.getElementById('post-title').value = data.title || "";
+    document.getElementById('post-desc').value = data.desc || "";
+};
+window.deletePost = async (id) => {
+    if (confirm("પોસ્ટ ડિલીટ કરવી છે?")) await deleteDoc(getPanchayatDoc("posts", id));
+};
+
+// --- ૩. નોટિસ મેનેજર ---
+let noticesCache = {};
+function loadNotices() {
+    const container = document.getElementById("admin-notices-list");
+    if (!container || !lgdCode) return;
+
+    onSnapshot(getPanchayatCol("notices"), (snapshot) => {
+        container.innerHTML = "";
+        noticesCache = {};
+        if (snapshot.empty) {
+            container.innerHTML = `<p class="text-xs text-gray-500 p-2">કોઈ નોટિસ નથી.</p>`;
+            return;
+        }
+        snapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            const id = docSnap.id;
+            noticesCache[id] = data;
+
+            container.innerHTML += `
+                <div class="bg-gray-50 border p-2 rounded flex justify-between items-start text-xs mb-1">
                     <div>
-                        <label class="text-xs font-semibold text-emerald-950">ટેગ લાઇન:</label>
-                        <input type="text" id="set-gp-tagline" class="w-full border border-emerald-300 p-2 rounded text-sm bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500" placeholder="દા.ત. ડિજિટલ પંચાયત">
+                        <h4 class="font-bold text-gray-800">${data.title}</h4>
+                        <p class="text-gray-600 text-[11px]">${data.desc || ''}</p>
                     </div>
-                    <button type="submit" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white text-xs px-4 py-2 rounded font-bold shadow transition">સેટિંગ્સ સેવ કરો</button>
-                </form>
+                    <div class="flex gap-1">
+                        <button onclick="editNotice('${id}')" class="bg-blue-600 text-white px-2 py-0.5 rounded text-[10px]">એડિટ</button>
+                        <button onclick="deleteNotice('${id}')" class="bg-red-500 text-white px-2 py-0.5 rounded text-[10px]">ડિલીટ</button>
+                    </div>
+                </div>
+            `;
+        });
+    });
+}
+
+document.getElementById("add-notice-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const editId = document.getElementById("edit-notice-id").value;
+    const title = document.getElementById("notice-title").value.trim();
+    const desc = document.getElementById("notice-desc").value.trim();
+
+    if (editId) {
+        await updateDoc(getPanchayatDoc("notices", editId), { title, desc, updatedAt: new Date() });
+    } else {
+        await addDoc(getPanchayatCol("notices"), { title, desc, createdAt: new Date() });
+    }
+    document.getElementById("add-notice-form").reset();
+    document.getElementById("edit-notice-id").value = "";
+    alert("નોટિસ સાચવી લેવાઈ!");
+});
+
+window.editNotice = (id) => {
+    const data = noticesCache[id];
+    if (!data) return;
+    document.getElementById('edit-notice-id').value = id;
+    document.getElementById('notice-title').value = data.title || "";
+    document.getElementById('notice-desc').value = data.desc || "";
+};
+window.deleteNotice = async (id) => {
+    if (confirm("નોટિસ ડિલીટ કરવી છે?")) await deleteDoc(getPanchayatDoc("notices", id));
+};
+
+// --- ૪. Blogger ફોટો ગેલેરી મેનેજર (૨૦ ફોટા લિમિટ & સ્ક્રોલ લિસ્ટ) ---
+document.getElementById("gallery-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const title = document.getElementById("img-title").value.trim();
+    const url = document.getElementById("img-url").value.trim();
+
+    const snap = await getDocs(getPanchayatCol("gallery"));
+    if (snap.size >= 20) {
+        alert("⚠️ ગેલેરી લિમિટ પૂરી થઈ ગઈ છે! તમે ફક્ત મહત્તમ ૨૦ ફોટા જ ઉમેરી શકો છો.");
+        return;
+    }
+
+    await addDoc(getPanchayatCol("gallery"), { title, imageUrl: url, createdAt: new Date() });
+    alert("ફોટો ઉમેરાઈ ગયો!");
+    e.target.reset();
+    loadAdminGallery();
+});
+
+async function loadAdminGallery() {
+    const container = document.getElementById("admin-gallery-list");
+    if (!container || !lgdCode) return;
+
+    const snap = await getDocs(getPanchayatCol("gallery"));
+    container.innerHTML = "";
+    
+    const countEl = document.getElementById("gallery-count");
+    if (countEl) countEl.innerText = `કુલ ફોટા: ${snap.size} / 20`;
+
+    if (snap.empty) {
+        container.innerHTML = "<p class='text-xs text-gray-500'>કોઈ ફોટો નથી.</p>";
+        return;
+    }
+
+    snap.forEach((docSnap) => {
+        const item = docSnap.data();
+        const id = docSnap.id;
+        container.innerHTML += `
+            <div class="flex justify-between items-center bg-white p-2 border rounded shadow-sm text-xs mb-1">
+                <div class="flex items-center gap-2 overflow-hidden">
+                    <img src="${item.imageUrl}" class="w-8 h-8 object-cover rounded flex-shrink-0">
+                    <span class="font-semibold text-gray-700 truncate">${item.title}</span>
+                </div>
+                <button onclick="deleteGalleryImg('${id}')" class="bg-red-600 text-white text-[10px] px-2 py-1 rounded">ડિલીટ</button>
             </div>
+        `;
+    });
+}
 
+window.deleteGalleryImg = async (id) => {
+    if (confirm("આ ફોટો કાઢી નાખવો છે?")) {
+        await deleteDoc(getPanchayatDoc("gallery", id));
+        loadAdminGallery();
+    }
+};
 
+// --- ૫. ગામ અને પંચાયત વિગત (Quill Editor) ---
+let menuQuill = null;
+if (document.getElementById('menu-editor-container')) {
+    menuQuill = new Quill('#menu-editor-container', {
+        theme: 'snow',
+        modules: { toolbar: [['bold', 'italic', 'underline'], [{ 'list': 'ordered'}, { 'list': 'bullet' }]] }
+    });
+}
 
+document.getElementById("add-menu-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const editId = document.getElementById("edit-menu-id").value;
+    const title = document.getElementById("menu-title").value.trim();
+    const content = menuQuill ? menuQuill.root.innerHTML : "";
 
-<!-- ૧. તાજી પોસ્ટ્સ અને ન્યૂઝ મેનેજર -->
-<div class="bg-white p-5 rounded-2xl shadow-md border space-y-4">
-    <h3 class="font-bold text-sm text-emerald-800 flex items-center gap-2 border-b pb-2">
-        📢 તાજી પોસ્ટ્સ અને ન્યૂઝ મેનેજ કરો
-    </h3>
+    if (editId) {
+        await setDoc(getPanchayatDoc("village_details", editId), { title, content, updatedAt: new Date() }, { merge: true });
+    } else {
+        await addDoc(getPanchayatCol("village_details"), { title, content, isShow: true, createdAt: new Date() });
+    }
 
-    <!-- Post Form -->
-    <form id="add-post-form" class="space-y-3 bg-gray-50 p-4 rounded-xl border">
-        <!-- Hidden input edit mode માટે -->
-        <input type="hidden" id="edit-post-id" value="">
+    document.getElementById("add-menu-form").reset();
+    document.getElementById("edit-menu-id").value = "";
+    if (menuQuill) menuQuill.root.innerHTML = "";
+    alert("મેનૂ સેવ થઈ ગયું!");
+    loadAdminMenuList();
+});
 
-        <div>
-            <label class="block text-xs font-medium text-gray-700 mb-1">પોસ્ટ / ન્યૂઝનું શીર્ષક (Title)</label>
-            <input type="text" id="post-title" placeholder="દા.ત. ગામમાં નવું પ્રાથમિક આરોગ્ય કેન્દ્ર મંજૂર" class="w-full border p-2 rounded text-xs bg-white" required>
-        </div>
+async function loadAdminMenuList() {
+    const container = document.getElementById("admin-menu-list");
+    if (!container || !lgdCode) return;
 
-        <div>
-            <label class="block text-xs font-medium text-gray-700 mb-1">વિગત (Description)</label>
-            <textarea id="post-desc" rows="3" placeholder="પોસ્ટ અંગેની સંપૂર્ણ માહિતી લખો..." class="w-full border p-2 rounded text-xs bg-white" required></textarea>
-        </div>
+    const snap = await getDocs(getPanchayatCol("village_details"));
+    container.innerHTML = "";
+    if (snap.empty) {
+        container.innerHTML = "<p class='text-xs text-gray-500'>કોઈ મેનૂ મળેલ નથી.</p>";
+        return;
+    }
 
-        <div class="flex gap-2">
-            <button type="submit" id="submit-post-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded text-xs font-semibold">
-                પોસ્ટ ઉમેરો
-            </button>
-            <button type="button" id="cancel-post-edit-btn" class="hidden bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded text-xs font-semibold">
-                રદ કરો
-            </button>
-        </div>
-    </form>
+    snap.forEach((docSnap) => {
+        const item = docSnap.data();
+        const id = docSnap.id;
+        const isShow = item.isShow !== false;
 
-    <!-- Posts List Container -->
-    <div class="mt-4">
-        <h4 class="font-bold text-xs text-gray-700 mb-2">હાલની તમામ પોસ્ટ્સ અને ન્યૂઝ:</h4>
-        <div id="admin-posts-list" class="space-y-2 max-h-72 overflow-y-auto">
-            <p class="text-xs text-gray-500">પોસ્ટ્સ લોડ થઈ રહી છે...</p>
-        </div>
-    </div>
-</div>
+        container.innerHTML += `
+            <div class="flex justify-between items-center bg-white p-2 border rounded text-xs mb-1">
+                <span class="font-semibold ${isShow ? 'text-gray-800' : 'text-gray-400 line-through'}">${item.title}</span>
+                <div class="flex gap-1">
+                    <button onclick="editMenu('${id}')" class="bg-blue-600 text-white text-[10px] px-2 py-0.5 rounded">એડિટ</button>
+                    <button onclick="toggleMenu('${id}', ${isShow})" class="text-white text-[10px] px-2 py-0.5 rounded ${isShow ? 'bg-amber-600' : 'bg-gray-500'}">${isShow ? 'સંતાડો' : 'બતાવો'}</button>
+                    <button onclick="deleteMenu('${id}')" class="bg-red-600 text-white text-[10px] px-2 py-0.5 rounded">ડિલીટ</button>
+                </div>
+            </div>
+        `;
+    });
+}
 
+window.editMenu = async (id) => {
+    const snap = await getDoc(getPanchayatDoc("village_details", id));
+    if (snap.exists()) {
+        const data = snap.data();
+        document.getElementById("edit-menu-id").value = id;
+        document.getElementById("menu-title").value = data.title || "";
+        if (menuQuill) menuQuill.root.innerHTML = data.content || "";
+    }
+};
 
+window.toggleMenu = async (id, currentStatus) => {
+    await setDoc(getPanchayatDoc("village_details", id), { isShow: !currentStatus }, { merge: true });
+    loadAdminMenuList();
+};
 
+window.deleteMenu = async (id) => {
+    if (confirm("આ મેનૂ ડિલીટ કરવું છે?")) {
+        await deleteDoc(getPanchayatDoc("village_details", id));
+        loadAdminMenuList();
+    }
+};
 
+// --- ૧. ફરિયાદ વિભાગ સેટિંગ્સ અને દૈનિક મર્યાદા લોડ અને સેવ કરવી ---
+async function loadComplaintConfig() {
+    if (!lgdCode) return;
+    try {
+        const snap = await getDoc(getPanchayatDoc("settings", "complaint_config"));
+        if (snap.exists()) {
+            const data = snap.data();
+            if (document.getElementById("complaint-section-status")) {
+                document.getElementById("complaint-section-status").value = data.isEnabled !== false ? "true" : "false";
+            }
+            if (document.getElementById("complaint-daily-limit")) {
+                document.getElementById("complaint-daily-limit").value = data.dailyLimit || 50;
+            }
+        }
+    } catch (err) {
+        console.error("Complaint config load error:", err);
+    }
+}
 
+document.getElementById("save-complaint-config-btn")?.addEventListener("click", async () => {
+    if (!lgdCode) return;
+    const isEnabled = document.getElementById("complaint-section-status").value === "true";
+    const dailyLimitVal = document.getElementById("complaint-daily-limit").value.trim();
+    const dailyLimit = dailyLimitVal ? parseInt(dailyLimitVal) : 50;
+    
+    try {
+        await setDoc(getPanchayatDoc("settings", "complaint_config"), { 
+            isEnabled, 
+            dailyLimit, 
+            updatedAt: new Date() 
+        }, { merge: true });
+        
+        alert("✅ સફળતાપૂર્વક સેવ થઈ ગયું!\nવેબસાઇટ પર ફરિયાદ વિભાગનું સ્ટેટસ અને દૈનિક મર્યાદા અપડેટ થઈ ગઈ છે.");
+        loadComplaintConfig();
+    } catch (err) {
+        console.error("Save config error:", err);
+        alert("સેવ કરવામાં ભૂલ આવી.");
+    }
+});
 
+// --- ૨. એડમિન પેનલ માટે ફરિયાદો લોડ કરવી અને ફિલ્ટરિંગ કરવું ---
+async function loadAdminComplaints() {
+    if (!lgdCode) return;
+    const container = document.getElementById("admin-complaint-list");
+    const filter = document.getElementById("admin-complaint-filter")?.value || "ALL";
+    if (!container) return;
 
+    try {
+        const snap = await getDocs(getPanchayatCol("complaints"));
+        container.innerHTML = "";
+        
+        if (snap.empty) {
+            container.innerHTML = `<p class="text-xs text-gray-500 p-2">કોઈ ફરિયાદ મળેલી નથી.</p>`;
+            return;
+        }
 
+        let count = 0;
+        snap.forEach(d => {
+            const item = d.data();
+            const status = item.status || "Pending";
             
-            <!-- સેક્શન ૨: નવી પોસ્ટ / નોટિસ મૂકો -->
-            <div class="bg-blue-50/70 border border-blue-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[500px] overflow-y-auto">
-                <h3 class="font-bold border-b border-blue-300 pb-2 text-blue-900">૨. નવી પોસ્ટ / નોટિસ મૂકો</h3>
-<!-- Notice / Post Form -->
-<form id="add-notice-form" class="space-y-3 bg-white p-4 rounded-xl border shadow-sm">
-    <!-- Edit Mode માટે Hidden Input -->
-    <input type="hidden" id="edit-notice-id" value="">
+            // ફિલ્ટર લોજિક
+            const isPending = status.includes("પેન્ડિંગ") || status.includes("કામ ચાલી");
+            const isResolved = status.includes("નિવારણ થઈ ગયું") || status.includes("Resolved");
 
-    <div>
-        <label class="block text-xs font-medium text-gray-700 mb-1">નોટિસ / પોસ્ટનું શીર્ષક (Title)</label>
-        <input type="text" id="notice-title" placeholder="દા.ત. ગ્રામસભા અંગે અગત્યની સૂચના" class="w-full border p-2 rounded text-xs" required>
-    </div>
+            if (filter === "PENDING" && !isPending) return;
+            if (filter === "RESOLVED" && !isResolved) return;
 
-    <div>
-        <label class="block text-xs font-medium text-gray-700 mb-1">વિગત (Description)</label>
-        <textarea id="notice-desc" rows="3" placeholder="નોટિસ અંગેની સંપૂર્ણ માહિતી અહીં લખો..." class="w-full border p-2 rounded text-xs"></textarea>
-    </div>
-
-    <div class="flex gap-2">
-        <button type="submit" id="submit-notice-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-xs font-semibold">
-            નોટિસ પોસ્ટ કરો
-        </button>
-        <button type="button" id="cancel-notice-edit-btn" class="hidden bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded text-xs font-semibold">
-            રદ કરો
-        </button>
-    </div>
-</form>
-
-<!-- Notices List Container -->
-<div class="mt-4">
-    <h3 class="font-bold text-xs text-gray-700 mb-2">હાલની તમામ નોટિસો / પોસ્ટ્સ:</h3>
-    <div id="admin-notices-list" class="space-y-2 max-h-80 overflow-y-auto"></div>
-</div>
-            </div>
-
-            <!-- સેક્શન ૩: Blogger ફોટો ગેલેરી મેનેજર -->
-            <div class="bg-orange-50/70 border border-orange-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[500px] overflow-y-auto">
-                <h3 class="font-bold border-b border-orange-300 pb-2 text-orange-900">૩. Blogger ફોટો ગેલેરી</h3>
-                <form id="gallery-form" class="space-y-3">
-                    <div>
-                        <label class="text-xs font-semibold text-orange-950">ફોટાનું શીર્ષક:</label>
-                        <input type="text" id="img-title" placeholder="દા.ત. ગ્રામ સભા" required class="w-full border border-orange-300 p-2 rounded text-sm bg-white">
+            count++;
+            container.innerHTML += `
+                <div class="bg-white p-3 border rounded-xl shadow-sm text-xs space-y-2 mb-2">
+                    <div class="flex justify-between font-bold border-b pb-1">
+                        <span>ટોકન: <span class="text-emerald-700">${item.token || 'N/A'}</span> | નામ: ${item.name || 'અનામી'} (મો: ${item.mobile || '-'})</span>
+                        <span class="bg-blue-50 text-blue-800 px-2 py-0.5 rounded">${item.type || ''}</span>
                     </div>
-                    <div>
-                        <label class="text-xs font-semibold text-orange-950">Blogger Image URL:</label>
-                        <input type="url" id="img-url" placeholder="https://..." required class="w-full border border-orange-300 p-2 rounded text-sm bg-white">
-                    </div>
-                    <button type="submit" class="w-full bg-orange-600 hover:bg-orange-700 text-white text-xs px-4 py-2 rounded font-bold shadow transition">ગેલેરીમાં ફોટો ઉમેરો</button>
-                </form>
-
-                <div class="mt-4 border-t border-orange-200 pt-3">
-                    <h4 class="text-xs font-bold text-orange-950 mb-2">📸 ઉમેરેલા ફોટા (ડિલીટ કરવા માટે):</h4>
-                    <div id="admin-gallery-list" class="space-y-2 max-h-48 overflow-y-auto pr-1">
-                        <p class="text-xs text-gray-500">ફોટા લોડ થઈ રહ્યા છે...</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- સેક્શન ૪: ગામ અને પંચાયત વિગત -->
-            <div class="bg-purple-50/70 border border-purple-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[500px] overflow-y-auto">
-                <h3 class="font-bold border-b border-purple-300 pb-2 text-purple-900">૪. ગામ અને પંચાયત વિગત મેનેજર</h3>
-                <form id="add-menu-form" class="space-y-3">
-                    <input type="hidden" id="edit-menu-id" value="">
-                    <div>
-                        <label class="text-xs font-semibold text-purple-950">મેનૂનું નામ (શીર્ષક):</label>
-                        <input type="text" id="menu-title" placeholder="દા.ત. આપત્તિ વ્યવસ્થાપન પ્લાન" required class="w-full border border-purple-300 p-2 rounded text-sm bg-white">
-                    </div>
-                    <div>
-                        <label class="text-xs font-semibold text-purple-950">વિગત/માહિતી:</label>
-                        <div id="menu-editor-container" class="bg-white rounded border border-purple-300" style="min-height: 120px;"></div>
-                    </div>
-                    <div class="flex gap-2">
-                        <button type="submit" id="save-menu-btn" class="w-full bg-purple-700 hover:bg-purple-800 text-white text-xs px-4 py-2 rounded font-bold shadow transition">મેનૂ સેવ કરો</button>
-                        <button type="button" id="cancel-edit-btn" class="hidden bg-gray-500 hover:bg-gray-600 text-white text-xs px-4 py-2 rounded font-bold transition">રદ કરો</button>
-                    </div>
-                </form>
-
-                <div class="mt-4 border-t border-purple-200 pt-3">
-                    <h4 class="text-xs font-bold text-purple-950 mb-2">📋 હાલના મેનૂ (Edit, Show/Hide અને Delete):</h4>
-                    <div id="admin-menu-list" class="space-y-2 max-h-48 overflow-y-auto pr-1">
-                        <p class="text-xs text-gray-500">મેનૂ લોડ થઈ રહ્યા છે...</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- સેક્શન ૫: ફરિયાદ મેનેજમેન્ટ અને PDF રિપોર્ટ -->
-            <div class="bg-emerald-50/80 border border-emerald-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[500px] overflow-y-auto">
-                <h3 class="font-bold border-b border-emerald-300 pb-2 text-emerald-950">૫. આવેલ ફરિયાદો અને સ્ટેટસ મેનેજર</h3>
-                <div class="flex flex-wrap items-center justify-between gap-2">
-                    <select id="admin-complaint-filter" class="border border-emerald-300 p-1.5 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500">
-                        <option value="ALL">તમામ ફરિયાદો</option>
-                        <option value="PENDING">ફક્ત પેન્ડિંગ</option>
-                    </select>
-                    <div class="flex items-center gap-1 bg-emerald-100/60 p-1 rounded-lg border border-emerald-200">
-                        <input type="month" id="report-month-select" class="border border-emerald-300 p-1 rounded text-xs bg-white text-gray-700 focus:outline-none" />
-                        <button id="download-pdf-btn" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-2 py-1 rounded text-xs shadow flex items-center gap-1 transition-colors">
-                            PDF
-                        </button>
-                    </div>
-                </div>
-                <div id="admin-complaint-list" class="space-y-3 max-h-72 overflow-y-auto pr-1">
-                    <p class="text-xs text-gray-500">ફરિયાદો લોડ થઈ રહી છે...</p>
-                </div>
-            </div>
-
-            <!-- સેક્શન ૬: પંચાયત કમિટી અને સ્ટાફ મેનેજર -->
-            <div class="bg-blue-50/80 border border-blue-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[500px] overflow-y-auto">
-                <h3 class="font-bold border-b border-blue-300 pb-2 text-blue-950">૬. પંચાયત કમિટી અને સ્ટાફ મેનેજર</h3>
-                
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    <input type="text" id="admin-term-input" placeholder="મુદત (દા.ત. ૨૦૨૧ થી ૨૦૨૬)" class="border border-blue-300 p-1.5 rounded text-xs bg-white">
-                    <input type="text" id="admin-note-input" placeholder="દર્શાવવાની નોંધ" class="border border-blue-300 p-1.5 rounded text-xs bg-white">
-                </div>
-                <button id="save-meta-btn" class="bg-blue-700 hover:bg-blue-800 text-white font-bold px-3 py-1 rounded text-xs shadow w-full">મુદત / નોંધ સાચવો</button>
-
-                <form id="add-member-staff-form" class="space-y-2 border-t border-blue-200 pt-3">
-                    <input type="hidden" id="edit-ms-id" value="">
-                    <div class="grid grid-cols-2 gap-2">
-                        <select id="ms-category" class="border border-blue-300 p-1.5 rounded text-xs bg-white">
-                            <option value="committee">પંચાયત કમિટી</option>
-                            <option value="staff">કર્મચારી</option>
+                    <p><b>વિસ્તાર/ફળિયું:</b> ${item.area || item.faliya || '-'}</p>
+                    <p class="text-gray-700"><b>વિગત:</b> ${item.details || item.msg || ''}</p>
+                    <div class="flex items-center gap-2 pt-1 border-t">
+                        <label class="font-bold text-gray-700">સ્ટેટસ બદલો:</label>
+                        <select onchange="updateComplaintStatus('${d.id}', this.value)" class="border border-emerald-300 p-1 rounded bg-amber-50 text-[11px] font-bold flex-1 focus:outline-none">
+                            <option value="${status}" selected>હાલનું: ${status}</option>
+                            <option value="ફરિયાદ પર કામ ચાલી રહ્યું છે">ફરિયાદ પર કામ ચાલી રહ્યું છે</option>
+                            <option value="ફરિયાદ નિવારણ થઈ ગયું છે">ફરિયાદ નિવારણ થઈ ગયું છે</option>
+                            <option value="ફરિયાદ પેન્ડિંગ રાખવામા આવેલ છે">ફરિયાદ પેન્ડિંગ રાખવામા આવેલ છે</option>
+                            <option value="ફરિયાદ અયોગ્ય હોય રદ કરવામાં આવેલ છે">ફરિયાદ અયોગ્ય હોય રદ કરવામાં આવેલ છે</option>
                         </select>
-                        <input type="text" id="ms-name" placeholder="નામ" required class="border border-blue-300 p-1.5 rounded text-xs bg-white">
-                        <input type="text" id="ms-desig" placeholder="હોદ્દો" required class="border border-blue-300 p-1.5 rounded text-xs bg-white">
-                        <input type="text" id="ms-mobile" placeholder="મોબાઈલ" required class="border border-blue-300 p-1.5 rounded text-xs bg-white">
-                    </div>
-                    <input type="text" id="ms-ward" placeholder="વોર્ડ નં. (ફક્ત કમિટી માટે)" class="border border-blue-300 p-1.5 rounded text-xs bg-white w-full">
-                    <button type="submit" id="ms-submit-btn" class="bg-indigo-700 hover:bg-indigo-800 text-white font-bold px-3 py-1.5 rounded text-xs w-full shadow">સભ્ય/કર્મચારી ઉમેરો</button>
-                </form>
-
-                <div class="mt-2 grid grid-cols-1 gap-3 border-t border-blue-200 pt-2">
-                    <div>
-                        <h4 class="text-xs font-bold text-blue-950 mb-1">👥 પંચાયત કમિટી સભ્યો:</h4>
-                        <div id="admin-committee-list" class="space-y-1 max-h-32 overflow-y-auto pr-1">
-                            <p class="text-xs text-gray-500">લોડ થઈ રહ્યું છે...</p>
-                        </div>
-                    </div>
-                    <div>
-                        <h4 class="text-xs font-bold text-blue-950 mb-1">👔 સ્ટાફ / કર્મચારીઓ:</h4>
-                        <div id="admin-staff-list" class="space-y-1 max-h-32 overflow-y-auto pr-1">
-                            <p class="text-xs text-gray-500">લોડ થઈ રહ્યું છે...</p>
-                        </div>
                     </div>
                 </div>
-            </div>
+            `;
+        });
 
-            <!-- સેક્શન ૭: અધિકારી/કર્મચારી સમય પત્રક મેનેજર -->
-            <div class="bg-blue-50/80 border border-blue-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[500px] overflow-y-auto">
-                <h3 class="font-bold border-b border-blue-300 pb-2 text-blue-950">૭. અધિકારી / કર્મચારી સમય પત્રક</h3>
-                
-                <form id="add-schedule-form" class="space-y-2">
-                    <input type="hidden" id="edit-schedule-id" value="">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        <input type="text" id="sch-name" placeholder="કર્મચારીનું નામ" required class="border border-blue-300 p-1.5 rounded text-xs bg-white">
-                        <input type="text" id="sch-desig" placeholder="હોદ્દો (દા.ત. તલાટી)" required class="border border-blue-300 p-1.5 rounded text-xs bg-white">
-                    </div>
-                    <input type="text" id="sch-timing" placeholder="સમય (દા.ત. ૧૧:૦૦ થી ૫:૦૦)" required class="border border-blue-300 p-1.5 rounded text-xs bg-white w-full">
-                    <input type="text" id="sch-days" placeholder="હાજરીના દિવસો (દા.ત. સોમ, બુધ)" required class="border border-blue-300 p-1.5 rounded text-xs bg-white w-full">
-                    <input type="text" id="sch-note" placeholder="વિશેષ નોંધ (રજા/મુલાકાત)" class="border border-blue-300 p-1.5 rounded text-xs bg-white w-full">
-                    <button type="submit" id="sch-submit-btn" class="bg-indigo-700 hover:bg-indigo-800 text-white font-bold px-3 py-1.5 rounded text-xs w-full shadow">
-                        સમય પત્રક ઉમેરો
-                    </button>
-                </form>
+        if (count === 0) {
+            container.innerHTML = `<p class="text-xs text-gray-500 p-2">આ ફિલ્ટર મુજબ કોઈ ફરિયાદ નથી.</p>`;
+        }
+    } catch (err) {
+        console.error("Load complaints error:", err);
+        container.innerHTML = `<p class="text-xs text-red-500">ફરિયાદો લોડ કરવામાં ભૂલ આવી.</p>`;
+    }
+}
 
-                <div class="border-t border-blue-200 pt-2">
-                    <h4 class="text-xs font-bold text-blue-950 mb-1">📋 દર્શાવેલ સમય પત્રક:</h4>
-                    <div id="admin-schedule-list" class="space-y-1 max-h-36 overflow-y-auto pr-1">
-                        <p class="text-xs text-gray-500">લોડ થઈ રહ્યું છે...</p>
-                    </div>
+window.updateComplaintStatus = async (id, status) => {
+    if (!lgdCode) return;
+    try {
+        await updateDoc(getPanchayatDoc("complaints", id), { status, updatedAt: new Date() });
+        alert("✅ ફરિયાદનું સ્ટેટસ સફળતાપૂર્વક અપડેટ થઈ ગયું!");
+        loadAdminComplaints();
+    } catch (err) {
+        console.error("Status update error:", err);
+        alert("સ્ટેટસ અપડેટ કરવામાં ભૂલ આવી.");
+    }
+};
+
+// ફિલ્ટર બદલાય ત્યારે લિસ્ટ ઓટોમેટિક અપડેટ થવું
+document.getElementById("admin-complaint-filter")?.addEventListener("change", loadAdminComplaints);
+
+// --- ૩. PDF રિપોર્ટ જનરેટર (મહિનાવારી) ---
+document.getElementById("download-pdf-btn")?.addEventListener("click", async () => {
+    const monthVal = document.getElementById("report-month-select")?.value;
+    if (!monthVal) {
+        alert("⚠️ કૃપા કરીને પહેલા મહિનો (Month) પસંદ કરો!");
+        return;
+    }
+
+    try {
+        const snap = await getDocs(getPanchayatCol("complaints"));
+        let filteredComplaints = [];
+
+        snap.forEach(d => {
+            const item = d.data();
+            if (item.createdAt && item.createdAt.toDate) {
+                const cDate = item.createdAt.toDate();
+                const cMonthStr = cDate.toISOString().slice(0, 7); // YYYY-MM
+                if (cMonthStr === monthVal) {
+                    filteredComplaints.push(item);
+                }
+            }
+        });
+
+        if (filteredComplaints.length === 0) {
+            alert("⚠️ પસંદ કરેલ મહિનામાં કોઈ ફરિયાદ મળી નથી.");
+            return;
+        }
+
+        // ప్రింట్‌ અથવા PDF માટે નવું വിండో ஓപਨ કરવું
+        let printWindow = window.open('', '_blank');
+        let htmlContent = `
+            <!DOCTYPE html>
+            <html lang="gu">
+            <head>
+                <meta charset="UTF-8">
+                <title>ફરિયાદ રિપોર્ટ - ${monthVal}</title>
+                <style>
+                    body { font-family: Arial, sans-serif; padding: 20px; color: #333; }
+                    h2 { text-align: center; color: #065f46; }
+                    table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 12px; }
+                    th, td { border: 1px solid #cbd5e1; padding: 8px; text-align: left; }
+                    th { background-color: #065f46; color: white; }
+                </style>
+            </head>
+            <body>
+                <h2>ગ્રામ પંચાયત - ફરિયાદ નિવારણ રિપોર્ટ (${monthVal})</h2>
+                <p><b>કુલ ફરિયાદો:</b> ${filteredComplaints.length}</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ટોકન નં</th>
+                            <th>નામ</th>
+                            <th>મોબાઈલ</th>
+                            <th>પ્રકાર</th>
+                            <th>વિગત</th>
+                            <th>સ્ટેટસ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        filteredComplaints.forEach(c => {
+            htmlContent += `
+                <tr>
+                    <td><b>${c.token || '-'}</b></td>
+                    <td>${c.name || '-'}</td>
+                    <td>${c.mobile || '-'}</td>
+                    <td>${c.type || '-'}</td>
+                    <td>${c.details || c.msg || '-'}</td>
+                    <td><b>${c.status || 'Pending'}</b></td>
+                </tr>
+            `;
+        });
+
+        htmlContent += `
+                    </tbody>
+                </table>
+                <script>
+                    window.onload = function() { window.print(); }
+                </script>
+            </body>
+            </html>
+        `;
+
+        printWindow.document.write(htmlContent);
+        printWindow.document.close();
+    } catch (err) {
+        console.error("PDF generation error:", err);
+        alert("PDF રિપોર્ટ બનાવવામાં ભૂલ આવી.");
+    }
+});
+
+
+// --- ૭. પંચાયત કમિટી અને સ્ટાફ મેનેજર ---
+async function loadAdminMeta() {
+    if (!lgdCode) return;
+    const snap = await getDoc(getPanchayatDoc("panchayat_meta", "staff_page"));
+    if (snap.exists()) {
+        const data = snap.data();
+        if (document.getElementById("admin-term-input")) document.getElementById("admin-term-input").value = data.term || "";
+        if (document.getElementById("admin-note-input")) document.getElementById("admin-note-input").value = data.note || "";
+    }
+}
+
+document.getElementById("save-meta-btn")?.addEventListener("click", async () => {
+    const term = document.getElementById("admin-term-input")?.value || "";
+    const note = document.getElementById("admin-note-input")?.value || "";
+    await setDoc(getPanchayatDoc("panchayat_meta", "staff_page"), { term, note }, { merge: true });
+    alert("મુદત અને નોંધ સેવ થયા!");
+});
+
+async function loadAdminStaffAndCommittee() {
+    const commContainer = document.getElementById("admin-committee-list");
+    const staffContainer = document.getElementById("admin-staff-list");
+
+    if (commContainer) {
+        const snap = await getDocs(getPanchayatCol("panchayat_committee"));
+        commContainer.innerHTML = "";
+        snap.forEach(d => {
+            const item = d.data();
+            commContainer.innerHTML += `
+                <div class="flex justify-between items-center bg-white p-1.5 border rounded text-xs mb-1">
+                    <span><b>${item.name}</b> (${item.designation})</span>
+                    <button onclick="deleteStaffComm('panchayat_committee', '${d.id}')" class="bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded">ડિલીટ</button>
                 </div>
-            </div>
+            `;
+        });
+    }
 
-            <!-- સેક્શન ૮: કાર્યરત સમિતિઓ મેનેજર -->
-            <div class="bg-purple-50/80 border border-purple-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[500px] overflow-y-auto">
-                <h3 class="font-bold border-b border-purple-300 pb-2 text-purple-950">૮. કાર્યરત સમિતિઓ મેનેજર</h3>
-                <!-- Committee Form -->
-<!-- Committee Form -->
-<form id="add-committee-group-form" class="space-y-3 bg-white p-4 rounded-xl border shadow-sm">
-    <!-- Hidden input edit Mode maate -->
-    <input type="hidden" id="edit-committee-id" value="">
+    if (staffContainer) {
+        const snap = await getDocs(getPanchayatCol("panchayat_staff"));
+        staffContainer.innerHTML = "";
+        snap.forEach(d => {
+            const item = d.data();
+            staffContainer.innerHTML += `
+                <div class="flex justify-between items-center bg-white p-1.5 border rounded text-xs mb-1">
+                    <span><b>${item.name}</b> (${item.designation})</span>
+                    <button onclick="deleteStaffComm('panchayat_staff', '${d.id}')" class="bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded">ડિલીટ</button>
+                </div>
+            `;
+        });
+    }
+}
+
+window.deleteStaffComm = async (col, id) => {
+    if (confirm("ડિલીટ કરવું છે?")) {
+        await deleteDoc(getPanchayatDoc(col, id));
+        loadAdminStaffAndCommittee();
+    }
+};
+
+document.getElementById("add-member-staff-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const type = document.getElementById("ms-category").value;
+    const colName = type === 'committee' ? 'panchayat_committee' : 'panchayat_staff';
+    const payload = {
+        name: document.getElementById("ms-name").value,
+        designation: document.getElementById("ms-desig").value,
+        mobile: document.getElementById("ms-mobile").value,
+        ward: document.getElementById("ms-ward").value || '',
+        order: Date.now()
+    };
+    await addDoc(getPanchayatCol(colName), payload);
+    alert("સભ્ય/કર્મચારી ઉમેરાઈ ગયા!");
+    e.target.reset();
+    loadAdminStaffAndCommittee();
+});
+
+// --- ૮. અધિકારી/કર્મચારી સમય પત્રક ---
+async function loadAdminSchedule() {
+    const container = document.getElementById("admin-schedule-list");
+    if (!container || !lgdCode) return;
     
-    <div>
-        <label class="block text-xs font-medium text-gray-700 mb-1">સમિતિનું નામ</label>
-        <input type="text" id="cg-title" placeholder="દા.ત. કારોબારી સમિતિ" class="w-full border p-2 rounded text-xs" required>
-    </div>
-
-    <!-- Dynamic Members Section -->
-    <div>
-        <div class="flex justify-between items-center mb-1">
-            <label class="block text-xs font-medium text-gray-700">સમિતિના સભ્યો</label>
-            <button type="button" id="add-member-row-btn" class="text-xs bg-emerald-100 text-emerald-800 hover:bg-emerald-200 px-2 py-1 rounded font-semibold">
-                + સભ્ય ઉમેરો
-            </button>
-        </div>
+    try {
+        const snap = await getDocs(getPanchayatCol("panchayat_schedule"));
+        container.innerHTML = "";
         
-        <div id="committee-members-container" class="space-y-2">
-            <!-- First Default Row -->
-            <div class="member-row flex items-center gap-2 border p-2 rounded bg-gray-50">
-                <input type="text" placeholder="સભ્યનું નામ" class="member-name w-1/3 border p-1.5 rounded text-xs" required>
-                <input type="text" placeholder="મૂળ હોદ્દો" class="member-main-role w-1/3 border p-1.5 rounded text-xs" required>
-                <input type="text" placeholder="સમિતિ હોદ્દો" class="member-comm-role w-1/3 border p-1.5 rounded text-xs" required>
-                <button type="button" class="remove-member-btn text-red-500 hover:text-red-700 font-bold px-1 text-sm">&times;</button>
-            </div>
-        </div>
-    </div>
+        if (snap.empty) {
+            container.innerHTML = `<p class="text-xs text-gray-500 p-2">કોઈ સમયપત્રક ઉપલબ્ધ નથી.</p>`;
+            return;
+        }
 
-    <div class="flex gap-2">
-        <button type="submit" id="submit-comm-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded text-xs font-semibold">
-            સમિતિ સાચવો
-        </button>
-        <button type="button" id="cancel-comm-edit-btn" class="hidden bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded text-xs font-semibold">
-            રદ કરો
-        </button>
-    </div>
-</form>
-
-<!-- Active Committees List -->
-<div class="mt-4">
-    <h3 class="font-bold text-xs text-gray-700 mb-2">હાલની તમામ સમિતિઓ:</h3>
-    <div id="admin-committees-list" class="space-y-2 max-h-80 overflow-y-auto"></div>
-</div>
-            </div>
-
-            <!-- સેક્શન ૯: મિલકત વેરો લિંક મેનેજર -->
-            <div class="bg-slate-50 border border-slate-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[500px] overflow-y-auto">
-                <h3 class="font-bold text-gray-800 border-b pb-2 flex items-center gap-2">
-                    ૯. 💳 મિલકત વેરો ચૂકવણી લિંક
-                </h3>
-                <form id="tax-link-form" class="space-y-3">
+        snap.forEach(d => {
+            const item = d.data();
+            container.innerHTML += `
+                <div class="flex justify-between items-center bg-white p-2.5 border rounded text-xs mb-1.5 shadow-sm">
                     <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-1">વેરો ભરવાની વેબસાઇટ લિંક (URL):</label>
-                        <input type="url" id="tax-payment-url" placeholder="https://cybergarvi.gujarat.gov.in/" required 
-                            class="w-full text-xs p-2 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 outline-none">
+                        <b>${item.name || ''}</b> (${item.designation || ''}) - ${item.timing || ''}
+                        <div class="text-[11px] text-gray-500">દિવસો: ${item.days || '-'} ${item.note ? `| નોંધ: ${item.note}` : ''}</div>
                     </div>
-                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2 rounded transition shadow">
-                        લિંક અપડેટ કરો
-                    </button>
-                </form>
-            </div>
-
-            <!-- સેક્શન ૧૦: કસ્ટમ બટન અને પેજ મેનેજર -->
-            <div class="bg-slate-50 border border-slate-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[500px] overflow-y-auto">
-                <h3 class="font-bold text-gray-800 border-b pb-2 flex items-center gap-2">
-                    ૧૦. 🔗 કસ્ટમ બટન અને પેજ મેનેજર
-                </h3>
-                
-                <form id="add-page-button-form" class="space-y-3">
-                    <input type="hidden" id="edit-custom-page-id">
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-1">બટનનું નામ (Title):</label>
-                        <input type="text" id="custom-btn-title" placeholder="દા.ત. શૌચાલય યોજના" required 
-                            class="w-full text-xs p-2 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-1">પેજ કન્ટેન્ટ (HTML / લખાણ):</label>
-                        <textarea id="custom-page-html" rows="3" placeholder="અહીં તમારો HTML કોડ અથવા લખાણ લખો..." required
-                            class="w-full text-xs p-2 border border-gray-300 rounded font-mono focus:ring-1 focus:ring-blue-500 outline-none"></textarea>
-                    </div>
-                    <div class="flex gap-2">
-                        <button type="submit" id="custom-page-submit-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2 rounded transition shadow">
-                            ઉમેરો
+                    <div class="flex items-center gap-1">
+                        <button type="button" onclick="editSchedule('${d.id}', '${encodeURIComponent(item.name || '')}', '${encodeURIComponent(item.designation || '')}', '${encodeURIComponent(item.timing || '')}', '${encodeURIComponent(item.days || '')}', '${encodeURIComponent(item.note || '')}')" class="bg-amber-500 hover:bg-amber-600 text-white text-[10px] px-2 py-1 rounded font-bold shadow">
+                            એડિટ
                         </button>
-                        <button type="button" id="custom-page-cancel-btn" class="hidden w-1/3 bg-gray-500 hover:bg-gray-600 text-white text-xs font-bold py-2 rounded transition">
-                            કેન્સલ
+                        <button type="button" onclick="deleteSchedule('${d.id}')" class="bg-red-600 hover:bg-red-700 text-white text-[10px] px-2 py-1 rounded font-bold shadow">
+                            ડિલીટ
                         </button>
-                    </div>
-                </form>
-
-                <div class="border-t pt-2">
-                    <h4 class="text-xs font-bold text-gray-700 mb-2">હાલના ઉમેરેલા બટનો:</h4>
-                    <div id="admin-custom-buttons-list" class="space-y-1 max-h-28 overflow-y-auto">
-                        <p class="text-xs text-gray-400">લોડ થઈ રહ્યું છે...</p>
                     </div>
                 </div>
-            </div>
+            `;
+        });
+    } catch (err) {
+        console.error("Load Schedule Error:", err);
+    }
+}
 
-            <!-- સેક્શન ૧૧: ઇવેન્ટ્સ મેનેજર (Events Manager) -->
-            <div class="bg-slate-50 border border-slate-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[500px] overflow-y-auto">
-                <h3 class="font-bold text-gray-800 border-b pb-2 flex items-center gap-2">
-                    ૧૧. 📅 ઇવેન્ટ્સ મેનેજર (Events)
-                </h3>
-                
-                <form id="event-form" class="space-y-3">
-                    <input type="hidden" id="edit-event-id">
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-1">કાર્યક્રમ/ઇવેન્ટનું નામ:</label>
-                        <input type="text" id="event-name" placeholder="દા.ત. ગ્રામ સભા" required 
-                            class="w-full text-xs p-2 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 outline-none">
-                    </div>
+window.deleteSchedule = async (id) => {
+    if (confirm("શું તમે આ સમય પત્રક ડિલીટ કરવા માંગો છો?")) {
+        try {
+            await deleteDoc(getPanchayatDoc("panchayat_schedule", id));
+            alert("સમય પત્રક ડિલીટ થઈ ગયું!");
+            loadAdminSchedule();
+        } catch (err) {
+            console.error("Delete Error:", err);
+            alert("ડિલીટ કરવામાં ભૂલ આવી.");
+        }
+    }
+};
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-600 mb-1">તારીખ:</label>
-                            <input type="date" id="event-date" required 
-                                class="w-full text-xs p-2 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-600 mb-1">સ્થળ:</label>
-                            <input type="text" id="event-location" placeholder="દા.ત. પંચાયત હોલ" required 
-                                class="w-full text-xs p-2 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 outline-none">
-                        </div>
-                    </div>
-
-                    <div class="flex gap-2">
-                        <button type="submit" id="event-submit-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2 rounded transition shadow">
-                            ઇવેન્ટ ઉમેરો
-                        </button>
-                        <button type="button" id="event-cancel-btn" class="hidden w-1/3 bg-gray-500 hover:bg-gray-600 text-white text-xs font-bold py-2 rounded transition">
-                            કેન્સલ
-                        </button>
-                    </div>
-                </form>
-
-                <div class="border-t pt-2">
-                    <h4 class="text-xs font-bold text-gray-700 mb-2">હાલની ઇવેન્ટ્સ:</h4>
-                    <div id="admin-events-list" class="space-y-1 max-h-28 overflow-y-auto">
-                        <p class="text-xs text-gray-400">લોડ થઈ રહ્યું છે...</p>
-                    </div>
-                </div>
-            </div>
-
-
-<!-- સેક્શન ૧૨: આપત્તિ વ્યવસ્થાપન (Disaster Management) મેનેજર -->
-<div class="bg-slate-50 border border-slate-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[500px] overflow-y-auto">
-    <h3 class="font-bold text-gray-800 border-b pb-2 flex items-center gap-2">
-        🚨 ૧૨. આપત્તિ વ્યવસ્થાપન (Disaster Management) મેનેજર
-    </h3>
+// એડિટ કરવા માટે ડેટા ફોર્મમાં ભરવાનું ફંક્શન
+window.editSchedule = (id, name, desig, timing, days, note) => {
+    // ફોર્મમાં વેલ્યુ સેટ કરવી
+    document.getElementById("sch-name").value = decodeURIComponent(name);
+    document.getElementById("sch-desig").value = decodeURIComponent(desig);
+    document.getElementById("sch-timing").value = decodeURIComponent(timing);
+    document.getElementById("sch-days").value = decodeURIComponent(days);
     
-    <form id="disaster-management-form" class="space-y-3">
-        <div>
-            <label class="block text-xs font-semibold text-gray-600 mb-1">પેજ પસંદ કરો:</label>
-            <select id="disaster-page-key" required class="w-full text-xs p-2 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 outline-none bg-white">
-                <option value="important_contacts">૧. Important Contacts (અગત્યના સંપર્ક નંબરો)</option>
-                <option value="mock_drills">૨. Mock Drills (મોક ડ્રિલ)</option>
-                <option value="vdrmp">૩. VDRMP (ગામ આપત્તિ વ્યવસ્થાપન યોજના)</option>
-                <option value="disaster_gallery">૪. વ્યવસ્થાપન ગેલેરી</option>
-            </select>
-        </div>
+    const noteEl = document.getElementById("sch-note");
+    if (noteEl) noteEl.value = decodeURIComponent(note);
 
-        <div>
-            <label class="block text-xs font-semibold text-gray-600 mb-1">પેજ કન્ટેન્ટ (HTML અથવા સાદો ટેક્સ્ટ લખો):</label>
-            <textarea id="disaster-page-content" rows="6" placeholder="અહીં HTML કોડ અથવા સાદુ લખાણ ઉમેરો..." required
-                class="w-full text-xs p-2 border border-gray-300 rounded font-mono focus:ring-1 focus:ring-blue-500 outline-none bg-white"></textarea>
-        </div>
+    // એડિટ માટે ID સ્ટોર કરવા હાઇડન ઇનપુટ ઉમેરવું અથવા અપડેટ મોડ સેટ કરવો
+    let editIdInput = document.getElementById("sch-edit-id");
+    if (!editIdInput) {
+        editIdInput = document.createElement("input");
+        editIdInput.type = "hidden";
+        editIdInput.id = "sch-edit-id";
+        document.getElementById("add-schedule-form").appendChild(editIdInput);
+    }
+    editIdInput.value = id;
 
-        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2 rounded transition shadow">
-            માહિતી સાચવો / અપડેટ કરો
-        </button>
-    </form>
-</div>
+    // સબમિટ બટનનું નામ બદલીને "અપડેટ કરો" કરવું
+    const submitBtn = document.querySelector("#add-schedule-form button[type='submit']");
+    if (submitBtn) {
+        submitBtn.innerText = "અપડેટ કરો";
+        submitBtn.classList.remove("bg-emerald-600", "hover:bg-emerald-700");
+        submitBtn.classList.add("bg-amber-600", "hover:bg-amber-700");
+    }
 
+    // ફોર્મ તરફ સ્ક્રોલ કરવું
+    document.getElementById("add-schedule-form")?.scrollIntoView({ behavior: 'smooth' });
+};
 
+// ફોર્મ સબમિટ (ઉમેરવા અથવા અપડેટ કરવા માટે)
+document.getElementById("add-schedule-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    
+    const editIdInput = document.getElementById("sch-edit-id");
+    const editId = editIdInput ? editIdInput.value : "";
 
+    const payload = {
+        name: document.getElementById("sch-name").value.trim(),
+        designation: document.getElementById("sch-desig").value.trim(),
+        timing: document.getElementById("sch-timing").value.trim(),
+        days: document.getElementById("sch-days").value.trim(),
+        note: document.getElementById("sch-note")?.value.trim() || ''
+    };
 
-<!-- ગામના નક્શાની લિંક્સ માટેનું સેક્શન -->
-<form id="village-map-form" class="space-y-4">
-    <div>
-        <label class="block text-sm font-bold text-gray-700 mb-1">🛰️ સેટેલાઇટ મેપ લિંક (Google Maps):</label>
-        <input type="url" id="admin-satellite-url" placeholder="https://maps.google.com/..." class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
-    </div>
+    try {
+        if (editId) {
+            // જો એડિટ થતું હોય તો અપડેટ કરવું
+            payload.updatedAt = new Date();
+            await updateDoc(getPanchayatDoc("panchayat_schedule", editId), payload);
+            alert("સમય પત્રક સફળતાપૂર્વક અપડેટ થઈ ગયું!");
+            
+            // એડિટ મોડ ક્લિયર કરવો
+            editIdInput.value = "";
+            const submitBtn = document.querySelector("#add-schedule-form button[type='submit']");
+            if (submitBtn) {
+                submitBtn.innerText = "સમય પત્રક ઉમેરો";
+                submitBtn.classList.remove("bg-amber-600", "hover:bg-amber-700");
+                submitBtn.classList.add("bg-emerald-600", "hover:bg-emerald-700");
+            }
+        } else {
+            // નવું ઉમેરવું
+            payload.createdAt = new Date();
+            await addDoc(getPanchayatCol("panchayat_schedule"), payload);
+            alert("સમય પત્રક ઉમેરાઈ ગયું!");
+        }
 
-    <div>
-        <label class="block text-sm font-bold text-gray-700 mb-1">📄 રેવન્યુ સર્વે નંબર મેપ PDF લિંક (Google Drive / Direct PDF):</label>
-        <input type="url" id="admin-revenue-pdf-url" placeholder="https://drive.google.com/..." class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
-    </div>
+        e.target.reset();
+        loadAdminSchedule();
+    } catch (err) {
+        console.error("Save/Update Schedule Error:", err);
+        alert("સેવ કરવામાં ભૂલ આવી.");
+    }
+});
 
-    <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-lg transition">
-        💾 લિંક્સ સાચવો / અપડેટ કરો
-    </button>
-</form>
+// --- કાર્યરત સમિતિઓ લોડ કરવા માટેનું મુખ્ય ફંક્શન ---
+async function loadActiveCommittees() {
+    const container = document.getElementById("admin-committees-list");
+    if (!container) return; // જો એડમિન પેનલમાં આ કન્ટેનર ન હોય તો અટકવું
 
+    // LGD Code પકડવો
+    const urlParams = new URLSearchParams(window.location.search);
+    let currentLgdCode = urlParams.get('id') || (typeof lgdCode !== 'undefined' ? lgdCode : null) || localStorage.getItem("currentPanchayatId") || localStorage.getItem("panchayatId");
 
+    if (!currentLgdCode) return;
 
-
-
-<!-- 'મારૂ ગામ - એક નજરમાં' એડમિન મેનેજર -->
-<div class="bg-white p-5 rounded-2xl shadow-md border space-y-4">
-    <h3 class="font-bold text-sm text-emerald-800 flex items-center gap-2 border-b pb-2">
-        <i class="fa-solid fa-chart-pie text-emerald-600"></i> મારૂ ગામ - એક નજરમાં (મેનેજર)
-    </h3>
-
-    <form id="add-glance-form" class="space-y-3 bg-gray-50 p-4 rounded-xl border">
-        <input type="hidden" id="edit-glance-id" value="">
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div>
-                <label class="block text-xs font-medium text-gray-700 mb-1">સેક્શનનું નામ (Category)</label>
-                <select id="glance-section" class="w-full border p-2 rounded text-xs bg-white" required>
-                    <option value="ભૌગોલિક માહિતી (Geography)">ભૌગોલિક માહિતી (ક્ષેત્રફળ, નદી, તળાવ વગેરે)</option>
-                    <option value="શૈક્ષણિક સંસ્થાઓ (Education)">શૈક્ષણિક સંસ્થાઓ (સ્કૂલ, કોલેજ વગેરે)</option>
-                    <option value="આંગણવાડી કેન્દ્રો (Anganwadi)">આંગણવાડી કેન્દ્રો</option>
-                    <option value="સહકારી મંડળીઓ અને જૂથો">સહકારી મંડળીઓ, સ્વ સહાય જૂથો</option>
-                    <option value="અન્ય જનસુવિધાઓ (Amenities)">અન્ય જનસુવિધાઓ (હૉલ, વોટર વર્કસ, ટ્રેનિંગ સેન્ટર વગેરે)</option>
-                </select>
-            </div>
-            <div>
-                <label class="block text-xs font-medium text-gray-700 mb-1">મુખ્ય શીર્ષક (વિગતનું નામ)</label>
-                <input type="text" id="glance-title" placeholder="દા.ત. પ્રાથમિક શાળા / કુલ ક્ષેત્રફળ" class="w-full border p-2 rounded text-xs bg-white" required>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div>
-                <label class="block text-xs font-medium text-gray-700 mb-1">આંકડો / મુખ્ય માહિતી</label>
-                <input type="text" id="glance-value" placeholder="દા.ત. ૨૫ ચોરસ કિમી / ૦૩ શાળાઓ" class="w-full border p-2 rounded text-xs bg-white" required>
-            </div>
-            <div>
-                <label class="block text-xs font-medium text-gray-700 mb-1">વધારાની માહિતી (શિક્ષક, બાળકો ની સંખ્યા વગેરે) </label>
-                <input type="text" id="glance-extra" placeholder="દા.ત. શિક્ષકો: ૧૨, વિદ્યાર્થીઓ: ૨૫૦, વિદ્યાર્થિનીઓ: ૨૩૦" class="w-full border p-2 rounded text-xs bg-white">
-            </div>
-        </div>
-
-        <div class="flex gap-2">
-            <button type="submit" id="submit-glance-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded text-xs font-semibold">
-                માહિતી સાચવો
-            </button>
-            <button type="button" id="cancel-glance-edit-btn" class="hidden bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded text-xs font-semibold">
-                રદ કરો
-            </button>
-        </div>
-    </form>
-
-    <!-- List Container -->
-    <div class="mt-4">
-        <h4 class="font-bold text-xs text-gray-700 mb-2">હાલની તમામ ભૌગોલિક અને સુવિધા વિગતો:</h4>
-        <div id="admin-glance-list" class="space-y-2 max-h-72 overflow-y-auto">
-            <p class="text-xs text-gray-500">માહિતી લોડ થઈ રહી છે...</p>
-        </div>
-    </div>
-</div>
-
-
-
-
-
-<!-- સંપર્ક માહિતી મેનેજર -->
-<div class="bg-white p-5 rounded-2xl shadow-md border space-y-4">
-    <h3 class="font-bold text-sm text-emerald-800 flex items-center gap-2 border-b pb-2">
-        <i class="fa-solid fa-address-card text-emerald-600"></i> સંપર્ક પેજ વિગતો મેનેજ કરો
-    </h3>
-
-    <form id="contact-admin-form" class="space-y-3 bg-gray-50 p-4 rounded-xl border">
-        <div>
-            <label class="block text-xs font-medium text-gray-700 mb-1">ગ્રામ પંચાયતનું નામ</label>
-            <input type="text" id="adm-panchayat-name" placeholder="દા.ત. અડાલજ ગ્રામ પંચાયત" class="w-full border p-2 rounded text-xs bg-white" required>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div>
-                <label class="block text-xs font-medium text-gray-700 mb-1">સરનામું</label>
-                <textarea id="adm-address" rows="2" placeholder="પંચાયત ઓફિસનું પૂરું સરનામું..." class="w-full border p-2 rounded text-xs bg-white" required></textarea>
-            </div>
-            <div class="space-y-3">
-                <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">ઈમેલ આઈડી</label>
-                    <input type="email" id="adm-email" placeholder="panchayat@gmail.com" class="w-full border p-2 rounded text-xs bg-white" required>
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">સંપર્ક નંબર (ફોન/મોબાઈલ)</label>
-                    <input type="text" id="adm-phone" placeholder="૦૨૭૬૪-xxxxx / ૯૮૨૫૦..." class="w-full border p-2 rounded text-xs bg-white" required>
-                </div>
-            </div>
-        </div>
-
-        <div>
-            <label class="block text-xs font-medium text-gray-700 mb-1">વધારાની માહિતી (ઓફિસ સમય, નોટિસ વગેરે)</label>
-            <textarea id="adm-extra" rows="2" placeholder="ઓફિસનો સમય: સવારે ૧૦:૦૦ થી સાંજે ૦૬:૦૦..." class="w-full border p-2 rounded text-xs bg-white"></textarea>
-        </div>
-
-        <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded text-xs font-semibold">
-            સંપર્ક વિગતો સેવ / અપડેટ કરો
-        </button>
-    </form>
-</div>
-
-
-
-
-<!-- યુઝર પ્રતિસાદ / સંદેશાઓ મેનેજર -->
-<div class="bg-white p-5 rounded-2xl shadow-md border space-y-4 mt-6">
-    <h3 class="font-bold text-sm text-emerald-800 flex items-center gap-2 border-b pb-2">
-        <i class="fa-solid fa-comments text-emerald-600"></i> યુઝર્સ દ્વારા મળેલા પ્રતિસાદો (Feedbacks)
-    </h3>
-
-    <!-- Feedbacks List Container -->
-    <div id="admin-feedback-list" class="space-y-3 max-h-96 overflow-y-auto pr-1">
-        <p class="text-xs text-gray-500">પ્રતિસાદો લોડ થઈ રહ્યા છે...</p>
-    </div>
-</div>
-
-
-
-
-
-
-
-
-<div class="bg-white p-5 rounded-2xl shadow-md border space-y-6 mt-6">
-    <h3 class="font-bold text-sm text-emerald-800 flex items-center gap-2 border-b pb-2">
-        <i class="fa-solid fa-file-pen text-emerald-600"></i> સ્વયં જાહેર કરેલ માહિતી મેનેજ કરો
-    </h3>
-
-    <form id="proactive-admin-form" class="space-y-6 text-xs">
+    try {
+        const snap = await getDocs(collection(db, "panchayats", currentLgdCode, "active_committees"));
+        container.innerHTML = "";
         
-        <!-- ૧. અધિકારી વિગતો -->
-        <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
-            <h4 class="font-bold text-gray-800 border-b pb-1">૧. જાહેર માહિતી અધિકારીની વિગતો</h4>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <div>
-                    <label class="block font-medium text-gray-700 mb-1">તલાટી કમ મંત્રીનું નામ</label>
-                    <input type="text" id="off-name" class="w-full border p-2 rounded bg-white" placeholder="નામ લખો" required>
+        if (snap.empty) {
+            container.innerHTML = `<p class="text-xs text-gray-500 p-2">કોઈ કાર્યરત સમિતિ ઉપલબ્ધ નથી.</p>`;
+            return;
+        }
+
+        snap.forEach(d => {
+            const item = d.data();
+            container.innerHTML += `
+                <div class="bg-gray-50 border p-2.5 rounded text-xs mb-1.5 shadow-sm space-y-1">
+                    <div class="flex justify-between items-center font-bold">
+                        <span class="text-gray-900">${item.committeeName || 'સમિતિ'} (${item.members ? item.members.length : 0} સભ્યો)</span>
+                        <div class="flex items-center gap-1">
+                            <button type="button" onclick="editActiveComm('${d.id}', '${encodeURIComponent(item.committeeName || '')}')" class="bg-amber-500 hover:bg-amber-600 text-white px-2 py-0.5 rounded text-[10px] font-bold shadow">
+                                એડિટ
+                            </button>
+                            <button type="button" onclick="deleteActiveComm('${d.id}')" class="bg-red-600 hover:bg-red-700 text-white px-2 py-0.5 rounded text-[10px] font-bold shadow">
+                                ડિલીટ
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <label class="block font-medium text-gray-700 mb-1">મોબાઈલ નંબર</label>
-                    <input type="text" id="off-phone" class="w-full border p-2 rounded bg-white" placeholder="નંબર લખો" required>
+            `;
+        });
+    } catch (err) {
+        console.error("Load Active Committees Error:", err);
+    }
+}
+
+
+// --- ૯. કાર્યરત સમિતિઓ સેવ અથવા અપડેટ કરવા માટેનું ફોર્મ સબમિટ હેન્ડલર ---
+document.getElementById("add-committee-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault(); // 🛑 પેજ રિફ્રેશ થતું સંપૂર્ણ અટકાવશે
+
+    // 1. સાચો LGD Code મેળવવો
+    const urlParams = new URLSearchParams(window.location.search);
+    let currentLgdCode = urlParams.get('id') || (typeof lgdCode !== 'undefined' ? lgdCode : null) || localStorage.getItem("currentPanchayatId") || localStorage.getItem("panchayatId");
+
+    if (!currentLgdCode) {
+        alert("⚠️ ભૂલ: પંચાયતનો LGD Code મળ્યો નથી! કૃપા કરીને સુપર એડમિન પેનલમાંથી યોગ્ય લિંક દ્વારા પ્રવેશ કરો.");
+        return;
+    }
+
+    // URL માં ID જળવાઈ રહે તેની ખાતરી કરવી
+    if (!window.location.search.includes("id=")) {
+        window.history.replaceState({}, '', `${window.location.pathname}?id=${currentLgdCode}`);
+    }
+
+    const editIdInput = document.getElementById("comm-edit-id");
+    const editId = editIdInput ? editIdInput.value : "";
+
+    const committeeName = document.getElementById("comm-name")?.value.trim() || document.getElementById("committee-name")?.value.trim();
+
+    if (!committeeName) {
+        alert("⚠️ કૃપા કરીને સમિતિનું નામ અવશ્ય ભરો!");
+        return;
+    }
+
+    const payload = {
+        committeeName: committeeName,
+        updatedAt: new Date()
+    };
+
+    try {
+        const committeeCollectionRef = collection(db, "panchayats", currentLgdCode, "active_committees");
+
+        if (editId) {
+            // અપડેટ કરવું
+            const docRef = doc(db, "panchayats", currentLgdCode, "active_committees", editId);
+            await updateDoc(docRef, payload);
+            alert("✅ સમિતિ સફળતાપૂર્વક અપડેટ થઈ ગઈ!");
+
+            if (editIdInput) editIdInput.value = "";
+            const submitBtn = e.target.querySelector("button[type='submit']");
+            if (submitBtn) {
+                submitBtn.innerText = "સમિતિ ઉમેરો";
+                submitBtn.classList.remove("bg-amber-600", "hover:bg-amber-700");
+                submitBtn.classList.add("bg-emerald-600", "hover:bg-emerald-700");
+            }
+        } else {
+            // નવી ઉમેરવી
+            payload.createdAt = new Date();
+            payload.members = [];
+            await addDoc(committeeCollectionRef, payload);
+            alert("✅ નવી સમિતિ સફળતાપૂર્વક ઉમેરાઈ ગઈ!");
+        }
+
+        // ફોર્મ રિસેટ કરવું અને લિસ્ટ રિફ્રેશ કરવું
+        e.target.reset();
+        if (editIdInput) editIdInput.value = "";
+        
+        // લિસ્ટ તરત જ રિફ્રેશ થશે જેથી જૂની/નવી સમિતિઓ દેખાવા લાગશે
+        loadActiveCommittees(); 
+
+    } catch (err) {
+        console.error("Save/Update Committee Error:", err);
+        alert("સેવ કરવામાં ટેકનિકલ ભૂલ આવી.");
+    }
+});
+// --- ૧૦. મિલકત વેરા લિંક ---
+async function loadAdminTaxLink() {
+    if (!lgdCode) return;
+    const snap = await getDoc(getPanchayatDoc("settings", "tax_payment"));
+    if (snap.exists() && document.getElementById("tax-payment-url")) {
+        document.getElementById("tax-payment-url").value = snap.data().url || "";
+    }
+}
+
+document.getElementById("tax-link-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const url = document.getElementById("tax-payment-url").value.trim();
+    await setDoc(getPanchayatDoc("settings", "tax_payment"), { url, updatedAt: new Date() }, { merge: true });
+    alert("મિલકત વેરા લિંક સાચવવામાં આવી!");
+});
+
+// --- ૧૧. કસ્ટમ બટન અને પેજ મેનેજર ---
+async function loadAdminCustomButtons() {
+    const container = document.getElementById("admin-custom-buttons-list");
+    if (!container || !lgdCode) return;
+    const snap = await getDocs(getPanchayatCol("custom_pages"));
+    container.innerHTML = "";
+    snap.forEach(d => {
+        const item = d.data();
+        container.innerHTML += `
+            <div class="flex justify-between items-center bg-gray-50 p-2 border rounded text-xs mb-1">
+                <span><b>${item.buttonTitle}</b></span>
+                <button onclick="deleteCustomBtn('${d.id}')" class="bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded">ડિલીટ</button>
+            </div>
+        `;
+    });
+}
+
+window.deleteCustomBtn = async (id) => {
+    if (confirm("બટન ડિલીટ કરવું છે?")) {
+        await deleteDoc(getPanchayatDoc("custom_pages", id));
+        loadAdminCustomButtons();
+    }
+};
+
+document.getElementById("add-page-button-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const buttonTitle = document.getElementById("custom-btn-title").value;
+    const htmlContent = document.getElementById("custom-page-html").value;
+    await addDoc(getPanchayatCol("custom_pages"), { buttonTitle, htmlContent, createdAt: new Date() });
+    alert("કસ્ટમ બટન સાચવવામાં આવ્યું!");
+    e.target.reset();
+    loadAdminCustomButtons();
+});
+
+// --- ૧૨. ઇવેન્ટ્સ મેનેજર ---
+async function loadAdminEvents() {
+    const container = document.getElementById("admin-events-list");
+    if (!container || !lgdCode) return;
+    const snap = await getDocs(getPanchayatCol("events"));
+    container.innerHTML = "";
+    snap.forEach(d => {
+        const item = d.data();
+        container.innerHTML += `
+            <div class="flex justify-between items-center bg-gray-50 p-2 border rounded text-xs mb-1">
+                <span><b>${item.eventName}</b> (${item.eventDate})</span>
+                <button onclick="deleteEvent('${d.id}')" class="bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded">ડિલીટ</button>
+            </div>
+        `;
+    });
+}
+
+window.deleteEvent = async (id) => {
+    if (confirm("ઇવેન્ટ ડિલીટ કરવી છે?")) {
+        await deleteDoc(getPanchayatDoc("events", id));
+        loadAdminEvents();
+    }
+};
+
+document.getElementById("event-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const payload = {
+        eventName: document.getElementById("event-name").value,
+        eventDate: document.getElementById("event-date").value,
+        eventLocation: document.getElementById("event-location").value
+    };
+    await addDoc(getPanchayatCol("events"), payload);
+    alert("ઇવેન્ટ ઉમેરાઈ ગઈ!");
+    e.target.reset();
+    loadAdminEvents();
+});
+
+// --- ૧૩. આપત્તિ વ્યવસ્થાપન ---
+async function fetchDisasterContent() {
+    const key = document.getElementById('disaster-page-key')?.value;
+    if (!key || !lgdCode) return;
+    const snap = await getDoc(getPanchayatDoc("disaster_management", key));
+    if (snap.exists() && document.getElementById('disaster-page-content')) {
+        document.getElementById('disaster-page-content').value = snap.data().content || "";
+    }
+}
+
+document.getElementById('disaster-page-key')?.addEventListener('change', fetchDisasterContent);
+document.getElementById('disaster-management-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const key = document.getElementById('disaster-page-key').value;
+    const content = document.getElementById('disaster-page-content').value;
+    await setDoc(getPanchayatDoc("disaster_management", key), { content, updatedAt: new Date() }, { merge: true });
+    alert("આપત્તિ વ્યવસ્થાપન પેજ અપડેટ થઈ ગયું!");
+});
+
+// --- ૧૪. સેટેલાઇટ & રેવન્યુ મેપ લિંક્સ ---
+async function fetchExistingMapLinks() {
+    if (!lgdCode) return;
+    const snap = await getDoc(getPanchayatDoc("village_map_settings", "links"));
+    if (snap.exists()) {
+        if (document.getElementById('admin-satellite-url')) document.getElementById('admin-satellite-url').value = snap.data().satelliteUrl || "";
+        if (document.getElementById('admin-revenue-pdf-url')) document.getElementById('admin-revenue-pdf-url').value = snap.data().revenuePdfUrl || "";
+    }
+}
+
+document.getElementById('village-map-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const satelliteUrl = document.getElementById('admin-satellite-url').value.trim();
+    const revenuePdfUrl = document.getElementById('admin-revenue-pdf-url').value.trim();
+    await setDoc(getPanchayatDoc("village_map_settings", "links"), { satelliteUrl, revenuePdfUrl, updatedAt: new Date() }, { merge: true });
+    alert("નક્શાની લિંક્સ સાચવાઈ ગઈ!");
+});
+
+// --- ૧૫. મારૂ ગામ - એક નજરમાં ---
+async function loadAdminGlanceList() {
+    const container = document.getElementById("admin-glance-list");
+    if (!container || !lgdCode) return;
+    const snap = await getDocs(getPanchayatCol("village_glance"));
+    container.innerHTML = "";
+    snap.forEach(d => {
+        const item = d.data();
+        container.innerHTML += `
+            <div class="flex justify-between items-center bg-gray-50 p-2 border rounded text-xs mb-1">
+                <span><b>${item.title}:</b> ${item.value}</span>
+                <button onclick="deleteGlance('${d.id}')" class="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded">ડિલીટ</button>
+            </div>
+        `;
+    });
+}
+
+window.deleteGlance = async (id) => {
+    if (confirm("ડિલીટ કરવું છે?")) {
+        await deleteDoc(getPanchayatDoc("village_glance", id));
+        loadAdminGlanceList();
+    }
+};
+
+document.getElementById("add-glance-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const payload = {
+        sectionName: document.getElementById("glance-section").value,
+        title: document.getElementById("glance-title").value,
+        value: document.getElementById("glance-value").value,
+        extraInfo: document.getElementById("glance-extra").value
+    };
+    await addDoc(getPanchayatCol("village_glance"), payload);
+    alert("માહિતી ઉમેરાઈ ગઈ!");
+    e.target.reset();
+    loadAdminGlanceList();
+});
+
+// --- ૧૬. સંપર્ક પેજ વિગતો ---
+async function loadContactAdminData() {
+    if (!lgdCode) return;
+    const snap = await getDoc(getPanchayatDoc("contact_info", "main_contact"));
+    if (snap.exists()) {
+        const data = snap.data();
+        if (document.getElementById("adm-panchayat-name")) document.getElementById("adm-panchayat-name").value = data.panchayatName || "";
+        if (document.getElementById("adm-address")) document.getElementById("adm-address").value = data.address || "";
+        if (document.getElementById("adm-email")) document.getElementById("adm-email").value = data.email || "";
+        if (document.getElementById("adm-phone")) document.getElementById("adm-phone").value = data.phone || "";
+        if (document.getElementById("adm-extra")) document.getElementById("adm-extra").value = data.extraInfo || "";
+    }
+}
+
+document.getElementById("contact-admin-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const payload = {
+        panchayatName: document.getElementById("adm-panchayat-name").value,
+        address: document.getElementById("adm-address").value,
+        email: document.getElementById("adm-email").value,
+        phone: document.getElementById("adm-phone").value,
+        extraInfo: document.getElementById("adm-extra").value
+    };
+    await setDoc(getPanchayatDoc("contact_info", "main_contact"), payload, { merge: true });
+    alert("સંપર્ક વિગતો અપડેટ થઈ ગઈ!");
+});
+
+// --- ૧૭. યુઝર ફીડબેક લોડિંગ ---
+function loadAdminFeedbacks() {
+    const container = document.getElementById("admin-feedback-list");
+    if (!container || !lgdCode) return;
+    onSnapshot(getPanchayatCol("user_feedbacks"), (snapshot) => {
+        container.innerHTML = "";
+        if (snapshot.empty) {
+            container.innerHTML = `<p class="text-xs text-gray-500">કોઈ પ્રતિભાવ મળેલ નથી.</p>`;
+            return;
+        }
+        snapshot.forEach(d => {
+            const data = d.data();
+            container.innerHTML += `
+                <div class="bg-gray-50 border p-2 rounded text-xs mb-1">
+                    <div class="font-bold">${data.name} (${data.phone})</div>
+                    <p>${data.message}</p>
                 </div>
-                <div>
-                    <label class="block font-medium text-gray-700 mb-1">પ્રથમ અપીલ અધિકારીશ્રી</label>
-                    <input type="text" id="off-appeal" class="w-full border p-2 rounded bg-white" placeholder="અધિકારીનું નામ" required>
-                </div>
-            </div>
-        </div>
+            `;
+        });
+    });
+}
 
-        <!-- ૨. વસ્તી માહિતી -->
-        <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
-            <h4 class="font-bold text-gray-800 border-b pb-1">૨. ગામની વસ્તી વિશેની માહિતી</h4>
-            <div id="population-rows" class="space-y-2"></div>
-            <button type="button" onclick="addPopulationRow()" class="bg-blue-600 text-white px-3 py-1 rounded text-[11px] font-bold">+ નવી વિગત ઉમેરો</button>
-        </div>
+// --- ૧૮. સ્વયં જાહેર કરેલ માહિતી (Proactive Disclosure) ---
+async function loadProactiveAdminData() {
+    if (!lgdCode) return;
+    const snap = await getDoc(getPanchayatDoc("proactive_disclosure", "main_data"));
+    if (snap.exists()) {
+        const data = snap.data();
+        if (data.officer) {
+            if (document.getElementById("off-name")) document.getElementById("off-name").value = data.officer.name || "";
+            if (document.getElementById("off-phone")) document.getElementById("off-phone").value = data.officer.phone || "";
+            if (document.getElementById("off-appeal")) document.getElementById("off-appeal").value = data.officer.appealOfficer || "";
+        }
+    }
+}
 
-        <!-- ૩. પાણીની વિગત -->
-        <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
-            <h4 class="font-bold text-gray-800 border-b pb-1">૩. ગામના પાણીની વિગત</h4>
-            <div id="water-rows" class="space-y-2"></div>
-            <button type="button" onclick="addWaterRow()" class="bg-blue-600 text-white px-3 py-1 rounded text-[11px] font-bold">+ જળાશય ઉમેરો</button>
-        </div>
-
-        <!-- ૪. પંચાયત મિલકત -->
-        <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
-            <h4 class="font-bold text-gray-800 border-b pb-1">૪. પંચાયતની મિલકત</h4>
-            <div id="prop-rows" class="space-y-2"></div>
-            <button type="button" onclick="addPropRow()" class="bg-blue-600 text-white px-3 py-1 rounded text-[11px] font-bold">+ મિલકત ઉમેરો</button>
-        </div>
-
-        <!-- ૫. પેજના સૌથી નીચે દેખાય તેવી વધારાની અન્ય માહિતી (Admin Custom Input) -->
-        <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
-            <h4 class="font-bold text-gray-800 border-b pb-1">૫. પેજની સૌથી નીચે ઉમેરવાની અન્ય માહિતી (વૈકલ્પિક)</h4>
-            <div>
-                <label class="block font-medium text-gray-700 mb-1">શિર્ષક (Title):</label>
-                <input type="text" id="extra-title-input" class="w-full border p-2 rounded bg-white" placeholder="દા.ત. વિશેષ નોંધ અથવા અન્ય વિગત">
-            </div>
-            <div>
-                <label class="block font-medium text-gray-700 mb-1">માહિતી / લખાણ (Content):</label>
-                <textarea id="extra-content-input" rows="3" class="w-full border p-2 rounded bg-white" placeholder="અહીં વિગતવાર લખાણ લખો..."></textarea>
-            </div>
-        </div>
-
-        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white p-3 rounded-lg font-bold text-sm shadow transition">
-            બધી માહિતી સેવ / અપડેટ કરો
-        </button>
-    </form>
-</div>
-
-
-
-
-            
-
-
-
-            
-            
-            
-        </main>
-    </div>
-
-
-
-
-
-
-    
-    <!-- html2pdf.js Bundle -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-
-    <!-- JavaScript Reference -->
-    <script type="module" src="./js/admin.js"></script>
-</body>
-</html>
+document.getElementById("proactive-admin-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const officer = {
+        name: document.getElementById("off-name").value,
+        phone: document.getElementById("off-phone").value,
+        appealOfficer: document.getElementById("off-appeal").value
+    };
+    await setDoc(getPanchayatDoc("proactive_disclosure", "main_data"), { officer, updatedAt: new Date() }, { merge: true });
+    alert("સ્વયં જાહેર કરેલ માહિતી સેવ થઈ!");
+});
+admin.js(5).txt
+Displaying admin.js(5).txt.
