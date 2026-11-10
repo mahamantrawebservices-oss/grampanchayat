@@ -54,6 +54,7 @@
                     </div>
                     <button type="submit" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white text-xs px-4 py-2 rounded font-bold shadow transition">સેટિંગ્સ સેવ કરો</button>
                 </form>
+                <div id="settings-preview"></div>
             </div>
 
             <!-- ૧. તાજી પોસ્ટ્સ અને ન્યૂઝ મેનેજર -->
@@ -135,11 +136,15 @@
                 </form>
 
                 <div class="mt-4 border-t border-orange-200 pt-3">
-                    <h4 class="text-xs font-bold text-orange-950 mb-2">📸 ઉમેરેલા ફોટા (ડિલીટ કરવા માટે):</h4>
-                    <div id="admin-gallery-list" class="space-y-2 max-h-48 overflow-y-auto pr-1">
-                        <p class="text-xs text-gray-500">ફોટા લોડ થઈ રહ્યા છે...</p>
+                     <div class="flex justify-between items-center mb-2">
+                      <h4 class="text-xs font-bold text-orange-950">📸 ઉમેરેલા ફોટા (મહત્તમ ૨૦):</h4>
+                     <span id="gallery-count" class="text-[10px] font-bold text-orange-800 bg-orange-100 px-2 py-0.5 rounded">કુલ: ૦ / 20</span>
                     </div>
-                </div>
+                <!-- ૨૦ ફોટા સ્ક્રોલ લિસ્ટ (એકસાથે ૫ ફોટા દેખાશે) -->
+                   <div id="admin-gallery-list" class="space-y-2 max-h-48 overflow-y-auto pr-1">
+                    <p class="text-xs text-gray-500">ફોટા લોડ થઈ રહ્યા છે...</p>
+             </div>
+</div>
             </div>
 
             <!-- સેક્શન ૪: ગામ અને પંચાયત વિગત -->
