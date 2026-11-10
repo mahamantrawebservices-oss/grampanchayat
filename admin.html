@@ -192,6 +192,21 @@
                     </div>
                 </div>
 
+<!-- ફરિયાદ વિભાગ ઓન/ઓફ અને દૈનિક મર્યાદા સેટિંગ્સ -->
+<div class="bg-emerald-100/70 p-3 rounded-lg border border-emerald-300 space-y-3">
+    <label class="block text-xs font-bold text-emerald-950">🌐 વેબસાઇટ પર ફરિયાદ વિભાગ સેટિંગ્સ:</label>
+    <div class="flex flex-col sm:flex-row gap-2">
+        <select id="complaint-section-status" class="border border-emerald-300 p-1.5 rounded text-xs bg-white flex-1 font-bold focus:outline-none">
+            <option value="true">ચાલુ રાખવો (Show)</option>
+            <option value="false">બંધ રાખવો (Hide)</option>
+        </select>
+        <input type="number" id="complaint-daily-limit" placeholder="દૈનિક મર્યાદા (દા.ત. 50)" class="border border-emerald-300 p-1.5 rounded text-xs bg-white w-32 font-bold focus:outline-none" title="એક દિવસમાં વધુમાં વધુ કેટલી ફરિયાદો સ્વીકારવી">
+        <button type="button" id="save-complaint-config-btn" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-3 py-1.5 rounded text-xs shadow transition-colors">
+            સેવ કરો
+        </button>
+    </div>
+</div>
+                
                 <div class="flex flex-wrap items-center justify-between gap-2">
                     <select id="admin-complaint-filter" class="border border-emerald-300 p-1.5 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500">
                         <option value="ALL">તમામ ફરિયાદો</option>
