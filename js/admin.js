@@ -689,39 +689,129 @@ document.getElementById("add-member-staff-form")?.addEventListener("submit", asy
 async function loadAdminSchedule() {
     const container = document.getElementById("admin-schedule-list");
     if (!container || !lgdCode) return;
-    const snap = await getDocs(getPanchayatCol("panchayat_schedule"));
-    container.innerHTML = "";
-    snap.forEach(d => {
-        const item = d.data();
-        container.innerHTML += `
-            <div class="flex justify-between items-center bg-white p-2 border rounded text-xs mb-1">
-                <div><b>${item.name}</b> (${item.designation}) - ${item.timing}</div>
-                <button onclick="deleteSchedule('${d.id}')" class="bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded">ડિલીટ</button>
-            </div>
-        `;
-    });
+    
+    try {
+        const snap = await getDocs(getPanchayatCol("panchayat_schedule"));
+        container.innerHTML = "";
+        
+        if (snap.empty) {
+            container.innerHTML = `<p class="text-xs text-gray-500 p-2">કોઈ સમયપત્રક ઉપલબ્ધ નથી.</p>`;
+            return;
+        }
+
+        snap.forEach(d => {
+            const item = d.data();
+            container.innerHTML += `
+                <div class="flex justify-between items-center bg-white p-2.5 border rounded text-xs mb-1.5 shadow-sm">
+                    <div>
+                        <b>${item.name || ''}</b> (${item.designation || ''}) - ${item.timing || ''}
+                        <div class="text-[11px] text-gray-500">દિવસો: ${item.days || '-'} ${item.note ? `| નોંધ: ${item.note}` : ''}</div>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <button type="button" onclick="editSchedule('${d.id}', '${encodeURIComponent(item.name || '')}', '${encodeURIComponent(item.designation || '')}', '${encodeURIComponent(item.timing || '')}', '${encodeURIComponent(item.days || '')}', '${encodeURIComponent(item.note || '')}')" class="bg-amber-500 hover:bg-amber-600 text-white text-[10px] px-2 py-1 rounded font-bold shadow">
+                            એડિટ
+                        </button>
+                        <button type="button" onclick="deleteSchedule('${d.id}')" class="bg-red-600 hover:bg-red-700 text-white text-[10px] px-2 py-1 rounded font-bold shadow">
+                            ડિલીટ
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+    } catch (err) {
+        console.error("Load Schedule Error:", err);
+    }
 }
 
 window.deleteSchedule = async (id) => {
-    if (confirm("ડિલીટ કરવું છે?")) {
-        await deleteDoc(getPanchayatDoc("panchayat_schedule", id));
-        loadAdminSchedule();
+    if (confirm("શું તમે આ સમય પત્રક ડિલીટ કરવા માંગો છો?")) {
+        try {
+            await deleteDoc(getPanchayatDoc("panchayat_schedule", id));
+            alert("સમય પત્રક ડિલીટ થઈ ગયું!");
+            loadAdminSchedule();
+        } catch (err) {
+            console.error("Delete Error:", err);
+            alert("ડિલીટ કરવામાં ભૂલ આવી.");
+        }
     }
 };
 
+// એડિટ કરવા માટે ડેટા ફોર્મમાં ભરવાનું ફંક્શન
+window.editSchedule = (id, name, desig, timing, days, note) => {
+    // ફોર્મમાં વેલ્યુ સેટ કરવી
+    document.getElementById("sch-name").value = decodeURIComponent(name);
+    document.getElementById("sch-desig").value = decodeURIComponent(desig);
+    document.getElementById("sch-timing").value = decodeURIComponent(timing);
+    document.getElementById("sch-days").value = decodeURIComponent(days);
+    
+    const noteEl = document.getElementById("sch-note");
+    if (noteEl) noteEl.value = decodeURIComponent(note);
+
+    // એડિટ માટે ID સ્ટોર કરવા હાઇડન ઇનપુટ ઉમેરવું અથવા અપડેટ મોડ સેટ કરવો
+    let editIdInput = document.getElementById("sch-edit-id");
+    if (!editIdInput) {
+        editIdInput = document.createElement("input");
+        editIdInput.type = "hidden";
+        editIdInput.id = "sch-edit-id";
+        document.getElementById("add-schedule-form").appendChild(editIdInput);
+    }
+    editIdInput.value = id;
+
+    // સબમિટ બટનનું નામ બદલીને "અપડેટ કરો" કરવું
+    const submitBtn = document.querySelector("#add-schedule-form button[type='submit']");
+    if (submitBtn) {
+        submitBtn.innerText = "અપડેટ કરો";
+        submitBtn.classList.remove("bg-emerald-600", "hover:bg-emerald-700");
+        submitBtn.classList.add("bg-amber-600", "hover:bg-amber-700");
+    }
+
+    // ફોર્મ તરફ સ્ક્રોલ કરવું
+    document.getElementById("add-schedule-form")?.scrollIntoView({ behavior: 'smooth' });
+};
+
+// ફોર્મ સબમિટ (ઉમેરવા અથવા અપડેટ કરવા માટે)
 document.getElementById("add-schedule-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
+    
+    const editIdInput = document.getElementById("sch-edit-id");
+    const editId = editIdInput ? editIdInput.value : "";
+
     const payload = {
-        name: document.getElementById("sch-name").value,
-        designation: document.getElementById("sch-desig").value,
-        timing: document.getElementById("sch-timing").value,
-        days: document.getElementById("sch-days").value,
-        note: document.getElementById("sch-note").value || ''
+        name: document.getElementById("sch-name").value.trim(),
+        designation: document.getElementById("sch-desig").value.trim(),
+        timing: document.getElementById("sch-timing").value.trim(),
+        days: document.getElementById("sch-days").value.trim(),
+        note: document.getElementById("sch-note")?.value.trim() || ''
     };
-    await addDoc(getPanchayatCol("panchayat_schedule"), payload);
-    alert("સમય પત્રક ઉમેરાઈ ગયું!");
-    e.target.reset();
-    loadAdminSchedule();
+
+    try {
+        if (editId) {
+            // જો એડિટ થતું હોય તો અપડેટ કરવું
+            payload.updatedAt = new Date();
+            await updateDoc(getPanchayatDoc("panchayat_schedule", editId), payload);
+            alert("સમય પત્રક સફળતાપૂર્વક અપડેટ થઈ ગયું!");
+            
+            // એડિટ મોડ ક્લિયર કરવો
+            editIdInput.value = "";
+            const submitBtn = document.querySelector("#add-schedule-form button[type='submit']");
+            if (submitBtn) {
+                submitBtn.innerText = "સમય પત્રક ઉમેરો";
+                submitBtn.classList.remove("bg-amber-600", "hover:bg-amber-700");
+                submitBtn.classList.add("bg-emerald-600", "hover:bg-emerald-700");
+            }
+        } else {
+            // નવું ઉમેરવું
+            payload.createdAt = new Date();
+            await addDoc(getPanchayatCol("panchayat_schedule"), payload);
+            alert("સમય પત્રક ઉમેરાઈ ગયું!");
+        }
+
+        e.target.reset();
+        loadAdminSchedule();
+    } catch (err) {
+        console.error("Save/Update Schedule Error:", err);
+        alert("સેવ કરવામાં ભૂલ આવી.");
+    }
 });
 
 // --- ૯. કાર્યરત સમિતિઓ મેનેજર ---
