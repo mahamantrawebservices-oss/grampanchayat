@@ -9,25 +9,21 @@
 </head>
 <body class="bg-slate-50 min-h-screen flex flex-col font-sans">
 
-    <!-- ૧. Developer Maintenance Screen (Hidden by default) -->
+    <!-- ૧. Developer Maintenance Screen -->
     <div id="maintenance-screen" class="hidden fixed inset-0 bg-slate-900 text-white z-50 flex flex-col items-center justify-center p-6 text-center">
         <div class="bg-slate-800 p-8 rounded-3xl border border-slate-700 max-w-lg shadow-2xl space-y-4">
             <i class="fa-solid fa-screwdriver-wrench text-6xl text-amber-400 animate-bounce"></i>
             <h2 class="text-2xl font-bold text-amber-400">સિસ્ટમ મેન્ટેનન્સ ચાલુ છે</h2>
-            <p id="maintenance-msg-text" class="text-gray-300 text-sm">
-                હાલમાં ટેકનિકલ સુધારા અર્થે સિસ્ટમ મેન્ટેનન્સ મોડમાં છે. કૃપા કરીને થોડીવાર પછી પ્રયત્ન કરો.
-            </p>
+            <p id="maintenance-msg-text" class="text-gray-300 text-sm">હાલમાં ટેકનિકલ સુધારા અર્થે સિસ્ટમ મેન્ટેનન્સ મોડમાં છે.</p>
         </div>
     </div>
 
-    <!-- ૨. Subscription Deactive Screen (Hidden by default) -->
+    <!-- ૨. Subscription Deactive Screen -->
     <div id="deactive-screen" class="hidden fixed inset-0 bg-gray-900/90 text-white z-40 flex flex-col items-center justify-center p-6 text-center">
         <div class="bg-white text-gray-800 p-8 rounded-3xl max-w-md shadow-2xl space-y-4">
             <i class="fa-solid fa-circle-exclamation text-6xl text-red-500"></i>
             <h2 class="text-xl font-bold text-red-600">સબ્સ્ક્રિપ્શન નિષ્ક્રિય છે (Deactive)</h2>
-            <p class="text-gray-600 text-sm">
-                આ ગ્રામ પંચાયતની વેબસાઇટ સેવા હાલ પૂરતી સ્થગિત કરવામાં આવી છે.
-            </p>
+            <p class="text-gray-600 text-sm">આ ગ્રામ પંચાયતની વેબસાઇટ સેવા હાલ પૂરતી સ્થગિત કરવામાં આવી છે.</p>
         </div>
     </div>
 
@@ -45,14 +41,27 @@
 
     <main class="container mx-auto px-4 py-6 space-y-8 max-w-4xl flex-grow">
         
+        <!-- 💡 ઉપયોગી માર્ગદર્શિકા અને નિયમો -->
+        <div class="bg-emerald-50 border border-emerald-200 p-5 rounded-2xl shadow-sm space-y-3 text-xs md:text-sm text-emerald-950">
+            <h3 class="font-bold text-emerald-900 text-base flex items-center gap-2 border-b border-emerald-200 pb-2">
+                <i class="fa-solid fa-circle-info text-emerald-600"></i> ફરિયાદ નોંધાવવાના નિયમો અને માર્ગદર્શિકા
+            </h3>
+            <ul class="list-disc pl-5 space-y-1.5">
+                <li><b>ફરિયાદ નોંધણી રીત:</b> આપેલ ફોર્મમાં તમારું સાચું નામ, ૧૦ આંકડાનો ચાલુ મોબાઈલ નંબર અને ફળિયા/વિસ્તારની ચોક્કસ માહિતી ભરો.</li>
+                <li><b>ટોકન નંબર:</b> ફરિયાદ સબમિટ થયા બાદ સ્ક્રીન પર એક યુનિક ટોકન નંબર (દા.ત. GP-123456) આવશે, જે સાચવીને રાખવો.</li>
+                <li><b>સ્ટેટસ તપાસવાની રીત:</b> નીચે આપેલા 'તમારી ફરિયાદનું સ્ટેટસ જાણો' ખાનામાં તમારો ટોકન નંબર નાખીને તમારી ફરિયાદ પર શું કામગીરી થઈ તે ગમે ત્યારે જાણી શકાશે.</li>
+                <li><b>દૈનિક મર્યાદા:</b> પંચાયત દ્વારા નક્કી કરેલ દૈનિક ફરિયાદ લિમિટ પૂરી થયા બાદ ૨૪ કલાક પછી જ નવી ફરિયાદ નોંધી શકાશે.</li>
+            </ul>
+        </div>
+
         <!-- ૧. સ્ટેટસ ટ્રેકર સેક્શન -->
         <div class="bg-white p-6 rounded-2xl shadow-lg border border-teal-100 space-y-4">
             <h2 class="text-lg font-bold text-teal-900 border-b border-teal-100 pb-2 flex items-center gap-2">
-                <i class="fa-solid fa-magnifying-glass text-teal-600"></i> તમારી ફરિયાદનું સ્ટેટસ જાણો
+                <i class="fa-solid fa-magnifying-glass text-teal-600"></i> તમારી ફરિયાદનું સ્ટેટस જાણો
             </h2>
             
             <form id="check-status-form" class="flex flex-col sm:flex-row gap-3">
-                <input type="text" id="search-token" placeholder="અહીં તમારો ફરિયાદ નંબર (Token No.) દાખલ કરો" required class="flex-grow border border-gray-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-teal-500 focus:outline-none">
+                <input type="text" id="search-token" placeholder="અહીં તમારો ફરિયાદ નંબર (Token No. દા.ત. GP-XXXXXX) દાખલ કરો" required class="flex-grow border border-gray-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-teal-500 focus:outline-none">
                 <button type="submit" class="bg-teal-700 hover:bg-teal-800 text-white font-bold px-6 py-2.5 rounded-xl text-sm transition shadow">
                     સ્ટેટસ જુઓ
                 </button>
@@ -114,7 +123,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, query, where, getDocs, Timestamp, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, where, getDocs, Timestamp, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCMhWWI_6oxPIVEQEVlq2SIBf72EI2o8NI",
@@ -132,42 +141,58 @@
         const urlParams = new URLSearchParams(window.location.search);
         const panchayatId = urlParams.get('id') || "ahmedabad_daskroi_motapipalva";
 
-        // મુખ્ય પૃષ્ઠ લિંક સાથે ID જાળવી રાખવો
         document.getElementById("back-home-btn").href = `index.html?id=${panchayatId}`;
 
         async function verifySystemAccess() {
             try {
-                // 1. Global Maintenance Check
                 const maintSnap = await getDoc(doc(db, "system_settings", "global_config"));
                 if (maintSnap.exists() && maintSnap.data().isMaintenance) {
                     document.getElementById("maintenance-screen").classList.remove("hidden");
-                    if (maintSnap.data().maintenanceMessage) {
-                        document.getElementById("maintenance-msg-text").textContent = maintSnap.data().maintenanceMessage;
-                    }
                     return false;
                 }
-
-                // 2. Panchayat Active Status Check
                 const pSnap = await getDoc(doc(db, "panchayats", panchayatId));
                 if (pSnap.exists() && pSnap.data().isActive === false) {
                     document.getElementById("deactive-screen").classList.remove("hidden");
                     return false;
                 }
             } catch (err) {
-                console.error("Access verification error:", err);
+                console.error("Access error:", err);
             }
             return true;
         }
 
-        // ૧. ફરિયાદ સબમિટ ફંક્શન (પંચાયત સ્કોપ સાથે)
+        // ફરિયાદ સબમિટ અને દૈનિક મર્યાદા (Daily Limit) ચકાસણી
         document.getElementById("add-complaint-form").addEventListener("submit", async (e) => {
             e.preventDefault();
             const isAllowed = await verifySystemAccess();
             if (!isAllowed) return;
 
-            const token = "GP-" + Math.floor(100000 + Math.random() * 900000);
-            
             try {
+                // ૧. એડમિન દ્વારા સેટ કરેલી દૈનિક મર્યાદા તપાસવી
+                const configRef = doc(db, "panchayats", panchayatId, "settings", "complaint_config");
+                const configSnap = await getDoc(configRef);
+                const dailyLimit = configSnap.exists() && configSnap.data().dailyLimit ? parseInt(configSnap.data().dailyLimit) : 50; // ડિફોલ્ટ લિમિટ ૫૦
+
+                // ૨. આજના દિવસની કુલ ફરિયાદો ગણવી
+                const todayStr = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+                const complaintsSnap = await getDocs(collection(db, "panchayats", panchayatId, "complaints"));
+                
+                let todayCount = 0;
+                complaintsSnap.forEach(d => {
+                    const cData = d.data();
+                    if (cData.createdAt && cData.createdAt.toDate) {
+                        const cDate = cData.createdAt.toDate().toISOString().split('T')[0];
+                        if (cDate === todayStr) todayCount++;
+                    }
+                });
+
+                if (todayCount >= dailyLimit) {
+                    alert("⚠️ આજની ફરિયાદ નોંધણી મર્યાદા (Daily Limit) પૂરી થઈ ગઈ છે!\nકૃપા કરીને ૨૪ કલાક બાદ ફરી પ્રયાસ કરો.");
+                    return;
+                }
+
+                const token = "GP-" + Math.floor(100000 + Math.random() * 900000);
+                
                 await addDoc(collection(db, "panchayats", panchayatId, "complaints"), {
                     token: token,
                     name: document.getElementById("c-name").value,
@@ -179,7 +204,7 @@
                     createdAt: Timestamp.now()
                 });
 
-                alert(`તમારી ફરિયાદ નોંધાઈ ગઈ છે!\nતમારો ફરિયાદ નંબર: ${token}\nકૃપા કરીને આ નંબર સાચવી રાખો.`);
+                alert(`તમારી ફરિયાદ સફળતાપૂર્વક નોંધાઈ ગઈ છે!\nતમારો ફરિયાદ નંબર: ${token}\nકૃપા કરીને આ નંબર સાચવી રાખો.`);
                 e.target.reset();
             } catch (err) {
                 console.error("Complaint submit error:", err);
@@ -187,7 +212,7 @@
             }
         });
 
-        // ૨. સ્ટેટસ ટ્રેકિંગ ફંક્શન (પંચાયત સ્કોપ સાથે)
+        // સ્ટેટસ ટ્રેકિંગ ફંક્શન
         document.getElementById("check-status-form").addEventListener("submit", async (e) => {
             e.preventDefault();
             const tokenInput = document.getElementById("search-token").value.trim();
