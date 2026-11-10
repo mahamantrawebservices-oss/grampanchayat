@@ -18,28 +18,22 @@ const db = getFirestore(app);
 const storage = getStorage(app);
 
 // --- ૦. URL માંથી LGD Code પકડવો ---
-// 🌐 મલ્ટી-ટેનન્ટ LGD Code ડાયનેમિક કેપ્ચર કરવા માટેનું પરફેક્ટ લોજિક
 const urlParams = new URLSearchParams(window.location.search);
-let lgdCode = urlParams.get('id');
+const lgdCode = urlParams.get('id');
 
-if (lgdCode) {
-    // જો URL માં આઈડી હોય તો તેને લોકલ સ્ટોરેજમાં સેવ કરી લેવો (જેથી ભવિષ્યમાં કામ આવે)
-    localStorage.setItem("currentPanchayatId", lgdCode);
-} else {
-    // જો URL માં ન હોય, તો અગાઉ સેવ કરેલો આઈડી લેવો
-    lgdCode = localStorage.getItem("currentPanchayatId");
-}
-
-// ⚠️ જો હજી પણ આઈડી ન મળે તો જ યુઝરને પ્રોમ્પ્ટ કરવો કે યોગ્ય લિંકથી આવો
 if (!lgdCode) {
-    alert("⚠️ કૃપા કરીને સુપર એડમિન પેનલમાંથી યોગ્ય પંચાયતની લિંક દ્વારા પ્રવેશ કરો!");
-    // વૈકલ્પિક: સુપર એડમિન કે લોગિન પેજ પર રીડાયરેક્ટ કરી શકાય
-} else {
-    // ખાતરી કરો કે URL માં પણ આઈડી હંમેશા દેખાય
-    if (!window.location.search.includes("id=")) {
-        window.history.replaceState({}, '', `${window.location.pathname}?id=${lgdCode}`);
-    }
+    alert("⚠️ ભૂલ: LGD Code (પંચાયત ID) મળ્યો નથી! કૃપા કરીને સુપર એડમિન પેનલમાંથી યોગ્ય લિંક દ્વારા પ્રવેશ કરો.");
 }
+
+// LGD Code આધારિત Sub-Collection Helper
+function getPanchayatCol(subColName) {
+    return collection(db, "panchayats", lgdCode, subColName);
+}
+
+function getPanchayatDoc(subColName, docId) {
+    return doc(db, "panchayats", lgdCode, subColName, docId);
+}
+
 
 // LGD Code આધારિત Sub-Collection Helper
 function getPanchayatCol(subColName) {
