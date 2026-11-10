@@ -1,8 +1,23 @@
-import { db, storage } from "./firebase-config.js";
-import { collection, onSnapshot, addDoc, updateDoc, getDocs, doc, setDoc, getDoc, deleteDoc, query, orderBy, where, Timestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getFirestore, collection, onSnapshot, addDoc, updateDoc, getDocs, doc, setDoc, getDoc, deleteDoc, query, where, Timestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
-// --- 0. URL માંથી LGD Code પકડવો ---
+// --- સેન્ટ્રલ ફાયરબેઝ કન્ફિગરેશન ---
+const firebaseConfig = {
+    apiKey: "AIzaSyCMhWWI_6oxPIVEQEVlq2SIBf72EI2o8NI",
+    authDomain: "gram-panchayat-33c86.firebaseapp.com",
+    projectId: "gram-panchayat-33c86",
+    storageBucket: "gram-panchayat-33c86.firebasestorage.app",
+    messagingSenderId: "1025176315779",
+    appId: "1:1025176315779:web:a24ca10a06c55edcc8f8b6",
+    measurementId: "G-TQBSXCWNBV"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+// --- ૦. URL માંથી LGD Code પકડવો ---
 const urlParams = new URLSearchParams(window.location.search);
 const lgdCode = urlParams.get('id');
 
@@ -27,7 +42,6 @@ const loginForm = document.getElementById("admin-login-form");
 async function checkAdminAuth() {
     if (!lgdCode) return;
     
-    // સેશન સ્ટોરેજ તપાસવું
     if (sessionStorage.getItem(`admin_logged_${lgdCode}`) === "true") {
         if (loginModal) loginModal.classList.add("hidden");
         if (adminDashboard) adminDashboard.classList.remove("hidden");
@@ -43,13 +57,12 @@ loginForm?.addEventListener("submit", async (e) => {
     const enteredPass = document.getElementById("login-password")?.value.trim();
 
     try {
-        // ફાયરબેઝમાંથી આ પંચાયતનો રેકોર્ડ મેળવવો જેમાં પાસવર્ડ સેવ છે
         const panchayatDocRef = doc(db, "panchayats", lgdCode);
         const snap = await getDoc(panchayatDocRef);
 
         if (snap.exists()) {
             const data = snap.data();
-            const correctPass = data.adminPassword || "admin123"; // ડિફોલ્ટ પાસવર્ડ
+            const correctPass = data.adminPassword || "admin123";
 
             if (enteredPass === correctPass) {
                 sessionStorage.setItem(`admin_logged_${lgdCode}`, "true");
@@ -75,7 +88,6 @@ document.getElementById("logout-btn")?.addEventListener("click", () => {
     checkAdminAuth();
 });
 
-// પેજ લોડ થતાં જ ઓથેન્ટિકેશન ચેક કરવું
 checkAdminAuth();
 
 // તમામ ફંક્શન્સને એકસાથે રન કરવા માટેનું ઇનિશિયલાઈઝર
@@ -102,15 +114,6 @@ function initAdminPanel() {
     loadProactiveAdminData();
 }
 
-// Login & Logout
-document.getElementById("admin-login-form")?.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const email = document.getElementById("login-email")?.value;
-    const pass = document.getElementById("login-password")?.value;
-    signInWithEmailAndPassword(auth, email, pass).catch(err => alert("લોગિન નિષ્ફળ: " + err.message));
-});
-document.getElementById("logout-btn")?.addEventListener("click", () => signOut(auth));
-
 // --- ૧. વેબસાઇટ સેટિંગ્સ લાઈવ પ્રીવ્યુ ---
 async function loadWebsiteSettings() {
     if (!lgdCode) return;
@@ -120,7 +123,6 @@ async function loadWebsiteSettings() {
         if (document.getElementById("set-gp-name")) document.getElementById("set-gp-name").value = data.name || "";
         if (document.getElementById("set-gp-tagline")) document.getElementById("set-gp-tagline").value = data.tagline || "";
         
-        // સેટિંગ્સ નીચે લાઈવ વિગત બતાવવી
         const preview = document.getElementById("settings-preview");
         if (preview) {
             preview.innerHTML = `
@@ -272,7 +274,6 @@ document.getElementById("gallery-form")?.addEventListener("submit", async (e) =>
     const title = document.getElementById("img-title").value.trim();
     const url = document.getElementById("img-url").value.trim();
 
-    // ૨૦ ફોટા સુધીની ચકાસણી
     const snap = await getDocs(getPanchayatCol("gallery"));
     if (snap.size >= 20) {
         alert("⚠️ ગેલેરી લિમિટ પૂરી થઈ ગઈ છે! તમે ફક્ત મહત્તમ ૨૦ ફોટા જ ઉમેરી શકો છો.");
@@ -401,14 +402,11 @@ window.deleteMenu = async (id) => {
     }
 };
 
-// --- ૬. આવેલ ફરિયાદો, દૈનિક લિમિટ & સેટિંગ્સ ---
+// --- ૬. આવેલ ફરિયાદો, સેટિંગ્સ & PDF રિપોર્ટ ---
 async function loadComplaintConfig() {
     const snap = await getDoc(getPanchayatDoc("settings", "complaint_config"));
-    if (snap.exists()) {
-        const data = snap.data();
-        if (document.getElementById("complaint-section-status")) {
-            document.getElementById("complaint-section-status").value = data.isEnabled ? "true" : "false";
-        }
+    if (snap.exists() && document.getElementById("complaint-section-status")) {
+        document.getElementById("complaint-section-status").value = snap.data().isEnabled ? "true" : "false";
     }
 }
 
@@ -418,21 +416,6 @@ document.getElementById("save-complaint-config-btn")?.addEventListener("click", 
     alert("ફરિયાદ વિભાગ સ્ટેટસ સેટિંગ્સ સેવ થઈ ગયા!");
 });
 
-// ૬ મહિના જૂનો ડેટા ઓટો ડિલીટ
-async function cleanOldComplaints() {
-    if (!lgdCode) return;
-    try {
-        const sixMonthsAgo = Timestamp.fromDate(new Date(Date.now() - 180 * 24 * 60 * 60 * 1000));
-        const q = query(getPanchayatCol("complaints"), where("createdAt", "<", sixMonthsAgo));
-        const snap = await getDocs(q);
-        const deletePromises = snap.docs.map(d => deleteDoc(d.ref));
-        await Promise.all(deletePromises);
-    } catch (err) {
-        console.error("Auto cleanup error:", err);
-    }
-}
-cleanOldComplaints();
-
 async function loadAdminComplaints() {
     const filter = document.getElementById("admin-complaint-filter")?.value || "ALL";
     const snap = await getDocs(getPanchayatCol("complaints"));
@@ -440,6 +423,11 @@ async function loadAdminComplaints() {
     if (!container || !lgdCode) return;
 
     container.innerHTML = "";
+    if (snap.empty) {
+        container.innerHTML = `<p class="text-xs text-gray-500">કોઈ ફરિયાદ મળેલી નથી.</p>`;
+        return;
+    }
+
     snap.forEach(d => {
         const item = d.data();
         const isPending = item.status?.includes("પેન્ડિંગ") || item.status?.includes("ચાલ");
@@ -448,14 +436,15 @@ async function loadAdminComplaints() {
         container.innerHTML += `
             <div class="bg-white p-2.5 border rounded shadow-sm text-xs mb-2">
                 <div class="flex justify-between font-bold border-b pb-1">
-                    <span>ટોકન: ${item.token || 'N/A'} (${item.name || ''})</span>
+                    <span>નામ: ${item.name || 'અનામી'} (મો: ${item.mobile || '-'})</span>
                     <span class="text-emerald-700">${item.type || ''}</span>
                 </div>
-                <p class="mt-1"><b>વિગત:</b> ${item.details || ''}</p>
-                <div class="flex items-center gap-2 mt-2">
-                    <label class="font-bold">સ્ટેટસ:</label>
-                    <select onchange="updateComplaintStatus('${d.id}', this.value)" class="border p-1 rounded bg-amber-50 text-[11px]">
-                        <option value="${item.status}" selected>હાલનું: ${item.status}</option>
+                <p class="mt-1"><b>ફળિયું/મકાન:</b> ${item.faliya || ''} / ${item.house || ''}</p>
+                <p class="mt-1 text-gray-700"><b>ફરિયાદ:</b> ${item.msg || item.details || ''}</p>
+                <div class="flex items-center gap-2 mt-2 pt-1 border-t">
+                    <label class="font-bold text-gray-700">સ્ટેટસ:</label>
+                    <select onchange="updateComplaintStatus('${d.id}', this.value)" class="border p-1 rounded bg-amber-50 text-[11px] flex-1">
+                        <option value="${item.status || 'Pending'}" selected>હાલનું: ${item.status || 'Pending'}</option>
                         <option value="ફરિયાદ પર કામ ચાલી રહ્યું છે">ફરિયાદ પર કામ ચાલી રહ્યું છે</option>
                         <option value="ફરિયાદ નિવારણ થઈ ગયું છે">ફરિયાદ નિવારણ થઈ ગયું છે</option>
                         <option value="ફરિયાદ પેન્ડિંગ રાખવામા આવેલ છે">ફરિયાદ પેન્ડિંગ રાખવામા આવેલ છે</option>
@@ -476,6 +465,7 @@ document.getElementById("admin-complaint-filter")?.addEventListener("change", lo
 
 // --- ૭. પંચાયત કમિટી અને સ્ટાફ મેનેજર ---
 async function loadAdminMeta() {
+    if (!lgdCode) return;
     const snap = await getDoc(getPanchayatDoc("panchayat_meta", "staff_page"));
     if (snap.exists()) {
         const data = snap.data();
@@ -483,9 +473,10 @@ async function loadAdminMeta() {
         if (document.getElementById("admin-note-input")) document.getElementById("admin-note-input").value = data.note || "";
     }
 }
+
 document.getElementById("save-meta-btn")?.addEventListener("click", async () => {
-    const term = document.getElementById("admin-term-input").value;
-    const note = document.getElementById("admin-note-input").value;
+    const term = document.getElementById("admin-term-input")?.value || "";
+    const note = document.getElementById("admin-note-input")?.value || "";
     await setDoc(getPanchayatDoc("panchayat_meta", "staff_page"), { term, note }, { merge: true });
     alert("મુદત અને નોંધ સેવ થયા!");
 });
@@ -542,7 +533,7 @@ document.getElementById("add-member-staff-form")?.addEventListener("submit", asy
         order: Date.now()
     };
     await addDoc(getPanchayatCol(colName), payload);
-    alert("ઉમેરાઈ ગયું!");
+    alert("સભ્ય/કર્મચારી ઉમેરાઈ ગયા!");
     e.target.reset();
     loadAdminStaffAndCommittee();
 });
@@ -563,12 +554,14 @@ async function loadAdminSchedule() {
         `;
     });
 }
+
 window.deleteSchedule = async (id) => {
     if (confirm("ડિલીટ કરવું છે?")) {
         await deleteDoc(getPanchayatDoc("panchayat_schedule", id));
         loadAdminSchedule();
     }
 };
+
 document.getElementById("add-schedule-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const payload = {
@@ -602,6 +595,7 @@ async function loadActiveCommittees() {
         `;
     });
 }
+
 window.deleteActiveComm = async (id) => {
     if (confirm("સમિતિ ડિલીટ કરવી છે?")) {
         await deleteDoc(getPanchayatDoc("active_committees", id));
@@ -611,11 +605,13 @@ window.deleteActiveComm = async (id) => {
 
 // --- ૧૦. મિલકત વેરા લિંક ---
 async function loadAdminTaxLink() {
+    if (!lgdCode) return;
     const snap = await getDoc(getPanchayatDoc("settings", "tax_payment"));
     if (snap.exists() && document.getElementById("tax-payment-url")) {
         document.getElementById("tax-payment-url").value = snap.data().url || "";
     }
 }
+
 document.getElementById("tax-link-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const url = document.getElementById("tax-payment-url").value.trim();
@@ -639,12 +635,14 @@ async function loadAdminCustomButtons() {
         `;
     });
 }
+
 window.deleteCustomBtn = async (id) => {
     if (confirm("બટન ડિલીટ કરવું છે?")) {
         await deleteDoc(getPanchayatDoc("custom_pages", id));
         loadAdminCustomButtons();
     }
 };
+
 document.getElementById("add-page-button-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const buttonTitle = document.getElementById("custom-btn-title").value;
@@ -671,12 +669,14 @@ async function loadAdminEvents() {
         `;
     });
 }
+
 window.deleteEvent = async (id) => {
     if (confirm("ઇવેન્ટ ડિલીટ કરવી છે?")) {
         await deleteDoc(getPanchayatDoc("events", id));
         loadAdminEvents();
     }
 };
+
 document.getElementById("event-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const payload = {
@@ -699,6 +699,7 @@ async function fetchDisasterContent() {
         document.getElementById('disaster-page-content').value = snap.data().content || "";
     }
 }
+
 document.getElementById('disaster-page-key')?.addEventListener('change', fetchDisasterContent);
 document.getElementById('disaster-management-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -717,6 +718,7 @@ async function fetchExistingMapLinks() {
         if (document.getElementById('admin-revenue-pdf-url')) document.getElementById('admin-revenue-pdf-url').value = snap.data().revenuePdfUrl || "";
     }
 }
+
 document.getElementById('village-map-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const satelliteUrl = document.getElementById('admin-satellite-url').value.trim();
@@ -741,12 +743,14 @@ async function loadAdminGlanceList() {
         `;
     });
 }
+
 window.deleteGlance = async (id) => {
     if (confirm("ડિલીટ કરવું છે?")) {
         await deleteDoc(getPanchayatDoc("village_glance", id));
         loadAdminGlanceList();
     }
 };
+
 document.getElementById("add-glance-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const payload = {
@@ -774,6 +778,7 @@ async function loadContactAdminData() {
         if (document.getElementById("adm-extra")) document.getElementById("adm-extra").value = data.extraInfo || "";
     }
 }
+
 document.getElementById("contact-admin-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const payload = {
@@ -793,6 +798,10 @@ function loadAdminFeedbacks() {
     if (!container || !lgdCode) return;
     onSnapshot(getPanchayatCol("user_feedbacks"), (snapshot) => {
         container.innerHTML = "";
+        if (snapshot.empty) {
+            container.innerHTML = `<p class="text-xs text-gray-500">કોઈ પ્રતિભાવ મળેલ નથી.</p>`;
+            return;
+        }
         snapshot.forEach(d => {
             const data = d.data();
             container.innerHTML += `
@@ -812,12 +821,13 @@ async function loadProactiveAdminData() {
     if (snap.exists()) {
         const data = snap.data();
         if (data.officer) {
-            document.getElementById("off-name").value = data.officer.name || "";
-            document.getElementById("off-phone").value = data.officer.phone || "";
-            document.getElementById("off-appeal").value = data.officer.appealOfficer || "";
+            if (document.getElementById("off-name")) document.getElementById("off-name").value = data.officer.name || "";
+            if (document.getElementById("off-phone")) document.getElementById("off-phone").value = data.officer.phone || "";
+            if (document.getElementById("off-appeal")) document.getElementById("off-appeal").value = data.officer.appealOfficer || "";
         }
     }
 }
+
 document.getElementById("proactive-admin-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const officer = {
