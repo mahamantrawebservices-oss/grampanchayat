@@ -1,7 +1,21 @@
-import { db } from "./firebase-config.js";
-import { collection, onSnapshot, addDoc, getDocs, doc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getFirestore, collection, onSnapshot, addDoc, getDocs, doc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// URL માંથી પંચાયત આઈડી મેળવવું (ડિફોલ્ટ ડેમો આઈડી જો લિંકમાં ન હોય તો)
+// --- સેન્ટ્રલ ફાયરબેઝ કન્ફિગરેશન ---
+const firebaseConfig = {
+    apiKey: "AIzaSyCMhWWI_6oxPIVEQEVlq2SIBf72EI2o8NI",
+    authDomain: "gram-panchayat-33c86.firebaseapp.com",
+    projectId: "gram-panchayat-33c86",
+    storageBucket: "gram-panchayat-33c86.firebasestorage.app",
+    messagingSenderId: "1025176315779",
+    appId: "1:1025176315779:web:a24ca10a06c55edcc8f8b6",
+    measurementId: "G-TQBSXCWNBV"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// URL માંથી પંચાયત આઈડી (LGD Code) મેળવવું
 const urlParams = new URLSearchParams(window.location.search);
 const panchayatId = urlParams.get('id') || "ahmedabad_daskroi_motapipalva";
 
@@ -467,7 +481,7 @@ document.addEventListener('click', function(event) {
     }
 });
 
-// 🚀 સબમિટ/સ્ટાર્ટઅપ પ્રોસેસ (પ્રથમ એક્સેસ ચેક થશે, પછી જ બધું લોડ થશે)
+// 🚀 સબમિટ/સ્ટાર્ટઅપ પ્રોસેસ
 async function initApp() {
     const isAllowed = await checkSystemAccess();
     if (!isAllowed) return;
