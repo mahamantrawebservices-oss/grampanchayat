@@ -402,75 +402,213 @@ window.deleteMenu = async (id) => {
     }
 };
 
-// --- ૬. આવેલ ફરિયાદો, સેટિંગ્સ & PDF રિપોર્ટ ---
-// --- આવેલ ફરિયાદો અને દૈનિક લિમિટ સેટિંગ્સ ---
+// --- ૧. ફરિયાદ વિભાગ સેટિંગ્સ અને દૈનિક મર્યાદા લોડ અને સેવ કરવી ---
 async function loadComplaintConfig() {
-    const snap = await getDoc(getPanchayatDoc("settings", "complaint_config"));
-    if (snap.exists()) {
-        const data = snap.data();
-        if (document.getElementById("complaint-section-status")) {
-            document.getElementById("complaint-section-status").value = data.isEnabled !== false ? "true" : "false";
+    if (!lgdCode) return;
+    try {
+        const snap = await getDoc(getPanchayatDoc("settings", "complaint_config"));
+        if (snap.exists()) {
+            const data = snap.data();
+            if (document.getElementById("complaint-section-status")) {
+                document.getElementById("complaint-section-status").value = data.isEnabled !== false ? "true" : "false";
+            }
+            if (document.getElementById("complaint-daily-limit")) {
+                document.getElementById("complaint-daily-limit").value = data.dailyLimit || 50;
+            }
         }
-        if (document.getElementById("complaint-daily-limit")) {
-            document.getElementById("complaint-daily-limit").value = data.dailyLimit || 50;
-        }
+    } catch (err) {
+        console.error("Complaint config load error:", err);
     }
 }
 
 document.getElementById("save-complaint-config-btn")?.addEventListener("click", async () => {
+    if (!lgdCode) return;
     const isEnabled = document.getElementById("complaint-section-status").value === "true";
-    const dailyLimit = document.getElementById("complaint-daily-limit").value.trim() || 50;
+    const dailyLimitVal = document.getElementById("complaint-daily-limit").value.trim();
+    const dailyLimit = dailyLimitVal ? parseInt(dailyLimitVal) : 50;
     
-    await setDoc(getPanchayatDoc("settings", "complaint_config"), { 
-        isEnabled, 
-        dailyLimit: parseInt(dailyLimit), 
-        updatedAt: new Date() 
-    }, { merge: true });
-    
-    alert("ફરિયાદ વિભાગ અને દૈનિક મર્યાદા સેટિંગ્સ સફળતાપૂર્વક સેવ થઈ ગયા!");
+    try {
+        await setDoc(getPanchayatDoc("settings", "complaint_config"), { 
+            isEnabled, 
+            dailyLimit, 
+            updatedAt: new Date() 
+        }, { merge: true });
+        
+        alert("✅ સફળતાપૂર્વક સેવ થઈ ગયું!\nવેબસાઇટ પર ફરિયાદ વિભાગનું સ્ટેટસ અને દૈનિક મર્યાદા અપડેટ થઈ ગઈ છે.");
+        loadComplaintConfig();
+    } catch (err) {
+        console.error("Save config error:", err);
+        alert("સેવ કરવામાં ભૂલ આવી.");
+    }
 });
 
+// --- ૨. એડમિન પેનલ માટે ફરિયાદો લોડ કરવી અને ફિલ્ટરિંગ કરવું ---
 async function loadAdminComplaints() {
-    const snap = await getDocs(getPanchayatCol("complaints"));
+    if (!lgdCode) return;
     const container = document.getElementById("admin-complaint-list");
-    if (!container || !lgdCode) return;
+    const filter = document.getElementById("admin-complaint-filter")?.value || "ALL";
+    if (!container) return;
 
-    container.innerHTML = "";
-    if (snap.empty) {
-        container.innerHTML = `<p class="text-xs text-gray-500">કોઈ ફરિયાદ મળેલી નથી.</p>`;
-        return;
+    try {
+        const snap = await getDocs(getPanchayatCol("complaints"));
+        container.innerHTML = "";
+        
+        if (snap.empty) {
+            container.innerHTML = `<p class="text-xs text-gray-500 p-2">કોઈ ફરિયાદ મળેલી નથી.</p>`;
+            return;
+        }
+
+        let count = 0;
+        snap.forEach(d => {
+            const item = d.data();
+            const status = item.status || "Pending";
+            
+            // ફિલ્ટર લોજિક
+            const isPending = status.includes("પેન્ડિંગ") || status.includes("કામ ચાલી");
+            const isResolved = status.includes("નિવારણ થઈ ગયું") || status.includes("Resolved");
+
+            if (filter === "PENDING" && !isPending) return;
+            if (filter === "RESOLVED" && !isResolved) return;
+
+            count++;
+            container.innerHTML += `
+                <div class="bg-white p-3 border rounded-xl shadow-sm text-xs space-y-2 mb-2">
+                    <div class="flex justify-between font-bold border-b pb-1">
+                        <span>ટોકન: <span class="text-emerald-700">${item.token || 'N/A'}</span> | નામ: ${item.name || 'અનામી'} (મો: ${item.mobile || '-'})</span>
+                        <span class="bg-blue-50 text-blue-800 px-2 py-0.5 rounded">${item.type || ''}</span>
+                    </div>
+                    <p><b>વિસ્તાર/ફળિયું:</b> ${item.area || item.faliya || '-'}</p>
+                    <p class="text-gray-700"><b>વિગત:</b> ${item.details || item.msg || ''}</p>
+                    <div class="flex items-center gap-2 pt-1 border-t">
+                        <label class="font-bold text-gray-700">સ્ટેટસ બદલો:</label>
+                        <select onchange="updateComplaintStatus('${d.id}', this.value)" class="border border-emerald-300 p-1 rounded bg-amber-50 text-[11px] font-bold flex-1 focus:outline-none">
+                            <option value="${status}" selected>હાલનું: ${status}</option>
+                            <option value="ફરિયાદ પર કામ ચાલી રહ્યું છે">ફરિયાદ પર કામ ચાલી રહ્યું છે</option>
+                            <option value="ફરિયાદ નિવારણ થઈ ગયું છે">ફરિયાદ નિવારણ થઈ ગયું છે</option>
+                            <option value="ફરિયાદ પેન્ડિંગ રાખવામા આવેલ છે">ફરિયાદ પેન્ડિંગ રાખવામા આવેલ છે</option>
+                            <option value="ફરિયાદ અયોગ્ય હોય રદ કરવામાં આવેલ છે">ફરિયાદ અયોગ્ય હોય રદ કરવામાં આવેલ છે</option>
+                        </select>
+                    </div>
+                </div>
+            `;
+        });
+
+        if (count === 0) {
+            container.innerHTML = `<p class="text-xs text-gray-500 p-2">આ ફિલ્ટર મુજબ કોઈ ફરિયાદ નથી.</p>`;
+        }
+    } catch (err) {
+        console.error("Load complaints error:", err);
+        container.innerHTML = `<p class="text-xs text-red-500">ફરિયાદો લોડ કરવામાં ભૂલ આવી.</p>`;
     }
-
-    snap.forEach(d => {
-        const item = d.data();
-        container.innerHTML += `
-            <div class="bg-white p-2.5 border rounded shadow-sm text-xs mb-2">
-                <div class="flex justify-between font-bold border-b pb-1">
-                    <span>ટોકન: ${item.token || 'N/A'} | નામ: ${item.name || 'અનામી'} (મો: ${item.mobile || '-'})</span>
-                    <span class="text-emerald-700">${item.type || ''}</span>
-                </div>
-                <p class="mt-1"><b>વિસ્તાર:</b> ${item.area || '-'}</p>
-                <p class="mt-1 text-gray-700"><b>ફરિયાદ:</b> ${item.details || item.msg || ''}</p>
-                <div class="flex items-center gap-2 mt-2 pt-1 border-t">
-                    <label class="font-bold text-gray-700">સ્ટેટસ:</label>
-                    <select onchange="updateComplaintStatus('${d.id}', this.value)" class="border p-1 rounded bg-amber-50 text-[11px] flex-1">
-                        <option value="${item.status || 'Pending'}" selected>હાલનું: ${item.status || 'Pending'}</option>
-                        <option value="ફરિયાદ પર કામ ચાલી રહ્યું છે">ફરિયાદ પર કામ ચાલી રહ્યું છે</option>
-                        <option value="ફરિયાદ નિવારણ થઈ ગયું છે">ફરિયાદ નિવારણ થઈ ગયું છે</option>
-                        <option value="ફરિયાદ પેન્ડિંગ રાખવામા આવેલ છે">ફરિયાદ પેન્ડિંગ રાખવામા આવેલ છે</option>
-                        <option value="ફરિયાદ અયોગ્ય હોય રદ કરવામાં આવેલ છે">ફરિયાદ અયોગ્ય હોય રદ કરવામાં આવેલ છે</option>
-                    </select>
-                </div>
-            </div>
-        `;
-    });
 }
 
 window.updateComplaintStatus = async (id, status) => {
-    await updateDoc(getPanchayatDoc("complaints", id), { status });
-    alert("સ્ટેટસ અપડેટ થઈ ગયું!");
-    loadAdminComplaints();
+    if (!lgdCode) return;
+    try {
+        await updateDoc(getPanchayatDoc("complaints", id), { status, updatedAt: new Date() });
+        alert("✅ ફરિયાદનું સ્ટેટસ સફળતાપૂર્વક અપડેટ થઈ ગયું!");
+        loadAdminComplaints();
+    } catch (err) {
+        console.error("Status update error:", err);
+        alert("સ્ટેટસ અપડેટ કરવામાં ભૂલ આવી.");
+    }
 };
+
+// ફિલ્ટર બદલાય ત્યારે લિસ્ટ ઓટોમેટિક અપડેટ થવું
+document.getElementById("admin-complaint-filter")?.addEventListener("change", loadAdminComplaints);
+
+// --- ૩. PDF રિપોર્ટ જનરેટર (મહિનાવારી) ---
+document.getElementById("download-pdf-btn")?.addEventListener("click", async () => {
+    const monthVal = document.getElementById("report-month-select")?.value;
+    if (!monthVal) {
+        alert("⚠️ કૃપા કરીને પહેલા મહિનો (Month) પસંદ કરો!");
+        return;
+    }
+
+    try {
+        const snap = await getDocs(getPanchayatCol("complaints"));
+        let filteredComplaints = [];
+
+        snap.forEach(d => {
+            const item = d.data();
+            if (item.createdAt && item.createdAt.toDate) {
+                const cDate = item.createdAt.toDate();
+                const cMonthStr = cDate.toISOString().slice(0, 7); // YYYY-MM
+                if (cMonthStr === monthVal) {
+                    filteredComplaints.push(item);
+                }
+            }
+        });
+
+        if (filteredComplaints.length === 0) {
+            alert("⚠️ પસંદ કરેલ મહિનામાં કોઈ ફરિયાદ મળી નથી.");
+            return;
+        }
+
+        // ప్రింట్‌ અથવા PDF માટે નવું വിండో ஓപਨ કરવું
+        let printWindow = window.open('', '_blank');
+        let htmlContent = `
+            <!DOCTYPE html>
+            <html lang="gu">
+            <head>
+                <meta charset="UTF-8">
+                <title>ફરિયાદ રિપોર્ટ - ${monthVal}</title>
+                <style>
+                    body { font-family: Arial, sans-serif; padding: 20px; color: #333; }
+                    h2 { text-align: center; color: #065f46; }
+                    table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 12px; }
+                    th, td { border: 1px solid #cbd5e1; padding: 8px; text-align: left; }
+                    th { background-color: #065f46; color: white; }
+                </style>
+            </head>
+            <body>
+                <h2>ગ્રામ પંચાયત - ફરિયાદ નિવારણ રિપોર્ટ (${monthVal})</h2>
+                <p><b>કુલ ફરિયાદો:</b> ${filteredComplaints.length}</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ટોકન નં</th>
+                            <th>નામ</th>
+                            <th>મોબાઈલ</th>
+                            <th>પ્રકાર</th>
+                            <th>વિગત</th>
+                            <th>સ્ટેટસ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        filteredComplaints.forEach(c => {
+            htmlContent += `
+                <tr>
+                    <td><b>${c.token || '-'}</b></td>
+                    <td>${c.name || '-'}</td>
+                    <td>${c.mobile || '-'}</td>
+                    <td>${c.type || '-'}</td>
+                    <td>${c.details || c.msg || '-'}</td>
+                    <td><b>${c.status || 'Pending'}</b></td>
+                </tr>
+            `;
+        });
+
+        htmlContent += `
+                    </tbody>
+                </table>
+                <script>
+                    window.onload = function() { window.print(); }
+                </script>
+            </body>
+            </html>
+        `;
+
+        printWindow.document.write(htmlContent);
+        printWindow.document.close();
+    } catch (err) {
+        console.error("PDF generation error:", err);
+        alert("PDF રિપોર્ટ બનાવવામાં ભૂલ આવી.");
+    }
+});
+
 
 // --- ૭. પંચાયત કમિટી અને સ્ટાફ મેનેજર ---
 async function loadAdminMeta() {
