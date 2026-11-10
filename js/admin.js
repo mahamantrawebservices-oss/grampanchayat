@@ -30,7 +30,6 @@ if (lgdCode) {
 if (!lgdCode) {
     alert("⚠️ ભૂલ: LGD Code (પંચાયત ID) મળ્યો નથી! કૃપા કરીને સુપર એડમિન પેનલમાંથી યોગ્ય લિંક દ્વારા પ્રવેશ કરો.");
 } else {
-    // ખાતરી કરો કે બ્રાઉઝરના URL માં ID હંમેશા જળવાઈ રહે
     if (!window.location.search.includes("id=")) {
         window.history.replaceState({}, '', `${window.location.pathname}?id=${lgdCode}`);
     }
@@ -161,7 +160,7 @@ document.getElementById("settings-form")?.addEventListener("submit", async (e) =
 let postsCache = {};
 function loadAdminPosts() {
     const container = document.getElementById("admin-posts-list");
-    if (!container || !lgdCode) return;
+    if (!container || !lgdCode) return[cite: 1];
 
     onSnapshot(getPanchayatCol("posts"), (snapshot) => {
         container.innerHTML = "";
@@ -222,7 +221,7 @@ window.deletePost = async (id) => {
 let noticesCache = {};
 function loadNotices() {
     const container = document.getElementById("admin-notices-list");
-    if (!container || !lgdCode) return;
+    if (!container || !lgdCode) return[cite: 1];
 
     onSnapshot(getPanchayatCol("notices"), (snapshot) => {
         container.innerHTML = "";
@@ -279,7 +278,7 @@ window.deleteNotice = async (id) => {
     if (confirm("નોટિસ ડિલીટ કરવી છે?")) await deleteDoc(getPanchayatDoc("notices", id));
 };
 
-// --- ૪. Blogger ફોટો ગેલેરી મેનેજર (૨૦ ફોટા લિમિટ & સ્ક્રોલ લિસ્ટ) ---
+// --- ૪. Blogger ફોટો ગેલેરી મેનેજર ---
 document.getElementById("gallery-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const title = document.getElementById("img-title").value.trim();
@@ -299,7 +298,7 @@ document.getElementById("gallery-form")?.addEventListener("submit", async (e) =>
 
 async function loadAdminGallery() {
     const container = document.getElementById("admin-gallery-list");
-    if (!container || !lgdCode) return;
+    if (!container || !lgdCode) return[cite: 1];
 
     const snap = await getDocs(getPanchayatCol("gallery"));
     container.innerHTML = "";
@@ -364,7 +363,7 @@ document.getElementById("add-menu-form")?.addEventListener("submit", async (e) =
 
 async function loadAdminMenuList() {
     const container = document.getElementById("admin-menu-list");
-    if (!container || !lgdCode) return;
+    if (!container || !lgdCode) return[cite: 1];
 
     const snap = await getDocs(getPanchayatCol("village_details"));
     container.innerHTML = "";
@@ -413,7 +412,7 @@ window.deleteMenu = async (id) => {
     }
 };
 
-// --- ૧. ફરિયાદ વિભાગ સેટિંગ્સ અને દૈનિક મર્યાદા લોડ અને સેવ કરવી ---
+// --- ૬. ફરિયાદ વિભાગ સેટિંગ્સ અને દૈનિક મર્યાદા ---
 async function loadComplaintConfig() {
     if (!lgdCode) return;
     try {
@@ -453,7 +452,6 @@ document.getElementById("save-complaint-config-btn")?.addEventListener("click", 
     }
 });
 
-// --- ૨. એડમિન પેનલ માટે ફરિયાદો લોડ કરવી અને ફિલ્ટરિંગ કરવું ---
 async function loadAdminComplaints() {
     if (!lgdCode) return;
     const container = document.getElementById("admin-complaint-list");
@@ -474,7 +472,6 @@ async function loadAdminComplaints() {
             const item = d.data();
             const status = item.status || "Pending";
             
-            // ફિલ્ટર લોજિક
             const isPending = status.includes("પેન્ડિંગ") || status.includes("કામ ચાલી");
             const isResolved = status.includes("નિવારણ થઈ ગયું") || status.includes("Resolved");
 
@@ -525,100 +522,7 @@ window.updateComplaintStatus = async (id, status) => {
     }
 };
 
-// ફિલ્ટર બદલાય ત્યારે લિસ્ટ ઓટોમેટિક અપડેટ થવું
 document.getElementById("admin-complaint-filter")?.addEventListener("change", loadAdminComplaints);
-
-// --- ૩. PDF રિપોર્ટ જનરેટર (મહિનાવારી) ---
-document.getElementById("download-pdf-btn")?.addEventListener("click", async () => {
-    const monthVal = document.getElementById("report-month-select")?.value;
-    if (!monthVal) {
-        alert("⚠️ કૃપા કરીને પહેલા મહિનો (Month) પસંદ કરો!");
-        return;
-    }
-
-    try {
-        const snap = await getDocs(getPanchayatCol("complaints"));
-        let filteredComplaints = [];
-
-        snap.forEach(d => {
-            const item = d.data();
-            if (item.createdAt && item.createdAt.toDate) {
-                const cDate = item.createdAt.toDate();
-                const cMonthStr = cDate.toISOString().slice(0, 7); // YYYY-MM
-                if (cMonthStr === monthVal) {
-                    filteredComplaints.push(item);
-                }
-            }
-        });
-
-        if (filteredComplaints.length === 0) {
-            alert("⚠️ પસંદ કરેલ મહિનામાં કોઈ ફરિયાદ મળી નથી.");
-            return;
-        }
-
-        let printWindow = window.open('', '_blank');
-        let htmlContent = `
-            <!DOCTYPE html>
-            <html lang="gu">
-            <head>
-                <meta charset="UTF-8">
-                <title>ફરિયાદ રિપોર્ટ - ${monthVal}</title>
-                <style>
-                    body { font-family: Arial, sans-serif; padding: 20px; color: #333; }
-                    h2 { text-align: center; color: #065f46; }
-                    table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 12px; }
-                    th, td { border: 1px solid #cbd5e1; padding: 8px; text-align: left; }
-                    th { background-color: #065f46; color: white; }
-                </style>
-            </head>
-            <body>
-                <h2>ગ્રામ પંચાયત - ફરિયાદ નિવારણ રિપોર્ટ (${monthVal})</h2>
-                <p><b>કુલ ફરિયાદો:</b> ${filteredComplaints.length}</p>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ટોકન નં</th>
-                            <th>નામ</th>
-                            <th>મોબાઈલ</th>
-                            <th>પ્રકાર</th>
-                            <th>વિગત</th>
-                            <th>સ્ટેટસ</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-        `;
-
-        filteredComplaints.forEach(c => {
-            htmlContent += `
-                <tr>
-                    <td><b>${c.token || '-'}</b></td>
-                    <td>${c.name || '-'}</td>
-                    <td>${c.mobile || '-'}</td>
-                    <td>${c.type || '-'}</td>
-                    <td>${c.details || c.msg || '-'}</td>
-                    <td><b>${c.status || 'Pending'}</b></td>
-                </tr>
-            `;
-        });
-
-        htmlContent += `
-                    </tbody>
-                </table>
-                <script>
-                    window.onload = function() { window.print(); }
-                </script>
-            </body>
-            </html>
-        `;
-
-        printWindow.document.write(htmlContent);
-        printWindow.document.close();
-    } catch (err) {
-        console.error("PDF generation error:", err);
-        alert("PDF રિપોર્ટ બનાવવામાં ભૂલ આવી.");
-    }
-});
-
 
 // --- ૭. પંચાયત કમિટી અને સ્ટાફ મેનેજર ---
 async function loadAdminMeta() {
@@ -698,7 +602,7 @@ document.getElementById("add-member-staff-form")?.addEventListener("submit", asy
 // --- ૮. અધિકારી/કર્મચારી સમય પત્રક ---
 async function loadAdminSchedule() {
     const container = document.getElementById("admin-schedule-list");
-    if (!container || !lgdCode) return;
+    if (!container || !lgdCode) return[cite: 1];
     
     try {
         const snap = await getDocs(getPanchayatCol("panchayat_schedule"));
@@ -818,9 +722,7 @@ document.getElementById("add-schedule-form")?.addEventListener("submit", async (
 // --- ૯. કાર્યરત સમિતિઓ મેનેજર & લોડિંગ ફંક્શન ---
 async function loadActiveCommittees() {
     const container = document.getElementById("admin-committees-list");
-    if (!container) return; 
-
-    if (!lgdCode) return;
+    if (!container || !lgdCode) return[cite: 1];
 
     try {
         const snap = await getDocs(getPanchayatCol("active_committees"));
@@ -894,17 +796,13 @@ window.editActiveComm = (id, committeeName) => {
     formEl?.scrollIntoView({ behavior: 'smooth' });
 };
 
-// સમિતિ સેવ અથવા અપડેટ કરવા માટેનું ફોર્મ સબમિટ હેન્ડલર
+// સમિતિ સેવ અથવા અપડેટ કરવા માટેનું ફોર્મ સબમિટ હેન્ડલર (પરફેક્ટ ફિક્સ સાથે)
 document.getElementById("add-committee-form")?.addEventListener("submit", async (e) => {
-    e.preventDefault(); // 🛑 પેજ રિફ્રેશ થતું સંપૂર્ણ અટકાવશે
+    e.preventDefault(); // 🛑 પેજ રિફ્રેશ થતું અટકાવશે
 
     if (!lgdCode) {
         alert("⚠️ ભૂલ: પંચાયતનો LGD Code મળ્યો નથી! કૃપા કરીને સુપર એડમિન પેનલમાંથી યોગ્ય લિંક દ્વારા પ્રવેશ કરો.");
         return;
-    }
-
-    if (!window.location.search.includes("id=")) {
-        window.history.replaceState({}, '', `${window.location.pathname}?id=${lgdCode}`);
     }
 
     const editIdInput = document.getElementById("comm-edit-id");
@@ -937,6 +835,7 @@ document.getElementById("add-committee-form")?.addEventListener("submit", async 
             }
         } else {
             payload.createdAt = new Date();
+            payload.members = [];
             await addDoc(getPanchayatCol("active_committees"), payload);
             alert("✅ નવી સમિતિ સફળતાપૂર્વક ઉમેરાઈ ગઈ!");
         }
@@ -970,7 +869,7 @@ document.getElementById("tax-link-form")?.addEventListener("submit", async (e) =
 // --- ૧૧. કસ્ટમ બટન અને પેજ મેનેજર ---
 async function loadAdminCustomButtons() {
     const container = document.getElementById("admin-custom-buttons-list");
-    if (!container || !lgdCode) return;
+    if (!container || !lgdCode) return[cite: 1];
     const snap = await getDocs(getPanchayatCol("custom_pages"));
     container.innerHTML = "";
     snap.forEach(d => {
@@ -1004,7 +903,7 @@ document.getElementById("add-page-button-form")?.addEventListener("submit", asyn
 // --- ૧૨. ઇવેન્ટ્સ મેનેજર ---
 async function loadAdminEvents() {
     const container = document.getElementById("admin-events-list");
-    if (!container || !lgdCode) return;
+    if (!container || !lgdCode) return[cite: 1];
     const snap = await getDocs(getPanchayatCol("events"));
     container.innerHTML = "";
     snap.forEach(d => {
@@ -1078,7 +977,7 @@ document.getElementById('village-map-form')?.addEventListener('submit', async (e
 // --- ૧૫. મારૂ ગામ - એક નજરમાં ---
 async function loadAdminGlanceList() {
     const container = document.getElementById("admin-glance-list");
-    if (!container || !lgdCode) return;
+    if (!container || !lgdCode) return[cite: 1];
     const snap = await getDocs(getPanchayatCol("village_glance"));
     container.innerHTML = "";
     snap.forEach(d => {
@@ -1143,7 +1042,7 @@ document.getElementById("contact-admin-form")?.addEventListener("submit", async 
 // --- ૧૭. યુઝર ફીડબેક લોડિંગ ---
 function loadAdminFeedbacks() {
     const container = document.getElementById("admin-feedback-list");
-    if (!container || !lgdCode) return;
+    if (!container || !lgdCode) return[cite: 1];
     onSnapshot(getPanchayatCol("user_feedbacks"), (snapshot) => {
         container.innerHTML = "";
         if (snapshot.empty) {
