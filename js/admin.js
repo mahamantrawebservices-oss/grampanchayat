@@ -403,7 +403,7 @@ window.deleteMenu = async (id) => {
 };
 
 // --- ૬. આવેલ ફરિયાદો, સેટિંગ્સ & PDF રિપોર્ટ ---
-// --- આવેલ ફરિયાદો અને સેટિંગ્સ & લિમિટ મેનેજમેન્ટ ---
+// --- આવેલ ફરિયાદો અને દૈનિક લિમિટ સેટિંગ્સ ---
 async function loadComplaintConfig() {
     const snap = await getDoc(getPanchayatDoc("settings", "complaint_config"));
     if (snap.exists()) {
@@ -429,8 +429,8 @@ document.getElementById("save-complaint-config-btn")?.addEventListener("click", 
     
     alert("ફરિયાદ વિભાગ અને દૈનિક મર્યાદા સેટિંગ્સ સફળતાપૂર્વક સેવ થઈ ગયા!");
 });
+
 async function loadAdminComplaints() {
-    const filter = document.getElementById("admin-complaint-filter")?.value || "ALL";
     const snap = await getDocs(getPanchayatCol("complaints"));
     const container = document.getElementById("admin-complaint-list");
     if (!container || !lgdCode) return;
@@ -443,17 +443,14 @@ async function loadAdminComplaints() {
 
     snap.forEach(d => {
         const item = d.data();
-        const isPending = item.status?.includes("પેન્ડિંગ") || item.status?.includes("ચાલ");
-        if (filter === "PENDING" && !isPending) return;
-
         container.innerHTML += `
             <div class="bg-white p-2.5 border rounded shadow-sm text-xs mb-2">
                 <div class="flex justify-between font-bold border-b pb-1">
-                    <span>નામ: ${item.name || 'અનામી'} (મો: ${item.mobile || '-'})</span>
+                    <span>ટોકન: ${item.token || 'N/A'} | નામ: ${item.name || 'અનામી'} (મો: ${item.mobile || '-'})</span>
                     <span class="text-emerald-700">${item.type || ''}</span>
                 </div>
-                <p class="mt-1"><b>ફળિયું/મકાન:</b> ${item.faliya || ''} / ${item.house || ''}</p>
-                <p class="mt-1 text-gray-700"><b>ફરિયાદ:</b> ${item.msg || item.details || ''}</p>
+                <p class="mt-1"><b>વિસ્તાર:</b> ${item.area || '-'}</p>
+                <p class="mt-1 text-gray-700"><b>ફરિયાદ:</b> ${item.details || item.msg || ''}</p>
                 <div class="flex items-center gap-2 mt-2 pt-1 border-t">
                     <label class="font-bold text-gray-700">સ્ટેટસ:</label>
                     <select onchange="updateComplaintStatus('${d.id}', this.value)" class="border p-1 rounded bg-amber-50 text-[11px] flex-1">
@@ -474,7 +471,6 @@ window.updateComplaintStatus = async (id, status) => {
     alert("સ્ટેટસ અપડેટ થઈ ગયું!");
     loadAdminComplaints();
 };
-document.getElementById("admin-complaint-filter")?.addEventListener("change", loadAdminComplaints);
 
 // --- ૭. પંચાયત કમિટી અને સ્ટાફ મેનેજર ---
 async function loadAdminMeta() {
