@@ -175,94 +175,44 @@
             </div>
 
 <!-- સેક્શન ૫: ફરિયાદ મેનેજમેન્ટ અને PDF રિપોર્ટ -->
-            <div class="bg-emerald-50/80 border border-emerald-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[500px] overflow-y-auto">
-                <h3 class="font-bold border-b border-emerald-300 pb-2 text-emerald-950">૫. આવેલ ફરિયાદો અને સ્ટેટસ મેનેજર</h3>
-                
-                <!-- ફરિયાદ વિભાગ ઓન/ઓફ (Show/Hide) સેટિંગ્સ -->
-                <div class="bg-emerald-100/70 p-3 rounded-lg border border-emerald-300 space-y-2">
-                    <label class="block text-xs font-bold text-emerald-950">🌐 વેબસાઇટ પર ફરિયાદ વિભાગ દર્શાવવો:</label>
-                    <div class="flex gap-2">
-                        <select id="complaint-section-status" class="border border-emerald-300 p-1.5 rounded text-xs bg-white flex-1 font-bold focus:outline-none focus:ring-1 focus:ring-emerald-500">
-                            <option value="true">ચાલુ રાખવો (Show on Website)</option>
-                            <option value="false">બંધ રાખવો (Hide / કાર્યરત નથી નો મેસેજ)</option>
-                        </select>
-                        <button type="button" id="save-complaint-config-btn" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-3 py-1.5 rounded text-xs shadow transition-colors">
-                            સેવ કરો
-                        </button>
-                    </div>
-                </div>
+<div class="bg-emerald-50/80 border border-emerald-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[500px] overflow-y-auto">
+    <h3 class="font-bold border-b border-emerald-300 pb-2 text-emerald-950">૫. આવેલ ફરિયાદો અને સ્ટેટસ મેનેજર</h3>
+    
+    <!-- ફરિયાદ વિભાગ ઓન/ઓફ અને દૈનિક મર્યાદા સેટિંગ્સ -->
+    <div class="bg-emerald-100/70 p-3 rounded-lg border border-emerald-300 space-y-3">
+        <label class="block text-xs font-bold text-emerald-950">🌐 વેબસાઇટ પર ફરિયાદ વિભાગ સેટિંગ્સ:</label>
+        <div class="flex flex-col sm:flex-row gap-2">
+            <select id="complaint-section-status" class="border border-emerald-300 p-1.5 rounded text-xs bg-white flex-1 font-bold focus:outline-none">
+                <option value="true">ચાલુ રાખવો (Show)</option>
+                <option value="false">બંધ રાખવો (Hide)</option>
+            </select>
+            <input type="number" id="complaint-daily-limit" placeholder="દૈનિક મર્યાદા (દા.ત. 50)" class="border border-emerald-300 p-1.5 rounded text-xs bg-white w-32 font-bold focus:outline-none" title="એક દિવસમાં વધુમાં વધુ કેટલી ફરિયાદો સ્વીકારવી">
+            <button type="button" id="save-complaint-config-btn" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-3 py-1.5 rounded text-xs shadow transition-colors">
+                સેવ કરો
+            </button>
+        </div>
+    </div>
 
-<!-- ફરિયાદ વિભાગ ઓન/ઓફ અને દૈનિક મર્યાદા સેટિંગ્સ -->
-<div class="bg-emerald-100/70 p-3 rounded-lg border border-emerald-300 space-y-3">
-    <label class="block text-xs font-bold text-emerald-950">🌐 વેબસાઇટ પર ફરિયાદ વિભાગ સેટિંગ્સ:</label>
-    <div class="flex flex-col sm:flex-row gap-2">
-        <select id="complaint-section-status" class="border border-emerald-300 p-1.5 rounded text-xs bg-white flex-1 font-bold focus:outline-none">
-            <option value="true">ચાલુ રાખવો (Show)</option>
-            <option value="false">બંધ રાખવો (Hide)</option>
+    <div class="flex flex-wrap items-center justify-between gap-2">
+        <!-- સુધારેલું ફિલ્ટર ડ્રોપડાઉન -->
+        <select id="admin-complaint-filter" class="border border-emerald-300 p-1.5 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500 font-bold">
+            <option value="ALL">તમામ ફરિયાદો</option>
+            <option value="PENDING">ફક્ત પેન્ડિંગ</option>
+            <option value="RESOLVED">નિવારણ થયેલ (Resolved)</option>
         </select>
-        <input type="number" id="complaint-daily-limit" placeholder="દૈનિક મર્યાદા (દા.ત. 50)" class="border border-emerald-300 p-1.5 rounded text-xs bg-white w-32 font-bold focus:outline-none" title="એક દિવસમાં વધુમાં વધુ કેટલી ફરિયાદો સ્વીકારવી">
-        <button type="button" id="save-complaint-config-btn" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-3 py-1.5 rounded text-xs shadow transition-colors">
-            સેવ કરો
-        </button>
+        
+        <div class="flex items-center gap-1 bg-emerald-100/60 p-1 rounded-lg border border-emerald-200">
+            <input type="month" id="report-month-select" class="border border-emerald-300 p-1 rounded text-xs bg-white text-gray-700 focus:outline-none" />
+            <button type="button" id="download-pdf-btn" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-2 py-1 rounded text-xs shadow flex items-center gap-1 transition-colors">
+                <i class="fa-solid fa-file-pdf"></i> PDF
+            </button>
+        </div>
+    </div>
+
+    <div id="admin-complaint-list" class="space-y-3 max-h-72 overflow-y-auto pr-1">
+        <p class="text-xs text-gray-500">ફરિયાદો લોડ થઈ રહી છે...</p>
     </div>
 </div>
-                
-                <div class="flex flex-wrap items-center justify-between gap-2">
-                    <select id="admin-complaint-filter" class="border border-emerald-300 p-1.5 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500">
-                        <option value="ALL">તમામ ફરિયાદો</option>
-                        <option value="PENDING">ફક્ત પેન્ડિંગ</option>
-                    </select>
-                    <div class="flex items-center gap-1 bg-emerald-100/60 p-1 rounded-lg border border-emerald-200">
-                        <input type="month" id="report-month-select" class="border border-emerald-300 p-1 rounded text-xs bg-white text-gray-700 focus:outline-none" />
-                        <button type="button" id="download-pdf-btn" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-2 py-1 rounded text-xs shadow flex items-center gap-1 transition-colors">
-                            PDF
-                        </button>
-                    </div>
-                </div>
-                <div id="admin-complaint-list" class="space-y-3 max-h-72 overflow-y-auto pr-1">
-                    <p class="text-xs text-gray-500">ફરિયાદો લોડ થઈ રહી છે...</p>
-                </div>
-            </div>
-            <!-- સેક્શન ૬: પંચાયત કમિટી અને સ્ટાફ મેનેજર -->
-            <div class="bg-blue-50/80 border border-blue-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[500px] overflow-y-auto">
-                <h3 class="font-bold border-b border-blue-300 pb-2 text-blue-950">૬. પંચાયત કમિટી અને સ્ટાફ મેનેજર</h3>
-                
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    <input type="text" id="admin-term-input" placeholder="મુદત (દા.ત. ૨૦૨૧ થી ૨૦૨૬)" class="border border-blue-300 p-1.5 rounded text-xs bg-white">
-                    <input type="text" id="admin-note-input" placeholder="દર્શાવવાની નોંધ" class="border border-blue-300 p-1.5 rounded text-xs bg-white">
-                </div>
-                <button id="save-meta-btn" class="bg-blue-700 hover:bg-blue-800 text-white font-bold px-3 py-1 rounded text-xs shadow w-full">મુદત / નોંધ સાચવો</button>
-
-                <form id="add-member-staff-form" class="space-y-2 border-t border-blue-200 pt-3">
-                    <input type="hidden" id="edit-ms-id" value="">
-                    <div class="grid grid-cols-2 gap-2">
-                        <select id="ms-category" class="border border-blue-300 p-1.5 rounded text-xs bg-white">
-                            <option value="committee">પંચાયત કમિટી</option>
-                            <option value="staff">કર્મચારી</option>
-                        </select>
-                        <input type="text" id="ms-name" placeholder="નામ" required class="border border-blue-300 p-1.5 rounded text-xs bg-white">
-                        <input type="text" id="ms-desig" placeholder="હોદ્દો" required class="border border-blue-300 p-1.5 rounded text-xs bg-white">
-                        <input type="text" id="ms-mobile" placeholder="મોબાઈલ" required class="border border-blue-300 p-1.5 rounded text-xs bg-white">
-                    </div>
-                    <input type="text" id="ms-ward" placeholder="વોર્ડ નં. (ફક્ત કમિટી માટે)" class="border border-blue-300 p-1.5 rounded text-xs bg-white w-full">
-                    <button type="submit" id="ms-submit-btn" class="bg-indigo-700 hover:bg-indigo-800 text-white font-bold px-3 py-1.5 rounded text-xs w-full shadow">સભ્ય/કર્મચારી ઉમેરો</button>
-                </form>
-
-                <div class="mt-2 grid grid-cols-1 gap-3 border-t border-blue-200 pt-2">
-                    <div>
-                        <h4 class="text-xs font-bold text-blue-950 mb-1">👥 પંચાયત કમિટી સભ્યો:</h4>
-                        <div id="admin-committee-list" class="space-y-1 max-h-32 overflow-y-auto pr-1">
-                            <p class="text-xs text-gray-500">લોડ થઈ રહ્યું છે...</p>
-                        </div>
-                    </div>
-                    <div>
-                        <h4 class="text-xs font-bold text-blue-950 mb-1">👔 સ્ટાફ / કર્મચારીઓ:</h4>
-                        <div id="admin-staff-list" class="space-y-1 max-h-32 overflow-y-auto pr-1">
-                            <p class="text-xs text-gray-500">લોડ થઈ રહ્યું છે...</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
             <!-- સેક્શન ૭: અધિકારી/કર્મચારી સમય પત્રક મેનેજર -->
             <div class="bg-blue-50/80 border border-blue-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[500px] overflow-y-auto">
