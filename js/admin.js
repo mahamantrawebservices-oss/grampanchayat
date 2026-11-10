@@ -403,19 +403,32 @@ window.deleteMenu = async (id) => {
 };
 
 // --- ૬. આવેલ ફરિયાદો, સેટિંગ્સ & PDF રિપોર્ટ ---
+// --- આવેલ ફરિયાદો અને સેટિંગ્સ & લિમિટ મેનેજમેન્ટ ---
 async function loadComplaintConfig() {
     const snap = await getDoc(getPanchayatDoc("settings", "complaint_config"));
-    if (snap.exists() && document.getElementById("complaint-section-status")) {
-        document.getElementById("complaint-section-status").value = snap.data().isEnabled ? "true" : "false";
+    if (snap.exists()) {
+        const data = snap.data();
+        if (document.getElementById("complaint-section-status")) {
+            document.getElementById("complaint-section-status").value = data.isEnabled !== false ? "true" : "false";
+        }
+        if (document.getElementById("complaint-daily-limit")) {
+            document.getElementById("complaint-daily-limit").value = data.dailyLimit || 50;
+        }
     }
 }
 
 document.getElementById("save-complaint-config-btn")?.addEventListener("click", async () => {
     const isEnabled = document.getElementById("complaint-section-status").value === "true";
-    await setDoc(getPanchayatDoc("settings", "complaint_config"), { isEnabled, updatedAt: new Date() }, { merge: true });
-    alert("ફરિયાદ વિભાગ સ્ટેટસ સેટિંગ્સ સેવ થઈ ગયા!");
+    const dailyLimit = document.getElementById("complaint-daily-limit").value.trim() || 50;
+    
+    await setDoc(getPanchayatDoc("settings", "complaint_config"), { 
+        isEnabled, 
+        dailyLimit: parseInt(dailyLimit), 
+        updatedAt: new Date() 
+    }, { merge: true });
+    
+    alert("ફરિયાદ વિભાગ અને દૈનિક મર્યાદા સેટિંગ્સ સફળતાપૂર્વક સેવ થઈ ગયા!");
 });
-
 async function loadAdminComplaints() {
     const filter = document.getElementById("admin-complaint-filter")?.value || "ALL";
     const snap = await getDocs(getPanchayatCol("complaints"));
