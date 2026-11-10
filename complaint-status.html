@@ -29,7 +29,7 @@
             </h3>
             <ul class="list-disc pl-5 space-y-1.5">
                 <li><b>ફરિયાદ નોંધણી રીત:</b> તમારું સાચું નામ, મોબાઈલ નંબર અને વિસ્તારની ચોક્કસ માહિતી ભરો.</li>
-                <li><b>ટોકન નંબર:</b> ફરિયાદ સબમિટ થયા બાદ સ્ક્રીન પર એક યુનિક ટોકન નંબર આવશે, જે સાચવી રાખો.</li>
+                <li><b>ટોકન નંબર:</b> ફરિયાદ સબમિટ થયા બાદ સ્ક્રીન પર એક યુનિક ટોકન નંબર આવશે, જે કૉપી કરી સાચવી રાખો.</li>
                 <li><b>સ્ટેટસ તપાસવાની રીત:</b> નીચે આપેલા ખાનામાં તમારો ટોકન નંબર નાખીને પ્રગતિ જાણી શકાશે.</li>
                 <li><b>દૈનિક મર્યાદા:</b> પંચાયત દ્વારા નક્કી કરેલ દૈનિક ફરિયાદ લિમિટ પૂરી થયા બાદ ૨૪ કલાક પછી જ નવી ફરિયાદ નોંધી શકાશે.</li>
             </ul>
@@ -74,8 +74,8 @@
                             <option value="">-- પ્રકાર પસંદ કરો --</option>
                             <option value="પીવાના પાણી સંબંધિત">પીવાના પાણી સંબંધિત</option>
                             <option value="ગટર સંબંધિત">ગટર સંબંધિત</option>
-                            <option value="સફાઈ સંબંધિત">সફાઈ સંબંધિત</option>
-                            <option value="સ્ટ્રીટ લાઈટ સંબંધિત">સ્ટ્રીટ લાઈટ સંબંધિત</option>
+                            <option value="સફાઈ સંબંધિત">સફાઈ સંબંધિત</option>
+                            <option value="સ્ટ્રીટ લાઈਟ સંબંધિત">સ્ટ્રીટ લાઈટ સંબંધિત</option>
                             <option value="અન્ય રજૂઆત">અન્ય રજૂઆત</option>
                         </select>
                     </div>
@@ -88,6 +88,28 @@
             </form>
         </div>
     </main>
+
+    <!-- 📋 ટોકન કૉપી કરવા માટેનું કસ્ટમ મોડલ પૉપઅપ -->
+    <div id="token-modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 text-center space-y-4 shadow-2xl border border-emerald-100">
+            <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-xl">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <h3 class="text-lg font-bold text-emerald-900">ફરિયાદ સફળતાપૂર્વક નોંધાઈ ગઈ!</h3>
+            <p class="text-xs text-gray-600">તમારો યુનિક ફરિયાદ નંબર (ટોકન) નીચે મુજબ છે:</p>
+            
+            <div class="bg-slate-100 border border-slate-300 p-3 rounded-xl flex items-center justify-between">
+                <span id="modal-token-text" class="font-mono font-bold text-base text-emerald-800">GP-XXXXXX</span>
+                <button type="button" id="copy-token-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-2 rounded-lg shadow transition flex items-center gap-1">
+                    <i class="fa-solid fa-copy"></i> કૉપી કરો
+                </button>
+            </div>
+
+            <button type="button" id="close-modal-btn" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-bold py-2.5 rounded-xl text-xs transition">
+                બંધ કરો (OK)
+            </button>
+        </div>
+    </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -109,8 +131,13 @@
         const urlParams = new URLSearchParams(window.location.search);
         const panchayatId = urlParams.get('id') || "517045";
 
-        // મુખ્ય પૃષ્ઠ બટનમાં સાચો LGD Code જળવાઈ રહેશે
         document.getElementById("back-home-btn").href = `index.html?id=${panchayatId}`;
+
+        // DOM Elements
+        const tokenModal = document.getElementById("token-modal");
+        const modalTokenText = document.getElementById("modal-token-text");
+        const copyTokenBtn = document.getElementById("copy-token-btn");
+        const closeModalBtn = document.getElementById("close-modal-btn");
 
         // ફરિયાદ સબમિટ અને દૈનિક મર્યાદા (Daily Limit Check)
         document.getElementById("add-complaint-form").addEventListener("submit", async (e) => {
@@ -150,33 +177,7 @@
                     createdAt: Timestamp.now()
                 });
 
-
-// ફરિયાદ સબમિટ કરતી વખતે એલર્ટની જગ્યાએ મોડલ બતાવવું
-        const tokenModal = document.getElementById("token-modal");
-        const modalTokenText = document.getElementById("modal-token-text");
-        const copyTokenBtn = document.getElementById("copy-token-btn");
-        const closeModalBtn = document.getElementById("close-modal-btn");
-
-        // ફરિયાદ સબમિટ ઇવેન્ટ
-        document.getElementById("add-complaint-form").addEventListener("submit", async (e) => {
-            e.preventDefault();
-            try {
-                // (અહીં તમારી દૈનિક લિમિટ ચકાસણીવાળો કોડ રહેશે...)
-                
-                const token = "GP-" + Math.floor(100000 + Math.random() * 900000);
-                
-                await addDoc(collection(db, "panchayats", panchayatId, "complaints"), {
-                    token,
-                    name: document.getElementById("c-name").value,
-                    mobile: document.getElementById("c-mobile").value,
-                    area: document.getElementById("c-area").value,
-                    type: document.getElementById("c-type").value,
-                    details: document.getElementById("c-details").value,
-                    status: "ફરિયાદ પેન્ડિંગ રાખવામા આવેલ છે",
-                    createdAt: Timestamp.now()
-                });
-
-                // 팝અપ મોડલમાં ટોકન નંબર બતાવવો
+                // મોડલમાં ટોકન નંબર બતાવીને પૉપઅપ ઓપન કરવું
                 modalTokenText.innerText = token;
                 tokenModal.classList.remove("hidden");
                 
@@ -187,36 +188,28 @@
             }
         });
 
-        // 📋 "કોપી કરો" બટનનું લોજિક (ક્લિક કરતા જ ક્લિપબોર્ડમાં કોપી થઈ જશે)
+        // 📋 "કૉપી કરો" બટનનું લોજિક
         copyTokenBtn.addEventListener("click", () => {
             const tokenText = modalTokenText.innerText;
             navigator.clipboard.writeText(tokenText).then(() => {
-                copyTokenBtn.innerHTML = `<i class="fa-solid fa-check"></i> કોપી થઈ ગયું!`;
+                copyTokenBtn.innerHTML = `<i class="fa-solid fa-check"></i> કૉપી થઈ ગયું!`;
                 copyTokenBtn.classList.remove("bg-emerald-600", "hover:bg-emerald-700");
                 copyTokenBtn.classList.add("bg-teal-700");
                 
                 setTimeout(() => {
-                    copyTokenBtn.innerHTML = `<i class="fa-solid fa-copy"></i> કોપી કરો`;
+                    copyTokenBtn.innerHTML = `<i class="fa-solid fa-copy"></i> કૉપી કરો`;
                     copyTokenBtn.classList.remove("bg-teal-700");
                     copyTokenBtn.classList.add("bg-emerald-600", "hover:bg-emerald-700");
                 }, 2000);
             }).catch(err => {
                 console.error("Copy failed", err);
-                alert("કોપી કરવામાં નિષ્ફળતા.");
+                alert("કૉપી કરવામાં નિષ્ફળતા.");
             });
         });
 
         // મોડલ બંધ કરવાનું બટન
         closeModalBtn.addEventListener("click", () => {
             tokenModal.classList.add("hidden");
-        });
-
-                
-                e.target.reset();
-            } catch (err) {
-                console.error(err);
-                alert("ફરિયાદ સબમિટ કરવામાં ભૂલ આવી.");
-            }
         });
 
         // સ્ટેટસ ચેક
@@ -237,28 +230,5 @@
             } catch (err) { console.error(err); }
         });
     </script>
-
-    <!-- 📋 ટોકન કોપી કરવા માટેનું કસ્ટમ મોડલ પૉપઅપ -->
-<div id="token-modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-sm w-full p-6 text-center space-y-4 shadow-2xl border border-emerald-100">
-        <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-xl">
-            <i class="fa-solid fa-check"></i>
-        </div>
-        <h3 class="text-lg font-bold text-emerald-900">ફરિયાદ સફળતાપૂર્વક નોંધાઈ ગઈ!</h3>
-        <p class="text-xs text-gray-600">તમારો યુનિક ફરિયાદ નંબર (ટોકન) નીચે મુજબ છે:</p>
-        
-        <!-- ટોકન નંબર બોક્સ -->
-        <div class="bg-slate-100 border border-slate-300 p-3 rounded-xl flex items-center justify-between">
-            <span id="modal-token-text" class="font-mono font-bold text-base text-emerald-800">GP-XXXXXX</span>
-            <button type="button" id="copy-token-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-2 rounded-lg shadow transition flex items-center gap-1">
-                <i class="fa-solid fa-copy"></i> કોપી કરો
-            </button>
-        </div>
-
-        <button type="button" id="close-modal-btn" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-bold py-2.5 rounded-xl text-xs transition">
-            બધ કરો (OK)
-        </button>
-    </div>
-</div>
 </body>
 </html>
