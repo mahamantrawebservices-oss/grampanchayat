@@ -816,24 +816,31 @@ document.getElementById("add-schedule-form")?.addEventListener("submit", async (
 
 // --- ૯. કાર્યરત સમિતિઓ સેવ અથવા અપડેટ કરવા માટેનું ફોર્મ સબમિટ હેન્ડલર ---
 document.getElementById("add-committee-form")?.addEventListener("submit", async (e) => {
-    e.preventDefault();
+    e.preventDefault(); // પેજ રીલોડ થતું અટકાવવા માટે
 
-    // 🔒 સેફ્ટી ચેક: જો lgdCode કે panchayatId ગાયબ હોય તો URL માંથી પકડી લેવો
-    let currentLgdCode = typeof lgdCode !== 'undefined' ? lgdCode : null;
+    // 1. URL માંથી તાત્કાલિક LGD Code પકડવો
+    const urlParams = new URLSearchParams(window.location.search);
+    let currentLgdCode = urlParams.get('id');
+
+    // 2. જો URL માં ન હોય તો લેાકલ સ્ટોરેજ અથવા ગ્લોબલ વેરિએબલમાંથી લેવો
     if (!currentLgdCode) {
-        const urlParams = new URLSearchParams(window.location.search);
-        currentLgdCode = urlParams.get('id') || localStorage.getItem("panchayatId") || "517045";
+        currentLgdCode = typeof lgdCode !== 'undefined' ? lgdCode : localStorage.getItem("panchayatId");
     }
 
+    // 3. જો હજુ પણ ન મળે તો ડિફોલ્ટ આઈડી અથવા યુઝરને પ્રોમ્પ્ટ કરવો
     if (!currentLgdCode) {
-        alert("⚠️ ભૂલ: LGD Code (પંચાયત ID) મળ્યો નથી! કૃપા કરીને સુપર એડમિન પેનલમાંથી યોગ્ય લિંક દ્વારા પ્રવેશ કરો.");
-        return;
+        currentLgdCode = "517045"; // અથવા તમારો ડિફોલ્ટ LGD Code
+    }
+
+    // સુનિશ્ચિત કરો કે બ્રાઉઝરના URL માં ID હંમેશા જળવાઈ રહે
+    if (!window.location.search.includes("id=")) {
+        const newUrl = `${window.location.pathname}?id=${currentLgdCode}`;
+        window.history.replaceState({}, '', newUrl);
     }
 
     const editIdInput = document.getElementById("comm-edit-id");
     const editId = editIdInput ? editIdInput.value : "";
 
-    // ફોર્મમાંથી સમિતિનું નામ મેળવવું
     const committeeName = document.getElementById("comm-name")?.value.trim() || document.getElementById("committee-name")?.value.trim();
 
     if (!committeeName) {
@@ -841,24 +848,21 @@ document.getElementById("add-committee-form")?.addEventListener("submit", async 
         return;
     }
 
-    // નોંધ: જો તમારી પાસે સભ્યો (Members) ડાયનેમિક ઉમેરવાનું લોજિક હોય તો તે અહીં પડાશે
     const payload = {
         committeeName: committeeName,
         updatedAt: new Date()
     };
 
     try {
-        // ફાયરબેઝ પાથ સેટ કરવો: panchayats / {currentLgdCode} / active_committees
+        // ફાયરબેઝ રેફરન્સ (હંમેશા સાચા LGD Code સાથે)
         const committeeCollectionRef = collection(db, "panchayats", currentLgdCode, "active_committees");
 
         if (editId) {
-            // જો એડિટ થતું હોય તો અપડેટ કરવું
             const docRef = doc(db, "panchayats", currentLgdCode, "active_committees", editId);
             await updateDoc(docRef, payload);
             alert("✅ સમિતિ સફળતાપૂર્વક અપડેટ થઈ ગઈ!");
 
-            // એડિટ મોડ રીસેટ કરવો
-            editIdInput.value = "";
+            if (editIdInput) editIdInput.value = "";
             const submitBtn = e.target.querySelector("button[type='submit']");
             if (submitBtn) {
                 submitBtn.innerText = "સમિતિ ઉમેરો";
@@ -866,9 +870,8 @@ document.getElementById("add-committee-form")?.addEventListener("submit", async 
                 submitBtn.classList.add("bg-emerald-600", "hover:bg-emerald-700");
             }
         } else {
-            // નવું ઉમેરવું
             payload.createdAt = new Date();
-            payload.members = []; // જો સભ્યો હોય તો અહીં એરે આવી શકે
+            payload.members = [];
             await addDoc(committeeCollectionRef, payload);
             alert("✅ નવી સમિતિ સફળતાપૂર્વક ઉમેરાઈ ગઈ!");
         }
