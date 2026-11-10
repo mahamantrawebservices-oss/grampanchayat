@@ -18,11 +18,27 @@ const db = getFirestore(app);
 const storage = getStorage(app);
 
 // --- ૦. URL માંથી LGD Code પકડવો ---
+// 🌐 મલ્ટી-ટેનન્ટ LGD Code ડાયનેમિક કેપ્ચર કરવા માટેનું પરફેક્ટ લોજિક
 const urlParams = new URLSearchParams(window.location.search);
-const lgdCode = urlParams.get('id');
+let lgdCode = urlParams.get('id');
 
+if (lgdCode) {
+    // જો URL માં આઈડી હોય તો તેને લોકલ સ્ટોરેજમાં સેવ કરી લેવો (જેથી ભવિષ્યમાં કામ આવે)
+    localStorage.setItem("currentPanchayatId", lgdCode);
+} else {
+    // જો URL માં ન હોય, તો અગાઉ સેવ કરેલો આઈડી લેવો
+    lgdCode = localStorage.getItem("currentPanchayatId");
+}
+
+// ⚠️ જો હજી પણ આઈડી ન મળે તો જ યુઝરને પ્રોમ્પ્ટ કરવો કે યોગ્ય લિંકથી આવો
 if (!lgdCode) {
-    alert("⚠️ ભૂલ: LGD Code (પંચાયત ID) મળ્યો નથી! કૃપા કરીને સુપર એડમિન પેનલમાંથી યોગ્ય લિંક દ્વારા પ્રવેશ કરો.");
+    alert("⚠️ કૃપા કરીને સુપર એડમિન પેનલમાંથી યોગ્ય પંચાયતની લિંક દ્વારા પ્રવેશ કરો!");
+    // વૈકલ્પિક: સુપર એડમિન કે લોગિન પેજ પર રીડાયરેક્ટ કરી શકાય
+} else {
+    // ખાતરી કરો કે URL માં પણ આઈડી હંમેશા દેખાય
+    if (!window.location.search.includes("id=")) {
+        window.history.replaceState({}, '', `${window.location.pathname}?id=${lgdCode}`);
+    }
 }
 
 // LGD Code આધારિત Sub-Collection Helper
@@ -818,10 +834,14 @@ document.getElementById("add-schedule-form")?.addEventListener("submit", async (
 document.getElementById("add-committee-form")?.addEventListener("submit", async (e) => {
     e.preventDefault(); // પેજ રીલોડ થતું અટકાવવા માટે
 
-    // ખાતરી કરવી કે lgdCode ઉપલબ્ધ છે કે નહીં
-    if (!lgdCode) {
-        const urlParams = new URLSearchParams(window.location.search);
-        lgdCode = urlParams.get('id') || localStorage.getItem("panchayatId") || "517045";
+    // 🌐 મલ્ટી-ટેનન્ટ સેફ LGD Code પકડવો (કોઈપણ હાર્ડકોડેડ ડિફોલ્ટ વગર)
+    const urlParams = new URLSearchParams(window.location.search);
+    let currentLgdCode = urlParams.get('id') || (typeof lgdCode !== 'undefined' ? lgdCode : null) || localStorage.getItem("currentPanchayatId") || localStorage.getItem("panchayatId");
+
+    // જો કોઈ પણ રીતે LGD Code ન મળે તો એરર આપીને અટકવું (બીજી પંચાયતમાં ડેટા ન જાય તે માટે)
+    if (!currentLgdCode) {
+        alert("⚠️ ભૂલ: પંચાયતનો LGD Code મળ્યો નથી! કૃપા કરીને સુપર એડમિન પેનલમાંથી યોગ્ય લિંક દ્વારા પ્રવેશ કરો.");
+        return;
     }
 
     const editIdInput = document.getElementById("comm-edit-id");
@@ -840,11 +860,11 @@ document.getElementById("add-committee-form")?.addEventListener("submit", async 
     };
 
     try {
-        // ફાયરબેઝ રેફરન્સ (હંમેશા સાચા lgdCode સાથે)
-        const committeeCollectionRef = collection(db, "panchayats", lgdCode, "active_committees");
+        // ફાયરબેઝ રેફરન્સ (હંમેશા ચોક્કસ પંચાયતના સાચા LGD Code સાથે)
+        const committeeCollectionRef = collection(db, "panchayats", currentLgdCode, "active_committees");
 
         if (editId) {
-            const docRef = doc(db, "panchayats", lgdCode, "active_committees", editId);
+            const docRef = doc(db, "panchayats", currentLgdCode, "active_committees", editId);
             await updateDoc(docRef, payload);
             alert("✅ સમિતિ સફળતાપૂર્વક અપડેટ થઈ ગઈ!");
 
@@ -863,6 +883,10 @@ document.getElementById("add-committee-form")?.addEventListener("submit", async 
         }
 
         e.target.reset();
+        
+        // જો editId હોય તો તેને પણ ખાલી કરી દેવું
+        if(editIdInput) editIdInput.value = "";
+
         loadActiveCommittees(); // લિસ્ટ રિફ્રેશ કરવું
     } catch (err) {
         console.error("Save/Update Committee Error:", err);
