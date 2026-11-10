@@ -796,9 +796,9 @@ window.editActiveComm = (id, committeeName) => {
     formEl?.scrollIntoView({ behavior: 'smooth' });
 };
 
-// સમિતિ સેવ અથવા અપડેટ કરવા માટેનું ફોર્મ સબમિટ હેન્ડલર (પરફેક્ટ ફિક્સ સાથે)
+// સમિતિ સેવ અથવા અપડેટ કરવા માટેનું ફોર્મ સબમિટ હેન્ડલર (પરફેક્ટ ફિક્સ)
 document.getElementById("add-committee-form")?.addEventListener("submit", async (e) => {
-    e.preventDefault(); // 🛑 પેજ રિફ્રેશ થતું અટકાવશે
+    e.preventDefault(); // 🛑 પેજ રિફ્રેશ થતું સંપૂર્ણ અટકાવશે
 
     if (!lgdCode) {
         alert("⚠️ ભૂલ: પંચાયતનો LGD Code મળ્યો નથી! કૃપા કરીને સુપર એડમિન પેનલમાંથી યોગ્ય લિંક દ્વારા પ્રવેશ કરો.");
