@@ -202,6 +202,33 @@ async function setupComplaintSection() {
     }
 }
 
+// 🏡 ગામ અને પંચાયત વિગત (Overview / Village Details) વેબસાઇટ પર લોડ કરવા માટે
+async function loadVillageAndPanchayatDetails() {
+    try {
+        // ફાયરબેઝમાંથી ડેટા મેળવવો
+        const docRef = doc(db, "panchayats", panchayatId, "settings", "village_details");
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            
+            // જો વેબસાઇટ પર આઈડી હોય તો ત્યાં વિગતો સેટ કરવી
+            if (data.history && document.getElementById("village-history")) {
+                document.getElementById("village-history").innerText = data.history;
+            }
+            if (data.sarpanchMessage && document.getElementById("sarpanch-message")) {
+                document.getElementById("sarpanch-message").innerText = data.sarpanchMessage;
+            }
+            if (data.overview && document.getElementById("panchayat-overview")) {
+                document.getElementById("panchayat-overview").innerText = data.overview;
+            }
+        }
+    } catch (err) {
+        console.error("Village Details Load Error:", err);
+    }
+}
+
+
 // 🚀 મુખ્ય ઇનિશિયલાઈઝેશન
 async function initApp() {
     const isAllowed = await checkSystemAccess();
@@ -212,6 +239,7 @@ async function initApp() {
     loadFrontendNotices();
     loadFrontendStaffAndCommittee();
     loadFrontendSchedule();
+    loadVillageAndPanchayatDetails();
     await setupComplaintSection();
     updateDynamicLinks();
 }
