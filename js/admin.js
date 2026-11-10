@@ -815,74 +815,34 @@ document.getElementById("add-schedule-form")?.addEventListener("submit", async (
 });
 
 // --- ૯. કાર્યરત સમિતિઓ સેવ અથવા અપડેટ કરવા માટેનું ફોર્મ સબમિટ હેન્ડલર ---
-document.getElementById("add-committee-form")?.addEventListener("submit", async (e) => {
-    e.preventDefault(); // પેજ રીલોડ થતું અટકાવવા માટે
-
-    // 1. URL માંથી તાત્કાલિક LGD Code પકડવો
-    const urlParams = new URLSearchParams(window.location.search);
-    let currentLgdCode = urlParams.get('id');
-
-    // 2. જો URL માં ન હોય તો લેાકલ સ્ટોરેજ અથવા ગ્લોબલ વેરિએબલમાંથી લેવો
-    if (!currentLgdCode) {
-        currentLgdCode = typeof lgdCode !== 'undefined' ? lgdCode : localStorage.getItem("panchayatId");
+// એડિટ કરવા માટે સમિતિની માહિતી ફોર્મમાં લોડ કરવાનું ફંક્શન
+window.editActiveComm = (id, committeeName) => {
+    const nameInput = document.getElementById("comm-name") || document.getElementById("committee-name");
+    if (nameInput) {
+        nameInput.value = decodeURIComponent(committeeName);
     }
 
-    // 3. જો હજુ પણ ન મળે તો ડિફોલ્ટ આઈડી અથવા યુઝરને પ્રોમ્પ્ટ કરવો
-    if (!currentLgdCode) {
-        currentLgdCode = "517045"; // અથવા તમારો ડિફોલ્ટ LGD Code
+    let editIdInput = document.getElementById("comm-edit-id");
+    if (!editIdInput) {
+        editIdInput = document.createElement("input");
+        editIdInput.type = "hidden";
+        editIdInput.id = "comm-edit-id";
+        const formEl = document.getElementById("add-committee-form") || nameInput?.closest("form");
+        if (formEl) formEl.appendChild(editIdInput);
+    }
+    if (editIdInput) editIdInput.value = id;
+
+    // સબમિટ બટનનું નામ બદલીને "સમિતિ અપડેટ કરો" કરવું
+    const formEl = document.getElementById("add-committee-form") || nameInput?.closest("form");
+    const submitBtn = formEl?.querySelector("button[type='submit']");
+    if (submitBtn) {
+        submitBtn.innerText = "સમિતિ અપડેટ કરો";
+        submitBtn.classList.remove("bg-emerald-600", "hover:bg-emerald-700");
+        submitBtn.classList.add("bg-amber-600", "hover:bg-amber-700");
     }
 
-    // સુનિશ્ચિત કરો કે બ્રાઉઝરના URL માં ID હંમેશા જળવાઈ રહે
-    if (!window.location.search.includes("id=")) {
-        const newUrl = `${window.location.pathname}?id=${currentLgdCode}`;
-        window.history.replaceState({}, '', newUrl);
-    }
-
-    const editIdInput = document.getElementById("comm-edit-id");
-    const editId = editIdInput ? editIdInput.value : "";
-
-    const committeeName = document.getElementById("comm-name")?.value.trim() || document.getElementById("committee-name")?.value.trim();
-
-    if (!committeeName) {
-        alert("⚠️ કૃપા કરીને સમિતિનું નામ અવશ્ય ભરો!");
-        return;
-    }
-
-    const payload = {
-        committeeName: committeeName,
-        updatedAt: new Date()
-    };
-
-    try {
-        // ફાયરબેઝ રેફરન્સ (હંમેશા સાચા LGD Code સાથે)
-        const committeeCollectionRef = collection(db, "panchayats", currentLgdCode, "active_committees");
-
-        if (editId) {
-            const docRef = doc(db, "panchayats", currentLgdCode, "active_committees", editId);
-            await updateDoc(docRef, payload);
-            alert("✅ સમિતિ સફળતાપૂર્વક અપડેટ થઈ ગઈ!");
-
-            if (editIdInput) editIdInput.value = "";
-            const submitBtn = e.target.querySelector("button[type='submit']");
-            if (submitBtn) {
-                submitBtn.innerText = "સમિતિ ઉમેરો";
-                submitBtn.classList.remove("bg-amber-600", "hover:bg-amber-700");
-                submitBtn.classList.add("bg-emerald-600", "hover:bg-emerald-700");
-            }
-        } else {
-            payload.createdAt = new Date();
-            payload.members = [];
-            await addDoc(committeeCollectionRef, payload);
-            alert("✅ નવી સમિતિ સફળતાપૂર્વક ઉમેરાઈ ગઈ!");
-        }
-
-        e.target.reset();
-        loadActiveCommittees(); // લિસ્ટ રિફ્રેશ કરવું
-    } catch (err) {
-        console.error("Save/Update Committee Error:", err);
-        alert("સેવ કરવામાં ટેકનિકલ ભૂલ આવી.");
-    }
-});
+    formEl?.scrollIntoView({ behavior: 'smooth' });
+};
 // --- ૧૦. મિલકત વેરા લિંક ---
 async function loadAdminTaxLink() {
     if (!lgdCode) return;
