@@ -72,10 +72,11 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        // 🔗 URL માંથી LGD Code મેળવવો (ડિફોલ્ટ 517045)
         const urlParams = new URLSearchParams(window.location.search);
-        const panchayatId = urlParams.get('id') || "ahmedabad_daskroi_motapipalva";
+        const panchayatId = urlParams.get('id') || "517045";
 
-        // મુખ્ય પૃષ્ઠ લિંક સાથે પંચાયત ID જાળવી રાખવો
+        // 🔗 મુખ્ય પૃષ્ઠ બટનમાં સાચો LGD Code જળવાઈ રહેશે
         document.getElementById("back-home-btn").href = `index.html?id=${panchayatId}`;
 
         async function verifyAndLoad() {
@@ -113,13 +114,13 @@
             if (!container) return;
 
             try {
-                // Firebase માંથી ચોક્કસ પંચાયત સ્કોપ હેઠળનો ડેટા લાવવો
+                // ફાયરબેઝમાંથી ચોક્કસ પંચાયત સ્કોપ હેઠળનો ડેટા લાવવો (panchayats/{panchayatId}/panchayat_schedule)
                 const snap = await getDocs(collection(db, "panchayats", panchayatId, "panchayat_schedule"));
-                container.innerHTML = ""; // લોડર કે જૂનો કોડ સાફ કરવો
+                container.innerHTML = ""; // લોડર સાફ કરવો
 
                 if (snap.empty) {
                     container.innerHTML = `
-                        <div class="col-span-1 md:col-span-2 text-center py-8 text-gray-500 bg-white rounded-xl border p-4">
+                        <div class="col-span-1 md:col-span-2 text-center py-8 text-gray-500 bg-white rounded-xl border p-4 shadow-sm">
                             <p class="text-sm">હાલ કોઈ સમય પત્રક માહિતી ઉપલબ્ધ નથી.</p>
                         </div>`;
                     return;
@@ -135,7 +136,7 @@
                     const note = item.note || item.extraNote || "";
 
                     container.innerHTML += `
-                        <div class="bg-amber-50/40 border border-amber-200/80 rounded-xl p-4 shadow-sm relative">
+                        <div class="bg-amber-50/40 border border-amber-200/80 rounded-xl p-4 shadow-sm relative space-y-2">
                             <div class="flex justify-between items-start">
                                 <div>
                                     <h3 class="font-bold text-amber-900 text-base md:text-lg">${name}</h3>
