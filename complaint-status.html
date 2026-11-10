@@ -229,6 +229,48 @@
                 }
             } catch (err) { console.error(err); }
         });
+
+// 🛑 એડમિન પેનલના સેટિંગ મુજબ ફરિયાદ વિભાગ બંધ છે કે નહીં તે ચકાસવું
+        async function checkComplaintPageStatus() {
+            try {
+                const configSnap = await getDoc(doc(db, "panchayats", panchayatId, "settings", "complaint_config"));
+                
+                let isEnabled = true; // ડિફોલ્ટ ચાલુ
+                if (configSnap.exists()) {
+                    const data = configSnap.data();
+                    if (data.isEnabled === false || data.isEnabled === "false") {
+                        isEnabled = false;
+                    }
+                }
+
+                // જો એડમિન પેનલથી બંધ કર્યું હોય તો લાલ બેકગ્રાઉન્ડમાં નોટિસ બતાવવી
+                if (!isEnabled) {
+                    const mainContainer = document.querySelector("main");
+                    if (mainContainer) {
+                        mainContainer.innerHTML = `
+                            <div class="bg-red-600 text-white p-6 rounded-2xl shadow-xl text-center space-y-4 my-6 border-4 border-red-700 animate-pulse">
+                                <i class="fa-solid fa-triangle-exclamation text-5xl text-amber-300"></i>
+                                <h2 class="text-xl md:text-2xl font-bold">⚠️ ફરિયાદ નોંધણી સેવા અસ્થાયી રૂપે બંધ છે</h2>
+                                <p class="text-sm md:text-base leading-relaxed text-red-100 font-medium">
+                                    હાલમાં પંચાયત કચેરી દ્વારા ફરિયાદ નોંધણીની સેવા ટેકનિકલ કે વહીવટી કારણોસર બંધ રાખવામાં આવી છે. ટૂંક સમયમાં જ આ સેવા ફરીથી ચાલુ કરવામાં આવશે. સહકાર બદલ આભાર.
+                                </p>
+                                <div class="pt-2">
+                                    <a href="index.html?id=${panchayatId}" class="inline-block bg-white text-red-700 font-bold px-6 py-2.5 rounded-xl text-xs md:text-sm shadow-md hover:bg-gray-100 transition">
+                                        ← મુખ્ય પૃષ્ઠ પર પાછા જાઓ
+                                    </a>
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+            } catch (err) {
+                console.error("Status Check Error:", err);
+            }
+        }
+
+        // પેજ લોડ થતાં જ સ્ટેટસ ચેક કરવું
+        checkComplaintPageStatus();
+        
     </script>
 </body>
 </html>
