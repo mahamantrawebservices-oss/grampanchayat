@@ -149,6 +149,63 @@ async function loadFrontendStaffAndCommittee() {
     } catch (err) { console.error(err); }
 }
 
+// 🏛️ સમયપત્રક લોડ કરવું
+async function loadFrontendSchedule() {
+    const container = document.getElementById("frontend-schedule-list");
+    if (!container) return;
+    try {
+        const snap = await getDocs(collection(db, "panchayats", panchayatId, "panchayat_schedule"));
+        container.innerHTML = snap.empty ? "<p class='text-center text-gray-400 py-2 text-xs'>કોઈ સમયપત્રક નથી.</p>" : "";
+        snap.forEach(docSnap => {
+            const item = docSnap.data();
+            container.innerHTML += `
+                <div class="bg-white p-3 rounded-xl border shadow-sm space-y-1">
+                    <h4 class="font-bold text-gray-900 text-sm">${item.name || '-'}</h4>
+                    <span class="text-[11px] font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded">${item.designation || '-'}</span>
+                    <div class="text-xs text-gray-600 space-y-0.5 pt-1">
+                        <div><b>⏰ સમય:</b> ${item.timing || '-'}</div>
+                        <div><b>📅 દિવસો:</b> ${item.days || '-'}</div>
+                    </div>
+                </div>`;
+        });
+    } catch (err) { console.error(err); }
+}
+
+// 🛡️ એડમિન પેનલના સેટિંગ મુજબ ફરિયાદ વિભાગ ચાલુ/બંધ (Hide/Show) ચેક કરવાનું ફંક્શન
+async function setupComplaintSection() {
+    try {
+        const configSnap = await getDoc(doc(db, "panchayats", panchayatId, "settings", "complaint_config"));
+        const isEnabled = !configSnap.exists() || configSnap.data().isEnabled !== false;
+
+        if (!isEnabled) {
+            // જો મુખ્ય પેજ પર ફરિયાદ સેક્શન હોય તો બંધ નોટિસ બતાવવી
+            const container = document.getElementById("complaint-section-container");
+            if (container) {
+                container.innerHTML = `
+                    <div class="bg-amber-50 border border-amber-300 p-6 rounded-2xl text-center space-y-2 my-4">
+                        <i class="fa-solid fa-triangle-exclamation text-3xl text-amber-600"></i>
+                        <h3 class="font-bold text-amber-900 text-base">ફરિયાદ નિવારણ સેવાનો પ્રવાહ હાલ બંધ છે</h3>
+                        <p class="text-xs text-amber-700">પંચાયત વહીવટી તંત્ર દ્વારા હાલમાં આ સુવિધા અસ્થાયી રૂપે બંધ રાખવામાં આવી છે.</p>
+                    </div>`;
+            }
+
+            // જો યૂઝર સીધા complaint.html પર જાય તો તેને રોકવા માટે
+            if (window.location.pathname.includes("complaint.html")) {
+                document.querySelector("main").innerHTML = `
+                    <div class="bg-amber-50 border border-amber-300 p-8 rounded-2xl text-center space-y-3 max-w-lg mx-auto mt-10">
+                        <i class="fa-solid fa-ban text-4xl text-red-600"></i>
+                        <h2 class="font-bold text-amber-900 text-lg">ફરિયાદ પોર્ટલ હાલ બંધ છે</h2>
+                        <p class="text-xs text-amber-700">પંચાયત વહીવટી તંત્ર દ્વારા હાલમાં આ સેવા બંધ કરવામાં આવી છે.</p>
+                        <a href="index.html?id=${panchayatId}" class="inline-block bg-emerald-600 text-white font-bold px-4 py-2 rounded-xl text-xs mt-2">← મુખ્ય પૃષ્ઠ પર જાઓ</a>
+                    </div>`;
+            }
+        }
+    } catch (err) {
+        console.error("Complaint Config Check Error:", err);
+    }
+}
+
+// 🚀 મુખ્ય ઇનિશિયલાઈઝેશન
 async function initApp() {
     const isAllowed = await checkSystemAccess();
     if (!isAllowed) return;
@@ -157,6 +214,8 @@ async function initApp() {
     loadPosts();
     loadFrontendNotices();
     loadFrontendStaffAndCommittee();
+    loadFrontendSchedule();
+    setupComplaintSection(); // ✨ ફરિયાદ વિભાગ ઓન/ઓફ સ્ટેટસ ચેક થશે
     updateDynamicLinks();
 }
 
