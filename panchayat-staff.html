@@ -118,10 +118,11 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        // 🔗 URL માંથી LGD Code મેળવવો (ડિફોલ્ટ 517045)
         const urlParams = new URLSearchParams(window.location.search);
-        const panchayatId = urlParams.get('id') || "ahmedabad_daskroi_motapipalva";
+        const panchayatId = urlParams.get('id') || "517045";
 
-        // મુખ્ય પૃષ્ઠ લિંક સાથે પંચાયત ID જાળવી રાખવો
+        // 🔗 મુખ્ય પૃષ્ઠ લિંક સાથે પંચાયત ID જાળવી રાખવો
         document.getElementById("back-home-btn").href = `index.html?id=${panchayatId}`;
 
         async function verifyAndLoad() {
@@ -155,47 +156,81 @@
                 // મુદત અને નોંધ (Panchayat scoped meta)
                 const metaDoc = await getDoc(doc(db, "panchayats", panchayatId, "panchayat_meta", "staff_page"));
                 if (metaDoc.exists()) {
-                    document.getElementById("term-info").innerText = "મુદત: " + (metaDoc.data().term || "-");
-                    if (metaDoc.data().note) {
+                    const mData = metaDoc.data();
+                    document.getElementById("term-info").innerText = "મુદત: " + (mData.term || "-");
+                    if (mData.note) {
                         document.getElementById("staff-note-box").classList.remove("hidden");
-                        document.getElementById("staff-note-text").innerText = metaDoc.data().note;
+                        document.getElementById("staff-note-text").innerText = mData.note;
                     }
                 } else {
                     document.getElementById("term-info").innerText = "મુદત: -";
                 }
 
                 // ૧. કમિટી સભ્યો (Panchayat scoped)
-                const commSnap = await getDocs(query(collection(db, "panchayats", panchayatId, "panchayat_committee"), orderBy("order", "asc")));
                 const commBody = document.getElementById("committee-table-body");
                 commBody.innerHTML = "";
                 
-                if (commSnap.empty) {
-                    commBody.innerHTML = `<tr><td colspan="5" class="p-3 text-center text-gray-400">કોઈ કમિટી સભ્ય ઉપલબ્ધ નથી.</td></tr>`;
-                } else {
-                    let idx1 = 1;
-                    commSnap.forEach(d => {
-                        const item = d.data();
-                        commBody.innerHTML += `<tr class="hover:bg-gray-50"><td class="p-2.5">${idx1++}</td><td class="p-2.5 font-semibold text-gray-800">${item.name || '-'}</td><td class="p-2.5"><span class="bg-blue-100 text-blue-900 px-2 py-0.5 rounded font-bold text-xs">${item.designation || '-'}</span></td><td class="p-2.5">${item.ward || '-'}</td><td class="p-2.5">${item.mobile || '-'}</td></tr>`;
-                    });
+                try {
+                    const commSnap = await getDocs(query(collection(db, "panchayats", panchayatId, "panchayat_committee"), orderBy("order", "asc")));
+                    renderCommittee(commSnap, commBody);
+                } catch (e) {
+                    // જો order ફિલ્ડ ન હોય તો વિધાઉટ ઓર્ડર ફેચ કરવું
+                    const commSnap = await getDocs(collection(db, "panchayats", panchayatId, "panchayat_committee"));
+                    renderCommittee(commSnap, commBody);
                 }
 
                 // ૨. કર્મચારીઓ (Panchayat scoped)
-                const staffSnap = await getDocs(query(collection(db, "panchayats", panchayatId, "panchayat_staff"), orderBy("order", "asc")));
                 const staffBody = document.getElementById("staff-table-body");
                 staffBody.innerHTML = "";
 
-                if (staffSnap.empty) {
-                    staffBody.innerHTML = `<tr><td colspan="4" class="p-3 text-center text-gray-400">કોઈ કર્મચારી ઉપલબ્ધ નથી.</td></tr>`;
-                } else {
-                    let idx2 = 1;
-                    staffSnap.forEach(d => {
-                        const item = d.data();
-                        staffBody.innerHTML += `<tr class="hover:bg-gray-50"><td class="p-2.5">${idx2++}</td><td class="p-2.5 font-semibold text-gray-800">${item.name || '-'}</td><td class="p-2.5"><span class="bg-indigo-100 text-indigo-900 px-2 py-0.5 rounded font-bold text-xs">${item.designation || '-'}</span></td><td class="p-2.5">${item.mobile || '-'}</td></tr>`;
-                    });
+                try {
+                    const staffSnap = await getDocs(query(collection(db, "panchayats", panchayatId, "panchayat_staff"), orderBy("order", "asc")));
+                    renderStaff(staffSnap, staffBody);
+                } catch (e) {
+                    const staffSnap = await getDocs(collection(db, "panchayats", panchayatId, "panchayat_staff"));
+                    renderStaff(staffSnap, staffBody);
                 }
+
             } catch (err) {
                 console.error("Data load error:", err);
             }
+        }
+
+        function renderCommittee(snap, container) {
+            if (snap.empty) {
+                container.innerHTML = `<tr><td colspan="5" class="p-3 text-center text-gray-400">કોઈ કમિટી સભ્ય ઉપલબ્ધ નથી.</td></tr>`;
+                return;
+            }
+            let idx = 1;
+            snap.forEach(d => {
+                const item = d.data();
+                container.innerHTML += `
+                    <tr class="hover:bg-gray-50">
+                        <td class="p-2.5">${idx++}</td>
+                        <td class="p-2.5 font-semibold text-gray-800">${item.name || '-'}</td>
+                        <td class="p-2.5"><span class="bg-blue-100 text-blue-900 px-2 py-0.5 rounded font-bold text-xs">${item.designation || '-'}</span></td>
+                        <td class="p-2.5">${item.ward || '-'}</td>
+                        <td class="p-2.5">${item.mobile || '-'}</td>
+                    </tr>`;
+            });
+        }
+
+        function renderStaff(snap, container) {
+            if (snap.empty) {
+                container.innerHTML = `<tr><td colspan="4" class="p-3 text-center text-gray-400">કોઈ કર્મચારી ઉપલબ્ધ નથી.</td></tr>`;
+                return;
+            }
+            let idx = 1;
+            snap.forEach(d => {
+                const item = d.data();
+                container.innerHTML += `
+                    <tr class="hover:bg-gray-50">
+                        <td class="p-2.5">${idx++}</td>
+                        <td class="p-2.5 font-semibold text-gray-800">${item.name || '-'}</td>
+                        <td class="p-2.5"><span class="bg-indigo-100 text-indigo-900 px-2 py-0.5 rounded font-bold text-xs">${item.designation || '-'}</span></td>
+                        <td class="p-2.5">${item.mobile || '-'}</td>
+                    </tr>`;
+            });
         }
 
         verifyAndLoad();
