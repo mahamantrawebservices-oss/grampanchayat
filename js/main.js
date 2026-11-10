@@ -202,29 +202,40 @@ async function setupComplaintSection() {
     }
 }
 
-// 🏡 ગામ અને પંચાયત વિગત (Overview / Village Details) વેબસાઇટ પર લોડ કરવા માટે
-async function loadVillageAndPanchayatDetails() {
-    try {
-        // ફાયરબેઝમાંથી ડેટા મેળવવો
-        const docRef = doc(db, "panchayats", panchayatId, "settings", "village_details");
-        const docSnap = await getDoc(docRef);
+// 🏡 ગામ અને પંચાયત વિગત (Dynamic Village Details) લોડ કરવા માટેનું ફંક્શન
+async function loadVillageDetailsMenu() {
+    const container = document.getElementById("village-details-menu-list");
+    if (!container) return;
 
-        if (docSnap.exists()) {
-            const data = docSnap.data();
-            
-            // જો વેબસાઇટ પર આઈડી હોય તો ત્યાં વિગતો સેટ કરવી
-            if (data.history && document.getElementById("village-history")) {
-                document.getElementById("village-history").innerText = data.history;
-            }
-            if (data.sarpanchMessage && document.getElementById("sarpanch-message")) {
-                document.getElementById("sarpanch-message").innerText = data.sarpanchMessage;
-            }
-            if (data.overview && document.getElementById("panchayat-overview")) {
-                document.getElementById("panchayat-overview").innerText = data.overview;
-            }
+    try {
+        // ફાયરબેઝમાંથી ડાયનેમિક ટોપિક્સ ફેચ કરવા (પંચાયત સબ-કલેક્શન અથવા સેટિંગ્સમાંથી)
+        const snap = await getDocs(collection(db, "panchayats", panchayatId, "village_details"));
+        
+        container.innerHTML = "";
+        if (snap.empty) {
+            container.innerHTML = `<p class="text-xs text-gray-400 p-2">હાલમાં કોઈ વિગત ઉપલબ્ધ નથી.</p>`;
+            return;
         }
+
+        snap.forEach(docSnap => {
+            const item = docSnap.data();
+            const docId = docSnap.id;
+            const title = item.title || item.heading || "વિગત";
+            const desc = item.description || item.content || "";
+
+            // દરેક ટોપિક માટે ડાયનેમિક બટન/લિસ્ટ આઇટમ બનાવવી
+            container.innerHTML += `
+                <div class="bg-purple-50/60 p-3 rounded-lg border border-purple-200 shadow-sm space-y-2">
+                    <h5 class="font-bold text-purple-900 text-sm flex items-center gap-1.5">
+                        <i class="fa-solid fa-circle-chevron-right text-purple-600 text-xs"></i> ${title}
+                    </h5>
+                    ${desc ? `<p class="text-xs text-gray-700 whitespace-pre-line leading-relaxed pl-4">${desc}</p>` : ''}
+                </div>
+            `;
+        });
     } catch (err) {
-        console.error("Village Details Load Error:", err);
+        console.error("Village Details Menu Load Error:", err);
+        container.innerHTML = `<p class="text-xs text-red-400 p-2">માહિતી લોડ કરવામાં ભૂલ આવી.</p>`;
     }
 }
 
@@ -239,7 +250,7 @@ async function initApp() {
     loadFrontendNotices();
     loadFrontendStaffAndCommittee();
     loadFrontendSchedule();
-    loadVillageAndPanchayatDetails();
+    loadVillageDetailsMenu();
     await setupComplaintSection();
     updateDynamicLinks();
 }
