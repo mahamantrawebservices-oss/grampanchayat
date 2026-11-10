@@ -815,34 +815,60 @@ document.getElementById("add-schedule-form")?.addEventListener("submit", async (
 });
 
 // --- ૯. કાર્યરત સમિતિઓ સેવ અથવા અપડેટ કરવા માટેનું ફોર્મ સબમિટ હેન્ડલર ---
-// એડિટ કરવા માટે સમિતિની માહિતી ફોર્મમાં લોડ કરવાનું ફંક્શન
-window.editActiveComm = (id, committeeName) => {
-    const nameInput = document.getElementById("comm-name") || document.getElementById("committee-name");
-    if (nameInput) {
-        nameInput.value = decodeURIComponent(committeeName);
+document.getElementById("add-committee-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault(); // પેજ રીલોડ થતું અટકાવવા માટે
+
+    // ખાતરી કરવી કે lgdCode ઉપલબ્ધ છે કે નહીં
+    if (!lgdCode) {
+        const urlParams = new URLSearchParams(window.location.search);
+        lgdCode = urlParams.get('id') || localStorage.getItem("panchayatId") || "517045";
     }
 
-    let editIdInput = document.getElementById("comm-edit-id");
-    if (!editIdInput) {
-        editIdInput = document.createElement("input");
-        editIdInput.type = "hidden";
-        editIdInput.id = "comm-edit-id";
-        const formEl = document.getElementById("add-committee-form") || nameInput?.closest("form");
-        if (formEl) formEl.appendChild(editIdInput);
-    }
-    if (editIdInput) editIdInput.value = id;
+    const editIdInput = document.getElementById("comm-edit-id");
+    const editId = editIdInput ? editIdInput.value : "";
 
-    // સબમિટ બટનનું નામ બદલીને "સમિતિ અપડેટ કરો" કરવું
-    const formEl = document.getElementById("add-committee-form") || nameInput?.closest("form");
-    const submitBtn = formEl?.querySelector("button[type='submit']");
-    if (submitBtn) {
-        submitBtn.innerText = "સમિતિ અપડેટ કરો";
-        submitBtn.classList.remove("bg-emerald-600", "hover:bg-emerald-700");
-        submitBtn.classList.add("bg-amber-600", "hover:bg-amber-700");
+    const committeeName = document.getElementById("comm-name")?.value.trim() || document.getElementById("committee-name")?.value.trim();
+
+    if (!committeeName) {
+        alert("⚠️ કૃપા કરીને સમિતિનું નામ અવશ્ય ભરો!");
+        return;
     }
 
-    formEl?.scrollIntoView({ behavior: 'smooth' });
-};
+    const payload = {
+        committeeName: committeeName,
+        updatedAt: new Date()
+    };
+
+    try {
+        // ફાયરબેઝ રેફરન્સ (હંમેશા સાચા lgdCode સાથે)
+        const committeeCollectionRef = collection(db, "panchayats", lgdCode, "active_committees");
+
+        if (editId) {
+            const docRef = doc(db, "panchayats", lgdCode, "active_committees", editId);
+            await updateDoc(docRef, payload);
+            alert("✅ સમિતિ સફળતાપૂર્વક અપડેટ થઈ ગઈ!");
+
+            if (editIdInput) editIdInput.value = "";
+            const submitBtn = e.target.querySelector("button[type='submit']");
+            if (submitBtn) {
+                submitBtn.innerText = "સમિતિ ઉમેરો";
+                submitBtn.classList.remove("bg-amber-600", "hover:bg-amber-700");
+                submitBtn.classList.add("bg-emerald-600", "hover:bg-emerald-700");
+            }
+        } else {
+            payload.createdAt = new Date();
+            payload.members = [];
+            await addDoc(committeeCollectionRef, payload);
+            alert("✅ નવી સમિતિ સફળતાપૂર્વક ઉમેરાઈ ગઈ!");
+        }
+
+        e.target.reset();
+        loadActiveCommittees(); // લિસ્ટ રિફ્રેશ કરવું
+    } catch (err) {
+        console.error("Save/Update Committee Error:", err);
+        alert("સેવ કરવામાં ટેકનિકલ ભૂલ આવી.");
+    }
+});
 // --- ૧૦. મિલકત વેરા લિંક ---
 async function loadAdminTaxLink() {
     if (!lgdCode) return;
