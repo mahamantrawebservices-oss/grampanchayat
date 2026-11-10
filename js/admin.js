@@ -1,13 +1,13 @@
-import { db, storage, auth } from "./firebase-config.js";
-import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { db, storage } from "./firebase-config.js";
 import { collection, onSnapshot, addDoc, updateDoc, getDocs, doc, setDoc, getDoc, deleteDoc, query, orderBy, where, Timestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
 // --- 0. URL માંથી LGD Code પકડવો ---
 const urlParams = new URLSearchParams(window.location.search);
 const lgdCode = urlParams.get('id');
 
 if (!lgdCode) {
-    alert("⚠️ ભૂલ: LGD Code (પંચાયત ID) મળ્યો નથી! કૃપા કરીને સુપર એડમિન પેનલમાંથી ફરી પ્રવેશ કરો.");
+    alert("⚠️ ભૂલ: LGD Code (પંચાયત ID) મળ્યો નથી! કૃપા કરીને સુપર એડમિન પેનલમાંથી યોગ્ય લિંક દ્વારા પ્રવેશ કરો.");
 }
 
 // LGD Code આધારિત Sub-Collection Helper
@@ -19,38 +19,88 @@ function getPanchayatDoc(subColName, docId) {
     return doc(db, "panchayats", lgdCode, subColName, docId);
 }
 
-// Authentication Check
-onAuthStateChanged(auth, (user) => {
-    if (user && lgdCode) {
-        document.getElementById("login-modal")?.classList.add("hidden");
-        document.getElementById("admin-dashboard")?.classList.remove("hidden");
-        
-        // બધી જ સિસ્ટમ લોડ કરવી
-        loadWebsiteSettings();
-        loadAdminPosts();
-        loadNotices();
-        loadAdminGallery();
-        loadAdminMenuList();
-        loadAdminComplaints();
-        loadComplaintConfig();
-        loadAdminMeta();
-        loadAdminStaffAndCommittee();
-        loadAdminSchedule();
-        loadActiveCommittees();
-        loadAdminTaxLink();
-        loadAdminCustomButtons();
-        loadAdminEvents();
-        fetchDisasterContent();
-        fetchExistingMapLinks();
-        loadAdminGlanceList();
-        loadContactAdminData();
-        loadAdminFeedbacks();
-        loadProactiveAdminData();
+// --- LGD Code & Password આધારિત Custom Login System ---
+const loginModal = document.getElementById("login-modal");
+const adminDashboard = document.getElementById("admin-dashboard");
+const loginForm = document.getElementById("admin-login-form");
+
+async function checkAdminAuth() {
+    if (!lgdCode) return;
+    
+    // સેશન સ્ટોરેજ તપાસવું
+    if (sessionStorage.getItem(`admin_logged_${lgdCode}`) === "true") {
+        if (loginModal) loginModal.classList.add("hidden");
+        if (adminDashboard) adminDashboard.classList.remove("hidden");
+        initAdminPanel();
     } else {
-        document.getElementById("login-modal")?.classList.remove("hidden");
-        document.getElementById("admin-dashboard")?.classList.add("hidden");
+        if (loginModal) loginModal.classList.remove("hidden");
+        if (adminDashboard) adminDashboard.classList.add("hidden");
+    }
+}
+
+loginForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const enteredPass = document.getElementById("login-password")?.value.trim();
+
+    try {
+        // ફાયરબેઝમાંથી આ પંચાયતનો રેકોર્ડ મેળવવો જેમાં પાસવર્ડ સેવ છે
+        const panchayatDocRef = doc(db, "panchayats", lgdCode);
+        const snap = await getDoc(panchayatDocRef);
+
+        if (snap.exists()) {
+            const data = snap.data();
+            const correctPass = data.adminPassword || "admin123"; // ડિફોલ્ટ પાસવર્ડ
+
+            if (enteredPass === correctPass) {
+                sessionStorage.setItem(`admin_logged_${lgdCode}`, "true");
+                if (loginModal) loginModal.classList.add("hidden");
+                if (adminDashboard) adminDashboard.classList.remove("hidden");
+                alert("સફળતાપૂર્વક લૉગિન થઈ ગયું!");
+                initAdminPanel();
+            } else {
+                alert("ખોટો પાસવર્ડ! કૃપા કરીને સાચો પાસવર્ડ દાખલ કરો.");
+            }
+        } else {
+            alert("આ LGD Code વાળી પંચાયત મળી નથી.");
+        }
+    } catch (err) {
+        console.error("Login error:", err);
+        alert("લૉગિન કરવામાં ભૂલ આવી: " + err.message);
     }
 });
+
+// Logout Button
+document.getElementById("logout-btn")?.addEventListener("click", () => {
+    sessionStorage.removeItem(`admin_logged_${lgdCode}`);
+    checkAdminAuth();
+});
+
+// પેજ લોડ થતાં જ ઓથેન્ટિકેશન ચેક કરવું
+checkAdminAuth();
+
+// તમામ ફંક્શન્સને એકસાથે રન કરવા માટેનું ઇનિશિયલાઈઝર
+function initAdminPanel() {
+    loadWebsiteSettings();
+    loadAdminPosts();
+    loadNotices();
+    loadAdminGallery();
+    loadAdminMenuList();
+    loadAdminComplaints();
+    loadComplaintConfig();
+    loadAdminMeta();
+    loadAdminStaffAndCommittee();
+    loadAdminSchedule();
+    loadActiveCommittees();
+    loadAdminTaxLink();
+    loadAdminCustomButtons();
+    loadAdminEvents();
+    fetchDisasterContent();
+    fetchExistingMapLinks();
+    loadAdminGlanceList();
+    loadContactAdminData();
+    loadAdminFeedbacks();
+    loadProactiveAdminData();
+}
 
 // Login & Logout
 document.getElementById("admin-login-form")?.addEventListener("submit", (e) => {
