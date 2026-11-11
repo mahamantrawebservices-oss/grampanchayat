@@ -1412,25 +1412,23 @@ document.getElementById("event-form")?.addEventListener("submit", async (e) => {
 // --- ૧૩. આપત્તિ વ્યવસ્થાપન મેનેજર ---
 async function fetchDisasterContent() {
     const keySelect = document.getElementById('disaster-page-key');
+    if (!keySelect || !lgdCode) return; // જો એલિમેન્ટ ન હોય તો આગળ ન વધવું
+    
     const standardBox = document.getElementById('standard-disaster-box');
     const galleryBox = document.getElementById('gallery-disaster-box');
-    
-    if (!keySelect || !lgdCode) return;
-    
     const key = keySelect.value;
 
     if (key === 'disaster_gallery') {
-        standardBox.classList.add('hidden');
-        galleryBox.classList.remove('hidden');
+        if (standardBox) standardBox.classList.add('hidden');
+        if (galleryBox) galleryBox.classList.remove('hidden');
         loadAdminDisasterGallery();
     } else {
-        standardBox.classList.remove('hidden');
-        galleryBox.classList.add('hidden');
+        if (standardBox) standardBox.classList.remove('hidden');
+        if (galleryBox) galleryBox.classList.add('hidden');
 
         const contentTextarea = document.getElementById('disaster-page-content');
         if (!contentTextarea) return;
 
-        // જો મહત્વના સંપર્ક કે VDRMP હોય તો તેના માટે પ્રી-ડિફાઇન HTML ટેમ્પ્લેટ આપવું જેથી એડમિનને સરળતા રહે
         let defaultTemplate = "";
         if (key === 'important_contacts') {
             defaultTemplate = `<div class="space-y-2">\n  <p><b>પંચાયત સચિવ:</b> 9876543210</p>\n  <p><b>સરપંચશ્રી:</b> 9123456789</p>\n</div>`;
@@ -1462,7 +1460,10 @@ document.getElementById('disaster-management-form')?.addEventListener('submit', 
     if (!lgdCode) return;
 
     const key = document.getElementById('disaster-page-key').value;
-    const content = document.getElementById('disaster-page-content').value.trim();
+    const contentTextarea = document.getElementById('disaster-page-content');
+    if (!contentTextarea) return;
+
+    const content = contentTextarea.value.trim();
 
     try {
         await setDoc(getPanchayatDoc("disaster_management", key), { 
@@ -1512,28 +1513,47 @@ async function loadAdminDisasterGallery() {
 }
 
 window.editDisasterGallery = (id, titleEnc, urlEnc) => {
-    document.getElementById("edit-gallery-id").value = id;
-    document.getElementById("gallery-title").value = decodeURIComponent(titleEnc);
-    document.getElementById("gallery-img-url").value = decodeURIComponent(urlEnc);
+    const editIdInput = document.getElementById("edit-gallery-id");
+    const titleInput = document.getElementById("gallery-title");
+    const urlInput = document.getElementById("gallery-img-url");
+    const submitBtn = document.getElementById("gallery-submit-btn");
+    const cancelBtn = document.getElementById("gallery-cancel-btn");
 
-    document.getElementById("gallery-submit-btn").innerText = "અપડેટ કરો";
-    document.getElementById("gallery-cancel-btn").classList.remove("hidden");
+    if (editIdInput) editIdInput.value = id;
+    if (titleInput) titleInput.value = decodeURIComponent(titleEnc);
+    if (urlInput) urlInput.value = decodeURIComponent(urlEnc);
+
+    if (submitBtn) submitBtn.innerText = "અપડેટ કરો";
+    if (cancelBtn) cancelBtn.classList.remove("hidden");
 };
 
 document.getElementById("gallery-cancel-btn")?.addEventListener("click", () => {
-    document.getElementById("disaster-gallery-form").reset();
-    document.getElementById("edit-gallery-id").value = "";
-    document.getElementById("gallery-submit-btn").innerText = "ફોટો ઉમેરો";
-    document.getElementById("gallery-cancel-btn").classList.add("hidden");
+    const form = document.getElementById("disaster-gallery-form");
+    if (form) form.reset();
+
+    const editIdInput = document.getElementById("edit-gallery-id");
+    if (editIdInput) editIdInput.value = "";
+
+    const submitBtn = document.getElementById("gallery-submit-btn");
+    if (submitBtn) submitBtn.innerText = "ફોટો ઉમેરો";
+
+    const cancelBtn = document.getElementById("gallery-cancel-btn");
+    if (cancelBtn) cancelBtn.classList.add("hidden");
 });
 
 document.getElementById("disaster-gallery-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     if (!lgdCode) return;
 
-    const editId = document.getElementById("edit-gallery-id").value.trim();
-    const title = document.getElementById("gallery-title").value.trim();
-    const imageUrl = document.getElementById("gallery-img-url").value.trim();
+    const editIdInput = document.getElementById("edit-gallery-id");
+    const titleInput = document.getElementById("gallery-title");
+    const urlInput = document.getElementById("gallery-img-url");
+
+    if (!editIdInput || !titleInput || !urlInput) return;
+
+    const editId = editIdInput.value.trim();
+    const title = titleInput.value.trim();
+    const imageUrl = urlInput.value.trim();
 
     if (!title || !imageUrl) {
         alert("⚠️ કૃપા કરીને શીર્ષક અને ઇમેજ લિંક બંને ભરો!");
@@ -1543,7 +1563,6 @@ document.getElementById("disaster-gallery-form")?.addEventListener("submit", asy
     try {
         const galleryColRef = collection(db, "panchayats", lgdCode, "disaster_gallery");
         
-        // ચકાસણી: મેક્સિમમ ૨૦ ફોટા જ હોવા જોઈએ
         if (!editId) {
             const currentSnap = await getDocs(galleryColRef);
             if (currentSnap.size >= 20) {
