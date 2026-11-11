@@ -201,9 +201,12 @@
             }
         }
 
+// Button Event Listeners
         btnGram.addEventListener('click', () => { 
             setActiveButton(btnGram);
-            showFrame("https://grammanchitra.gov.in/");
+            const gramManchitraUrl = "https://grammanchitra.gov.in/gm4MVC";
+            window.open(gramManchitraUrl, "_blank");
+            showPlaceholder("Gram Manchitra પોર્ટલ નવી ટેબમાં સફળતાપૂર્વક ખુલી ગયું છે.", gramManchitraUrl);
         });
 
         btnSat.addEventListener('click', async () => { 
