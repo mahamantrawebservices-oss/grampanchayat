@@ -374,13 +374,40 @@ async function openDisasterPage(pageKey, pageTitle) {
     modal.classList.add("flex");
 
     try {
-        const docRef = doc(db, "panchayats", panchayatId, "disaster_management", pageKey);
-        const snap = await getDoc(docRef);
+        // જો ગેલેરી હોય તો sub-collection માંથી ફોટા ફેચ કરવા
+        if (pageKey === 'disaster_gallery') {
+            const gallerySnap = await getDocs(collection(db, "panchayats", panchayatId, "disaster_gallery"));
+            
+            if (gallerySnap.empty) {
+                modalContent.innerHTML = "<p class='text-gray-500 text-center py-4'>હાલમાં ગેલેરીમાં કોઈ ફોટા ઉપલબ્ધ નથી.</p>";
+                return;
+            }
 
-        if (snap.exists() && snap.data().content) {
-            modalContent.innerHTML = snap.data().content;
+            let galleryHTML = `<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">`;
+            gallerySnap.forEach(d => {
+                const item = d.data();
+                galleryHTML += `
+                    <div class="bg-gray-50 border rounded-xl overflow-hidden shadow-sm flex flex-col">
+                        <img src="${item.imageUrl}" class="w-full h-40 object-cover" onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
+                        <div class="p-3">
+                            <h4 class="font-bold text-gray-800 text-xs text-center">${item.title || 'ફોટો'}</h4>
+                        </div>
+                    </div>
+                `;
+            });
+            galleryHTML += `</div>`;
+            modalContent.innerHTML = galleryHTML;
+
         } else {
-            modalContent.innerHTML = "<p class='text-gray-500 text-center py-4'>આ વિભાગ માટે હજુ સુધી કોઈ માહિતી ઉમેરવામાં આવી નથી.</p>";
+            // અન્ય સ્ટાન્ડર્ડ પેજ (Contacts, Mock Drills, VDRMP) માટે
+            const docRef = doc(db, "panchayats", panchayatId, "disaster_management", pageKey);
+            const snap = await getDoc(docRef);
+
+            if (snap.exists() && snap.data().content) {
+                modalContent.innerHTML = snap.data().content;
+            } else {
+                modalContent.innerHTML = "<p class='text-gray-500 text-center py-4'>આ વિભાગ માટે હજુ સુધી કોઈ માહિતી ઉમેરવામાં આવી નથી.</p>";
+            }
         }
     } catch (err) {
         console.error("Open Disaster Page Error:", err);
@@ -388,17 +415,12 @@ async function openDisasterPage(pageKey, pageTitle) {
     }
 }
 
-function closeDisasterPage() {
-    const modal = document.getElementById("disaster-modal");
-    if (modal) {
-        modal.classList.remove("flex");
-        modal.classList.add("hidden");
-    }
-}
-
 // વૈશ્વિક સ્તરે ફંક્શન્સ ઉપલબ્ધ કરાવવા માટે
 window.openDisasterPage = openDisasterPage;
 window.closeDisasterPage = closeDisasterPage;
+// --- આપત્તિ વ્યવસ્થાપન મોડલ ઓપન અને લોડ કરવા માટે (કોડ પૂર્ણ) ---
+
+
 
 // 🚀 મુખ્ય ઇનિશિયલાઈઝેશન
 async function initApp() {
