@@ -415,9 +415,7 @@ async function openDisasterPage(pageKey, pageTitle) {
     }
 }
 
-// વૈશ્વિક સ્તરે ફંક્શન્સ ઉપલબ્ધ કરાવવા માટે
-window.openDisasterPage = openDisasterPage;
-window.closeDisasterPage = closeDisasterPage;
+
 // --- આપત્તિ વ્યવસ્થાપન મોડલ ઓપન અને લોડ કરવા માટે (કોડ પૂર્ણ) ---
 
 
