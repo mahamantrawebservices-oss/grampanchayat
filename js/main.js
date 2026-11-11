@@ -360,6 +360,7 @@ async function loadPublicEvents() {
 }
 
 // --- આપત્તિ વ્યવસ્થાપન મોડલ ઓપન અને લોડ કરવા માટે ---
+// --- આપત્તિ વ્યવસ્થાપન મોડલ ઓપન અને લોડ કરવા માટે ---
 async function openDisasterPage(pageKey, pageTitle) {
     const modal = document.getElementById("disaster-modal");
     const modalTitle = document.getElementById("disaster-modal-title");
@@ -415,6 +416,18 @@ async function openDisasterPage(pageKey, pageTitle) {
     }
 }
 
+// મોડલ બંધ કરવા માટેનું ફંક્શન
+function closeDisasterPage() {
+    const modal = document.getElementById("disaster-modal");
+    if (modal) {
+        modal.classList.remove("flex");
+        modal.classList.add("hidden");
+    }
+}
+
+// HTML ના onclick માંથી કોલ થઈ શકે તે માટે વિન્ડો ઓબ્જેક્ટ પર બાઇન્ડ કરવું ફરજિયાત છે
+window.openDisasterPage = openDisasterPage;
+window.closeDisasterPage = closeDisasterPage;
 
 // --- આપત્તિ વ્યવસ્થાપન મોડલ ઓપન અને લોડ કરવા માટે (કોડ પૂર્ણ) ---
 
