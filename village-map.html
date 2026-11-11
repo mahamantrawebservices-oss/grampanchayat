@@ -75,7 +75,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyCMhWWI_6oxPIVEQEVlq2SIBf72EI2o8NI",
             authDomain: "gram-panchayat-33c86.firebaseapp.com",
@@ -89,10 +88,20 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        // LGD Code મેળવવા માટેની ડબલ સેફ્ટી
         const urlParams = new URLSearchParams(window.location.search);
-        const panchayatId = urlParams.get('id') || "ahmedabad_daskroi_motapipalva";
+        let panchayatId = urlParams.get('id');
 
-        // મુખ્ય પેજ લિંક સાથે પંચાયત ID જાળવી રાખવો
+        if (panchayatId) {
+            localStorage.setItem("currentPanchayatId", panchayatId);
+        } else {
+            panchayatId = localStorage.getItem("currentPanchayatId") || "517045";
+        }
+
+        if (!window.location.search.includes("id=")) {
+            window.history.replaceState({}, '', `${window.location.pathname}?id=${panchayatId}`);
+        }
+
         document.getElementById("back-home-btn").href = `index.html?id=${panchayatId}`;
 
         const frame = document.getElementById('map-frame');
@@ -109,7 +118,6 @@
 
         async function verifyAndLoad() {
             try {
-                // 1. Global Maintenance Check
                 const maintSnap = await getDoc(doc(db, "system_settings", "global_config"));
                 if (maintSnap.exists() && maintSnap.data().isMaintenance) {
                     document.getElementById("maintenance-screen").classList.remove("hidden");
@@ -119,21 +127,18 @@
                     return;
                 }
 
-                // 2. Panchayat Active Status Check
                 const pSnap = await getDoc(doc(db, "panchayats", panchayatId));
                 if (pSnap.exists() && pSnap.data().isActive === false) {
                     document.getElementById("deactive-screen").classList.remove("hidden");
                     return;
                 }
 
-                // 3. Load Map Links
                 loadMapLinks();
             } catch (err) {
                 console.error("Verification error:", err);
             }
         }
 
-        // Firestore માંથી પંચાયત સ્કોપ મુજબ લિંક્સ મેળવવી
         async function loadMapLinks() {
             try {
                 const docRef = doc(db, "panchayats", panchayatId, "village_map_settings", "links");
@@ -143,18 +148,15 @@
                     const data = docSnap.data();
                     satUrl = data.satelliteUrl || "";
                     pdfUrl = data.revenuePdfUrl || "";
-                    console.log("✅ લિંક્સ લોડ થઈ ગઈ:", { satUrl, pdfUrl });
-                } else {
-                    console.warn("⚠️ Firestore માં સંગ્રહિત લિંક્સ મળી નથી.");
                 }
             } catch (err) {
                 console.error("❌ લિંક લોડ કરવામાં ભૂલ:", err);
             }
         }
 
-        // Display update helper
         function showFrame(url) {
             placeholder.classList.add('hidden');
+            externalBtn.classList.add('hidden');
             frame.classList.remove('hidden');
             frame.src = url;
         }
@@ -173,7 +175,6 @@
             }
         }
 
-        // Active Button styling handler
         function setActiveButton(activeBtn) {
             [btnGram, btnSat, btnPdf].forEach(btn => {
                 btn.classList.remove('ring-4', 'ring-offset-2', 'ring-gray-400');
@@ -181,49 +182,42 @@
             activeBtn.classList.add('ring-4', 'ring-offset-2', 'ring-gray-400');
         }
 
-        // Open URL logic
-        function openUrl(url) {
+        function openUrl(url, typeName) {
             if (!url || url.trim() === "") {
-                alert("એડમિન પેનલમાંથી આ લિંક હજુ સુધી ઉમેરવામાં આવી નથી.");
+                showPlaceholder(`⚠️ એડમિન પેનલમાંથી ${typeName} ની લિંક હજુ સુધી ઉમેરવામાં આવી નથી.`);
                 return;
             }
 
             let finalUrl = url.trim();
 
-            // Google Drive preview logic
             if (finalUrl.includes('drive.google.com') && finalUrl.includes('/view')) {
                 finalUrl = finalUrl.replace('/view', '/preview');
             }
 
-            // External Maps (Google Maps non-embed)
             if (finalUrl.includes('google.com/maps') && !finalUrl.includes('embed')) {
-                window.open(finalUrl, '_blank');
-                showPlaceholder("ગૂગલ મેપ નવી ટેબમાં ઓપન થઈ ગયો છે.", finalUrl);
+                showPlaceholder(`ગૂગલ મેપ નીચેના બટન દ્વારા જુઓ અથવા નવી ટેબમાં ખોલો.`, finalUrl);
             } else {
                 showFrame(finalUrl);
             }
         }
 
-        // Button Event Listeners
         btnGram.addEventListener('click', () => { 
             setActiveButton(btnGram);
-            window.open("https://grammanchitra.gov.in/", "_blank");
-            showPlaceholder("Gram Manchitra પોર્ટલ નવી ટેબમાં સફળતાપૂર્વક ખુલી ગયું છે.", "https://grammanchitra.gov.in/");
+            showFrame("https://grammanchitra.gov.in/");
         });
 
         btnSat.addEventListener('click', async () => { 
             setActiveButton(btnSat);
             if (!satUrl) await loadMapLinks(); 
-            openUrl(satUrl); 
+            openUrl(satUrl, "સેટેલાઇટ મેપ"); 
         });
 
         btnPdf.addEventListener('click', async () => { 
             setActiveButton(btnPdf);
             if (!pdfUrl) await loadMapLinks(); 
-            openUrl(pdfUrl); 
+            openUrl(pdfUrl, "રેવન્યુ સર્વે નંબર મેપ"); 
         });
 
-        // Initial Load with Security Guards
         verifyAndLoad();
     </script>
 </body>
