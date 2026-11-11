@@ -203,42 +203,71 @@ async function setupComplaintSection() {
 }
 
 // 🏡 ગામ અને પંચાયત વિગત (Dynamic Village Details) લોડ કરવા માટેનું ફંક્શન
-async function loadVillageDetailsMenu() {
+// --- પબ્લિક વેબસાઇટ પર ગામ અને પંચાયત વિગત મેનૂ લોડ કરવા માટે ---
+async function loadPublicVillageDetailsMenu() {
     const container = document.getElementById("village-details-menu-list");
     if (!container) return;
 
+    const urlParams = new URLSearchParams(window.location.search);
+    let currentLgdCode = urlParams.get('id');
+
+    if (currentLgdCode) {
+        localStorage.setItem("currentPanchayatId", currentLgdCode);
+    } else {
+        currentLgdCode = localStorage.getItem("currentPanchayatId");
+    }
+
+    if (!currentLgdCode) {
+        container.innerHTML = `<p class="text-xs text-gray-400 p-2">પંચાયત ID મળ્યો નથી.</p>`;
+        return;
+    }
+
     try {
-        // ફાયરબેઝમાંથી ડાયનેમિક ટોપિક્સ ફેચ કરવા (પંચાયત સબ-કલેક્શન અથવા સેટિંગ્સમાંથી)
-        const snap = await getDocs(collection(db, "panchayats", panchayatId, "village_details"));
+        const detailsColRef = collection(db, "panchayats", currentLgdCode, "village_details");
+        const snap = await getDocs(detailsColRef);
         
         container.innerHTML = "";
+
         if (snap.empty) {
-            container.innerHTML = `<p class="text-xs text-gray-400 p-2">હાલમાં કોઈ વિગત ઉપલબ્ધ નથી.</p>`;
+            container.innerHTML = `<p class="text-xs text-gray-400 p-2">હાલમાં કોઈ માહિતી ઉપલબ્ધ નથી.</p>`;
             return;
         }
 
-        snap.forEach(docSnap => {
-            const item = docSnap.data();
-            const docId = docSnap.id;
-            const title = item.title || item.heading || "વિગત";
-            const desc = item.description || item.content || "";
+        let hasVisibleItem = false;
 
-            // દરેક ટોપિક માટે ડાયનેમિક બટન/લિસ્ટ આઇટમ બનાવવી
+        snap.forEach(d => {
+            const item = d.data();
+            const menuId = d.id;
+            const isShow = item.isShow !== false;
+
+            // જો એડમિને 'સંતાડો' કર્યું હોય તો પબ્લિક પેજ પર ન બતાવવું
+            if (!isShow) return; 
+
+            hasVisibleItem = true;
+
             container.innerHTML += `
-                <div class="bg-purple-50/60 p-3 rounded-lg border border-purple-200 shadow-sm space-y-2">
-                    <h5 class="font-bold text-purple-900 text-sm flex items-center gap-1.5">
-                        <i class="fa-solid fa-circle-chevron-right text-purple-600 text-xs"></i> ${title}
-                    </h5>
-                    ${desc ? `<p class="text-xs text-gray-700 whitespace-pre-line leading-relaxed pl-4">${desc}</p>` : ''}
-                </div>
+                <a href="details.html?id=${currentLgdCode}&menuId=${menuId}" class="flex items-center justify-between bg-purple-50/50 hover:bg-purple-100/70 border border-purple-200 p-3 rounded-xl transition text-xs font-semibold text-purple-950 shadow-sm group">
+                    <span class="flex items-center gap-2">
+                        <i class="fa-solid fa-circle-chevron-right text-purple-600 group-hover:translate-x-1 transition"></i>
+                        ${item.title || 'વિગત'}
+                    </span>
+                    <span class="text-purple-700 bg-purple-200/60 px-2 py-1 rounded text-[10px]">વિગત જુઓ →</span>
+                </a>
             `;
         });
+
+        if (!hasVisibleItem) {
+            container.innerHTML = `<p class="text-xs text-gray-400 p-2">હાલમાં કોઈ માહિતી ઉપલબ્ધ નથી.</p>`;
+        }
     } catch (err) {
-        console.error("Village Details Menu Load Error:", err);
+        console.error("Public Village Details Menu Error:", err);
         container.innerHTML = `<p class="text-xs text-red-400 p-2">માહિતી લોડ કરવામાં ભૂલ આવી.</p>`;
     }
 }
 
+document.addEventListener("DOMContentLoaded", () => {
+    loadPublicVillageDetailsMenu();
+});
 
 // --- પબ્લિક વેબસાઇટ પર મિલકત વેરા લિંક ડાયનેમિક સેટ કરવા માટે ---
 async function loadPublicTaxLink() {
