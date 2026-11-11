@@ -278,6 +278,64 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
+
+
+// --- પબ્લિક વેબસાઇટ પર કસ્ટમ બટન્સ લોડ કરવા માટે ---
+async function loadPublicCustomButtons() {
+    const container = document.getElementById("custom-buttons-container");
+    if (!container) return;
+
+    const urlParams = new URLSearchParams(window.location.search);
+    let currentLgdCode = urlParams.get('id');
+
+    if (currentLgdCode) {
+        localStorage.setItem("currentPanchayatId", currentLgdCode);
+    } else {
+        currentLgdCode = localStorage.getItem("currentPanchayatId");
+    }
+
+    if (!currentLgdCode) {
+        container.innerHTML = `<p class="text-xs text-gray-400 col-span-full text-center py-2">પંચાયત ID મળ્યો નથી.</p>`;
+        return;
+    }
+
+    try {
+        const customPagesRef = collection(db, "panchayats", currentLgdCode, "custom_pages");
+        const snap = await getDocs(customPagesRef);
+        
+        container.innerHTML = "";
+
+        if (snap.empty) {
+            container.innerHTML = `<p class="text-xs text-gray-400 col-span-full text-center py-2">હાલમાં કોઈ અન્ય સેવાઓ ઉપલબ્ધ નથી.</p>`;
+            return;
+        }
+
+        snap.forEach(d => {
+            const item = d.data();
+            const pageId = d.id;
+            
+            container.innerHTML += `
+                <a href="custom-page.html?id=${currentLgdCode}&pageId=${pageId}" class="bg-gradient-to-br from-amber-50 to-orange-50 hover:from-amber-100 hover:to-orange-100 border border-amber-200/60 p-4 rounded-xl shadow-sm hover:shadow transition flex flex-col items-center text-center group">
+                    <div class="w-10 h-10 rounded-full bg-amber-500 text-white flex items-center justify-center mb-2 shadow group-hover:scale-110 transition">
+                        <i class="fa-solid fa-file-lines text-sm"></i>
+                    </div>
+                    <span class="font-bold text-gray-800 text-xs md:text-sm line-clamp-2">${item.buttonTitle || 'સેવા'}</span>
+                </a>
+            `;
+        });
+    } catch (err) {
+        console.error("Load Public Custom Buttons Error:", err);
+        container.innerHTML = `<p class="text-xs text-red-400 col-span-full text-center py-2">બટનો લોડ કરવામાં ભૂલ આવી.</p>`;
+    }
+}
+
+// પેજ લોડ થાય ત્યારે આ ફંક્શન રન કરવું
+document.addEventListener("DOMContentLoaded", () => {
+    loadPublicCustomButtons();
+});
+
+
+
 // 🚀 મુખ્ય ઇનિશિયલાઈઝેશન
 async function initApp() {
     const isAllowed = await checkSystemAccess();
