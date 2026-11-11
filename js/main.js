@@ -446,8 +446,65 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 // --- પબ્લિક વેબસાઇટ પર ઇવેન્ટ્સ લોડ કરવા માટે (કોડ પૂર્ણ)---
 
+// --- પબ્લિક વેબસાઇટ પર આપત્તિ વ્યવસ્થાપન મોડલ ઓપન અને લોડ કરવા માટે ---
+async function openDisasterPage(pageKey, pageTitle) {
+    const modal = document.getElementById("disaster-modal");
+    const modalTitle = document.getElementById("disaster-modal-title");
+    const modalContent = document.getElementById("disaster-modal-content");
+
+    if (!modal || !modalTitle || !modalContent) return;
+
+    modalTitle.innerText = pageTitle;
+    modalContent.innerHTML = "<p class='text-center text-gray-500 py-4'>માહિતી લોડ થઈ રહી છે...</p>";
+    
+    // મોડલ ઓપન કરવું (Tailwind classes મુજબ flex સેટ કરવું)
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+
+    // LGD Code મેળવવો
+    const urlParams = new URLSearchParams(window.location.search);
+    let currentLgdCode = urlParams.get('id');
+
+    if (currentLgdCode) {
+        localStorage.setItem("currentPanchayatId", currentLgdCode);
+    } else {
+        currentLgdCode = localStorage.getItem("currentPanchayatId");
+    }
+
+    if (!currentLgdCode) {
+        modalContent.innerHTML = "<p class='text-red-500 text-center py-4'>પંચાયત ID મળ્યો નથી.</p>";
+        return;
+    }
+
+    try {
+        // ફાયરબેઝમાંથી ડેટા ફેચ કરવો
+        const docRef = doc(db, "panchayats", currentLgdCode, "disaster_management", pageKey);
+        const snap = await getDoc(docRef);
+
+        if (snap.exists() && snap.data().content) {
+            modalContent.innerHTML = snap.data().content;
+        } else {
+            modalContent.innerHTML = "<p class='text-gray-500 text-center py-4'>આ વિભાગ માટે હજુ સુધી કોઈ માહિતી ઉમેરવામાં આવી નથી.</p>";
+        }
+    } catch (err) {
+        console.error("Open Disaster Page Error:", err);
+        modalContent.innerHTML = "<p class='text-red-500 text-center py-4'>માહિતી લોડ કરવામાં ટેકનિકલ સમસ્યા આવી.</p>";
+    }
+}
+
+// મોડલ બંધ કરવા માટેનું ફંક્શન
+function closeDisasterPage() {
+    const modal = document.getElementById("disaster-modal");
+    if (modal) {
+        modal.classList.remove("flex");
+        modal.classList.add("hidden");
+    }
+}
+// --- પબ્લિક વેબસાઇટ પર આપત્તિ વ્યવસ્થાપન મોડલ ઓપન અને લોડ કરવા માટે (કોડ પૂર્ણ)---
 
 
+
+    
 // 🚀 મુખ્ય ઇનિશિયલાઈઝેશન
 async function initApp() {
     const isAllowed = await checkSystemAccess();
