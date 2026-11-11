@@ -366,7 +366,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
-// --- પબ્લિક વેબસાઇટ પર ઇવેન્ટ્સ લોડ કરવા માટે ---
+
+// --- પબ્લિક વેબસાઇટ પર ફક્ત આજની કે આવનારી ઇવેન્ટ્સ જ લોડ કરવા માટે ---
 async function loadPublicEvents() {
     const container = document.getElementById("events-container");
     if (!container) return;
@@ -396,24 +397,44 @@ async function loadPublicEvents() {
             return;
         }
 
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // સમય સરખાવવા માટે આજની તારીખનો ટાઈમ ઝીરો કરી દેવો
+
+        let validEventsCount = 0;
+
         snap.forEach(d => {
             const item = d.data();
-            container.innerHTML += `
-                <div class="bg-gradient-to-br from-amber-50/60 to-orange-50/60 border border-amber-200/70 p-4 rounded-2xl shadow-sm hover:shadow transition flex flex-col justify-between space-y-3">
-                    <div>
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="bg-amber-100 text-amber-800 text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
-                                <i class="fa-regular fa-calendar"></i> ${item.eventDate || '-'}
-                            </span>
+            if (!item.eventDate) return;
+
+            const eventDateObj = new Date(item.eventDate);
+            eventDateObj.setHours(0, 0, 0, 0);
+
+            // શરત: જો ઇવેન્ટની તારીખ આજની કે તેના પછીની હોય તો જ બતાવવી
+            if (eventDateObj >= today) {
+                validEventsCount++;
+                container.innerHTML += `
+                    <div class="bg-gradient-to-br from-amber-50/60 to-orange-50/60 border border-amber-200/70 p-4 rounded-2xl shadow-sm hover:shadow transition flex flex-col justify-between space-y-3">
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="bg-amber-100 text-amber-800 text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
+                                    <i class="fa-regular fa-calendar"></i> ${item.eventDate}
+                                </span>
+                            </div>
+                            <h4 class="font-bold text-gray-900 text-sm md:text-base mb-1">${item.eventName || 'કાર્યક્રમ'}</h4>
+                            <p class="text-xs text-gray-600 flex items-center gap-1.5">
+                                <i class="fa-solid fa-location-dot text-amber-600"></i> ${item.eventLocation || '-'}
+                            </p>
                         </div>
-                        <h4 class="font-bold text-gray-900 text-sm md:text-base mb-1">${item.eventName || 'કાર્યક્રમ'}</h4>
-                        <p class="text-xs text-gray-600 flex items-center gap-1.5">
-                            <i class="fa-solid fa-location-dot text-amber-600"></i> ${item.eventLocation || '-'}
-                        </p>
                     </div>
-                </div>
-            `;
+                `;
+            }
         });
+
+        // જો બધી જ ઇવેન્ટ્સ જૂની હોય અને એક પણ વેલિડ ન બચે
+        if (validEventsCount === 0) {
+            container.innerHTML = `<p class="text-xs text-gray-400 col-span-full text-center py-4 bg-gray-50 rounded-xl border border-dashed border-gray-200">હાલમાં કોઈ આવનારા કાર્યક્રમો કે પ્રસંગો ઉપલબ્ધ નથી.</p>';
+        }
+
     } catch (err) {
         console.error("Public Events Load Error:", err);
         container.innerHTML = `<p class="text-xs text-red-400 col-span-full text-center py-2">ઇવેન્ટ્સ લોડ કરવામાં ભૂલ આવી.</p>`;
@@ -423,7 +444,7 @@ async function loadPublicEvents() {
 document.addEventListener("DOMContentLoaded", () => {
     loadPublicEvents();
 });
-
+// --- પબ્લિક વેબસાઇટ પર ઇવેન્ટ્સ લોડ કરવા માટે (કોડ પૂર્ણ)---
 
 
 
