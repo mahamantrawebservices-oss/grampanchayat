@@ -849,7 +849,7 @@ async function loadActiveCommittees() {
             container.innerHTML += `
                 <div class="bg-gray-50 border p-2.5 rounded text-xs mb-1.5 shadow-sm space-y-1">
                     <div class="flex justify-between items-center font-bold">
-                        <span class="text-gray-900">${item.committeeName || 'સમિતિ'} (${item.members ? item.members.length : 0} સભ્યો)</span>
+                        <span class="text-gray-900">${item.committeeName || 'સમિતિ'}</span>
                         <div class="flex items-center gap-1">
                             <button type="button" onclick="editActiveComm('${d.id}', '${encodeURIComponent(item.committeeName || '')}')" class="bg-amber-500 hover:bg-amber-600 text-white px-2 py-0.5 rounded text-[10px] font-bold shadow">
                                 એડિટ
@@ -907,36 +907,26 @@ window.editActiveComm = (id, committeeName) => {
     formEl?.scrollIntoView({ behavior: 'smooth' });
 };
 
-// કાર્યરત સમિતિઓ સેવ અથવા અપડેટ કરવા માટેનું ફોર્મ સબમિટ હેન્ડલર (પરફેક્ટ ફિક્સ)
-document.getElementById("add-committee-form")?.addEventListener("submit", async (e) => {
-    e.preventDefault(); // 🛑 પેજ રિફ્રેશ થતું સંપૂર્ણ અટકાવશે
+// ફોર્મ સબમિટ અથવા સેવ કરવા માટેનું સેફ ફંક્શન
+async function saveActiveCommitteeData(e) {
+    if (e) e.preventDefault(); // પેજ રિફ્રેશ અટકાવવા માટે
 
-    // ૧. LGD Code મેળવવો
-    const urlParams = new URLSearchParams(window.location.search);
-    let currentLgdCode = urlParams.get('id') || (typeof lgdCode !== 'undefined' ? lgdCode : null) || localStorage.getItem("currentPanchayatId") || localStorage.getItem("panchayatId");
-
-    if (!currentLgdCode) {
-        alert("⚠️ ભૂલ: પંચાયતનો LGD Code મળ્યો નથી! કૃપા કરીને યોગ્ય લિંક દ્વારા પ્રવેશ કરો.");
-        return;
+    if (!lgdCode) {
+        alert("⚠️ ભૂલ: પંચાયતનો LGD Code મળ્યો નથી!");
+        return false;
     }
 
-    // URL માં ID કાયમ જળવાઈ રહે તેની ખાતરી કરવી
-    if (!window.location.search.includes("id=")) {
-        window.history.replaceState({}, '', `${window.location.pathname}?id=${currentLgdCode}`);
-    }
-
-    const editIdInput = document.getElementById("comm-edit-id");
-    const editId = editIdInput ? editIdInput.value : "";
-
-    // સમિતિનું નામ મેળવવું (બંને સંભવિત ID માટે સપોર્ટ)
     const nameInput = document.getElementById("comm-name") || document.getElementById("committee-name");
     const committeeName = nameInput ? nameInput.value.trim() : "";
 
     if (!committeeName) {
         alert("⚠️ કૃપા કરીને સમિતિનું નામ અવશ્ય ભરો!");
         if (nameInput) nameInput.focus();
-        return;
+        return false;
     }
+
+    const editIdInput = document.getElementById("comm-edit-id");
+    const editId = editIdInput ? editIdInput.value : "";
 
     const payload = {
         committeeName: committeeName,
@@ -945,39 +935,40 @@ document.getElementById("add-committee-form")?.addEventListener("submit", async 
 
     try {
         if (editId) {
-            // જો એડિટ થતું હોય તો અપડેટ કરવું
-            const docRef = doc(db, "panchayats", currentLgdCode, "active_committees", editId);
+            const docRef = getPanchayatDoc("active_committees", editId);
             await updateDoc(docRef, payload);
             alert("✅ સમિતિ સફળતાપૂર્વક અપડેટ થઈ ગઈ!");
-
             if (editIdInput) editIdInput.value = "";
-            const submitBtn = e.target.querySelector("button[type='submit']");
-            if (submitBtn) {
-                submitBtn.innerText = "સમિતિ ઉમેરો";
-                submitBtn.classList.remove("bg-amber-600", "hover:bg-amber-700");
-                submitBtn.classList.add("bg-emerald-600", "hover:bg-emerald-700");
-            }
         } else {
-            // નવી સમિતિ ઉમેરવી
             payload.createdAt = new Date();
             payload.members = [];
-            const committeeCollectionRef = collection(db, "panchayats", currentLgdCode, "active_committees");
-            await addDoc(committeeCollectionRef, payload);
+            await addDoc(getPanchayatCol("active_committees"), payload);
             alert("✅ નવી સમિતિ સફળતાપૂર્વક ઉમેરાઈ ગઈ!");
         }
 
-        // ફોર્મ રિસેટ કરવું અને લિસ્ટ રિફ્રેશ કરવું
-        e.target.reset();
-        if (editIdInput) editIdInput.value = "";
-        
-        // ડેટા સેવ થયા પછી તરત જ લિસ્ટ અપડેટ થઈ જશે
-        loadActiveCommittees(); 
+        // ફોર્મ રીસેટ કરવું
+        if (nameInput) nameInput.value = "";
+        const formEl = document.getElementById("add-committee-form");
+        if (formEl) formEl.reset();
 
+        // બટનનું નામ પાછું "સમિતિ ઉમેરો" કરવું
+        const submitBtn = formEl?.querySelector("button[type='submit']");
+        if (submitBtn) {
+            submitBtn.innerText = "સમિતિ ઉમેરો";
+            submitBtn.classList.remove("bg-amber-600", "hover:bg-amber-700");
+            submitBtn.classList.add("bg-emerald-600", "hover:bg-emerald-700");
+        }
+
+        loadActiveCommittees(); // લિસ્ટ રિફ્રેશ કરવું
     } catch (err) {
         console.error("Save/Update Committee Error:", err);
         alert("સેવ કરવામાં ટેકનિકલ ભૂલ આવી: " + err.message);
     }
-});
+    return false;
+}
+
+// ઇવેન્ટ લિસનર જોડવું
+document.getElementById("add-committee-form")?.addEventListener("submit", saveActiveCommitteeData);
 
 // --- ૧૦. મિલકત વેરા લિંક ---
 async function loadAdminTaxLink() {
