@@ -1410,39 +1410,57 @@ document.getElementById("event-form")?.addEventListener("submit", async (e) => {
 // --- ૧૨. ઇવેન્ટ્સ મેનેજર ( કોડ પૂર્ણ)---
 
 // --- ૧૩. આપત્તિ વ્યવસ્થાપન મેનેજર ---
+// --- ૧૩. આપત્તિ વ્યવસ્થાપન મેનેજર ---
 async function fetchDisasterContent() {
     const keySelect = document.getElementById('disaster-page-key');
-    const contentTextarea = document.getElementById('disaster-page-content');
+    const standardBox = document.getElementById('standard-disaster-box');
+    const galleryBox = document.getElementById('gallery-disaster-box');
     
-    if (!keySelect || !contentTextarea || !lgdCode) return;
+    if (!keySelect || !lgdCode) return;
     
     const key = keySelect.value;
-    contentTextarea.value = "લોડ થઈ રહ્યું છે...";
 
-    try {
-        const snap = await getDoc(getPanchayatDoc("disaster_management", key));
-        if (snap.exists()) {
-            const data = snap.data();
-            contentTextarea.value = data.content || "";
-        } else {
-            contentTextarea.value = ""; // જો ડેટા ન હોય તો ખાલી રાખવું
+    if (key === 'disaster_gallery') {
+        standardBox.classList.add('hidden');
+        galleryBox.classList.remove('hidden');
+        loadAdminDisasterGallery();
+    } else {
+        standardBox.classList.remove('hidden');
+        galleryBox.classList.add('hidden');
+
+        const contentTextarea = document.getElementById('disaster-page-content');
+        if (!contentTextarea) return;
+
+        // જો મહત્વના સંપર્ક કે VDRMP હોય તો તેના માટે પ્રી-ડિફાઇન HTML ટેમ્પ્લેટ આપવું જેથી એડમિનને સરળતા રહે
+        let defaultTemplate = "";
+        if (key === 'important_contacts') {
+            defaultTemplate = `<div class="space-y-2">\n  <p><b>પંચાયત સચિવ:</b> 9876543210</p>\n  <p><b>સરપંચશ્રી:</b> 9123456789</p>\n</div>`;
+        } else if (key === 'vdrmp') {
+            defaultTemplate = `<h3 class="font-bold text-base text-blue-800">ગામ આપત્તિ વ્યવસ્થાપન યોજના</h3>\n<p>અહીં ગામની આપત્તિ વ્યવસ્થાપન યોજનાની વિગતો લખો...</p>`;
+        } else if (key === 'mock_drills') {
+            defaultTemplate = `<h3 class="font-bold text-base text-blue-800">મોક ડ્રિલ અહેવાલ</h3>\n<p>અહીં મોક ડ્રિલ વિશે માહિતી લખો...</p>`;
         }
-    } catch (err) {
-        console.error("Fetch Disaster Content Error:", err);
-        contentTextarea.value = "";
+
+        try {
+            const snap = await getDoc(getPanchayatDoc("disaster_management", key));
+            if (snap.exists()) {
+                const data = snap.data();
+                contentTextarea.value = data.content || defaultTemplate;
+            } else {
+                contentTextarea.value = defaultTemplate;
+            }
+        } catch (err) {
+            console.error("Fetch Disaster Content Error:", err);
+            contentTextarea.value = defaultTemplate;
+        }
     }
 }
 
-// જ્યારે ડ્રોપડાઉન બદલાય ત્યારે તે પેજનો ડેટા ઓટોમેટિક લોડ થવો જોઈએ
 document.getElementById('disaster-page-key')?.addEventListener('change', fetchDisasterContent);
 
 document.getElementById('disaster-management-form')?.addEventListener('submit', async (e) => {
-    e.preventDefault(); // પેજ રિફ્રેશ અટકાવવા માટે
-
-    if (!lgdCode) {
-        alert("⚠️ ભૂલ: પંચાયતનો LGD Code મળ્યો નથી!");
-        return;
-    }
+    e.preventDefault();
+    if (!lgdCode) return;
 
     const key = document.getElementById('disaster-page-key').value;
     const content = document.getElementById('disaster-page-content').value.trim();
@@ -1460,13 +1478,117 @@ document.getElementById('disaster-management-form')?.addEventListener('submit', 
     }
 });
 
-// એડમિન પેનલ લોડ થાય ત્યારે પહેલી ઓપ્શન (Important Contacts) નો ડેટາ ઓટોમેટિક લોડ કરવા માટે
-// (આ લાઇન તમે initAdminPanel() માં પણ ઉમેરી શકો છો)
-setTimeout(() => {
-    if (document.getElementById('disaster-page-key')) {
-        fetchDisasterContent();
+// --- આપત્તિ ગેલેરી (Disaster Gallery) માટેના ફંક્શન્સ ---
+async function loadAdminDisasterGallery() {
+    const container = document.getElementById("admin-disaster-gallery-list");
+    if (!container || !lgdCode) return;
+
+    try {
+        const snap = await getDocs(collection(db, "panchayats", lgdCode, "disaster_gallery"));
+        container.innerHTML = "";
+
+        if (snap.empty) {
+            container.innerHTML = `<p class="text-xs text-gray-400 p-2">હાલમાં કોઈ ફોટા ઉમેરેલા નથી.</p>`;
+            return;
+        }
+
+        snap.forEach(d => {
+            const item = d.data();
+            container.innerHTML += `
+                <div class="flex justify-between items-center bg-gray-50 p-2 border rounded text-xs mb-1 shadow-sm">
+                    <div class="flex items-center gap-2">
+                        <img src="${item.imageUrl}" class="w-8 h-8 object-cover rounded border" onerror="this.src='https://via.placeholder.com/40'">
+                        <span class="font-bold text-gray-800 line-clamp-1">${item.title || 'ફોટો'}</span>
+                    </div>
+                    <div class="flex gap-1">
+                        <button type="button" onclick="editDisasterGallery('${d.id}', '${encodeURIComponent(item.title || '')}', '${encodeURIComponent(item.imageUrl || '')}')" class="bg-amber-500 hover:bg-amber-600 text-white text-[10px] px-2 py-0.5 rounded font-semibold">એડિટ</button>
+                        <button type="button" onclick="deleteDisasterGallery('${d.id}')" class="bg-red-600 hover:bg-red-700 text-white text-[10px] px-2 py-0.5 rounded font-semibold">ડિલીટ</button>
+                    </div>
+                </div>
+            `;
+        });
+    } catch (err) {
+        console.error("Load Disaster Gallery Error:", err);
     }
-}, 1000);
+}
+
+window.editDisasterGallery = (id, titleEnc, urlEnc) => {
+    document.getElementById("edit-gallery-id").value = id;
+    document.getElementById("gallery-title").value = decodeURIComponent(titleEnc);
+    document.getElementById("gallery-img-url").value = decodeURIComponent(urlEnc);
+
+    document.getElementById("gallery-submit-btn").innerText = "અપડેટ કરો";
+    document.getElementById("gallery-cancel-btn").classList.remove("hidden");
+};
+
+document.getElementById("gallery-cancel-btn")?.addEventListener("click", () => {
+    document.getElementById("disaster-gallery-form").reset();
+    document.getElementById("edit-gallery-id").value = "";
+    document.getElementById("gallery-submit-btn").innerText = "ફોટો ઉમેરો";
+    document.getElementById("gallery-cancel-btn").classList.add("hidden");
+});
+
+document.getElementById("disaster-gallery-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!lgdCode) return;
+
+    const editId = document.getElementById("edit-gallery-id").value.trim();
+    const title = document.getElementById("gallery-title").value.trim();
+    const imageUrl = document.getElementById("gallery-img-url").value.trim();
+
+    if (!title || !imageUrl) {
+        alert("⚠️ કૃપા કરીને શીર્ષક અને ઇમેજ લિંક બંને ભરો!");
+        return;
+    }
+
+    try {
+        const galleryColRef = collection(db, "panchayats", lgdCode, "disaster_gallery");
+        
+        // ચકાસણી: મેક્સિમમ ૨૦ ફોટા જ હોવા જોઈએ
+        if (!editId) {
+            const currentSnap = await getDocs(galleryColRef);
+            if (currentSnap.size >= 20) {
+                alert("⚠️ તમે મેક્સિમમ ૨૦ ફોટા જ ઉમેરી શકો છો!");
+                return;
+            }
+        }
+
+        const payload = {
+            title: title,
+            imageUrl: imageUrl,
+            updatedAt: new Date()
+        };
+
+        if (editId) {
+            await updateDoc(doc(db, "panchayats", lgdCode, "disaster_gallery", editId), payload);
+            alert("✅ ફોટો સફળતાપૂર્વક અપડેટ થઈ ગયો!");
+        } else {
+            payload.createdAt = new Date();
+            await addDoc(galleryColRef, payload);
+            alert("✅ નવો ફોટો સફળતાપૂર્વક ઉમેરાઈ ગયો!");
+        }
+
+        document.getElementById("gallery-cancel-btn")?.click();
+        loadAdminDisasterGallery();
+    } catch (err) {
+        console.error("Save Gallery Error:", err);
+        alert("સેવ કરવામાં ટેકનિકલ ભૂલ આવી.");
+    }
+};
+
+window.deleteDisasterGallery = async (id) => {
+    if (!lgdCode) return;
+    if (confirm("શું તમે આ ફોટો ડિલીટ કરવા માંગો છો?")) {
+        try {
+            await deleteDoc(doc(db, "panchayats", lgdCode, "disaster_gallery", id));
+            alert("ફોટો સફળતાપૂર્વક ડિલીટ થઈ ગયો!");
+            loadAdminDisasterGallery();
+        } catch (err) {
+            console.error("Delete Gallery Error:", err);
+            alert("ડિલીટ કરવામાં ભૂલ આવી.");
+        }
+    }
+};
 // --- ૧૩. આપત્તિ વ્યવસ્થાપન મેનેજર (કોડ પૂર્ણ)---
 
 // --- ૧૪. સેટેલાઇટ & રેવન્યુ મેપ લિંક્સ ---
