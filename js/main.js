@@ -174,7 +174,6 @@ async function loadFrontendSchedule() {
     } catch (err) { console.error("Schedule Error:", err); }
 }
 
-// 🛡️ એકમાત્ર અને ફાઇનલ 'setupComplaintSection' ફંક્શન
 async function setupComplaintSection() {
     try {
         const configSnap = await getDoc(doc(db, "panchayats", panchayatId, "settings", "complaint_config"));
@@ -202,28 +201,13 @@ async function setupComplaintSection() {
     }
 }
 
-// 🏡 ગામ અને પંચાયત વિગત (Dynamic Village Details) લોડ કરવા માટેનું ફંક્શન
-// --- પબ્લિક વેબસાઇટ પર ગામ અને પંચાયત વિગત મેનૂ લોડ કરવા માટે ---
+// 🏡 ગામ અને પંચાયત વિગત મેનૂ લોડ કરવા માટે
 async function loadPublicVillageDetailsMenu() {
     const container = document.getElementById("village-details-menu-list");
     if (!container) return;
 
-    const urlParams = new URLSearchParams(window.location.search);
-    let currentLgdCode = urlParams.get('id');
-
-    if (currentLgdCode) {
-        localStorage.setItem("currentPanchayatId", currentLgdCode);
-    } else {
-        currentLgdCode = localStorage.getItem("currentPanchayatId");
-    }
-
-    if (!currentLgdCode) {
-        container.innerHTML = `<p class="text-xs text-gray-400 p-2">પંચાયત ID મળ્યો નથી.</p>`;
-        return;
-    }
-
     try {
-        const detailsColRef = collection(db, "panchayats", currentLgdCode, "village_details");
+        const detailsColRef = collection(db, "panchayats", panchayatId, "village_details");
         const snap = await getDocs(detailsColRef);
         
         container.innerHTML = "";
@@ -240,13 +224,12 @@ async function loadPublicVillageDetailsMenu() {
             const menuId = d.id;
             const isShow = item.isShow !== false;
 
-            // જો એડમિને 'સંતાડો' કર્યું હોય તો પબ્લિક પેજ પર ન બતાવવું
             if (!isShow) return; 
 
             hasVisibleItem = true;
 
             container.innerHTML += `
-                <a href="details.html?id=${currentLgdCode}&menuId=${menuId}" class="flex items-center justify-between bg-purple-50/50 hover:bg-purple-100/70 border border-purple-200 p-3 rounded-xl transition text-xs font-semibold text-purple-950 shadow-sm group">
+                <a href="details.html?id=${panchayatId}&menuId=${menuId}" class="flex items-center justify-between bg-purple-50/50 hover:bg-purple-100/70 border border-purple-200 p-3 rounded-xl transition text-xs font-semibold text-purple-950 shadow-sm group">
                     <span class="flex items-center gap-2">
                         <i class="fa-solid fa-circle-chevron-right text-purple-600 group-hover:translate-x-1 transition"></i>
                         ${item.title || 'વિગત'}
@@ -265,33 +248,15 @@ async function loadPublicVillageDetailsMenu() {
     }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-    loadPublicVillageDetailsMenu();
-});
-
-// --- પબ્લિક વેબસાઇટ પર મિલકત વેરા લિંક ડાયનેમિક સેટ કરવા માટે ---
+// --- મિલકત વેરા લિંક ડાયનેમિક સેટ કરવા માટે ---
 async function loadPublicTaxLink() {
-    // 1. URL અથવા LocalStorage માંથી LGD Code પકડવો
-    const urlParams = new URLSearchParams(window.location.search);
-    let currentLgdCode = urlParams.get('id');
-
-    if (currentLgdCode) {
-        localStorage.setItem("currentPanchayatId", currentLgdCode);
-    } else {
-        currentLgdCode = localStorage.getItem("currentPanchayatId");
-    }
-
-    if (!currentLgdCode) return;
-
     try {
-        // 2. ફાયરબેઝમાંથી તે પંચાયતની tax_payment લિંક મેળવવી
-        const taxDocRef = doc(db, "panchayats", currentLgdCode, "settings", "tax_payment");
+        const taxDocRef = doc(db, "panchayats", panchayatId, "settings", "tax_payment");
         const snap = await getDoc(taxDocRef);
         
         const taxBtn = document.getElementById("pay-tax-btn");
         if (snap.exists() && taxBtn) {
             const data = snap.data();
-            // જો એડમિને લિંક નાખી હોય તો બટનની લિંક બદલી નાખવી
             if (data.url && data.url.trim() !== "") {
                 taxBtn.href = data.url.trim();
             }
@@ -301,35 +266,13 @@ async function loadPublicTaxLink() {
     }
 }
 
-// પેજ લોડ થાય ત્યારે આ ફંક્શન ઓટોમેટિક રન થશે
-document.addEventListener("DOMContentLoaded", () => {
-    loadPublicTaxLink();
-});
-
-
-
-
-// --- પબ્લિક વેબસાઇટ પર કસ્ટમ બટન્સ લોડ કરવા માટે ---
+// --- કસ્ટમ બટન્સ લોડ કરવા માટે ---
 async function loadPublicCustomButtons() {
     const container = document.getElementById("custom-buttons-container");
     if (!container) return;
 
-    const urlParams = new URLSearchParams(window.location.search);
-    let currentLgdCode = urlParams.get('id');
-
-    if (currentLgdCode) {
-        localStorage.setItem("currentPanchayatId", currentLgdCode);
-    } else {
-        currentLgdCode = localStorage.getItem("currentPanchayatId");
-    }
-
-    if (!currentLgdCode) {
-        container.innerHTML = `<p class="text-xs text-gray-400 col-span-full text-center py-2">પંચાયત ID મળ્યો નથી.</p>`;
-        return;
-    }
-
     try {
-        const customPagesRef = collection(db, "panchayats", currentLgdCode, "custom_pages");
+        const customPagesRef = collection(db, "panchayats", panchayatId, "custom_pages");
         const snap = await getDocs(customPagesRef);
         
         container.innerHTML = "";
@@ -344,7 +287,7 @@ async function loadPublicCustomButtons() {
             const pageId = d.id;
             
             container.innerHTML += `
-                <a href="custom-page.html?id=${currentLgdCode}&pageId=${pageId}" class="bg-gradient-to-br from-amber-50 to-orange-50 hover:from-amber-100 hover:to-orange-100 border border-amber-200/60 p-4 rounded-xl shadow-sm hover:shadow transition flex flex-col items-center text-center group">
+                <a href="custom-page.html?id=${panchayatId}&pageId=${pageId}" class="bg-gradient-to-br from-amber-50 to-orange-50 hover:from-amber-100 hover:to-orange-100 border border-amber-200/60 p-4 rounded-xl shadow-sm hover:shadow transition flex flex-col items-center text-center group">
                     <div class="w-10 h-10 rounded-full bg-amber-500 text-white flex items-center justify-center mb-2 shadow group-hover:scale-110 transition">
                         <i class="fa-solid fa-file-lines text-sm"></i>
                     </div>
@@ -358,36 +301,13 @@ async function loadPublicCustomButtons() {
     }
 }
 
-// પેજ લોડ થાય ત્યારે આ ફંક્શન રન કરવું
-document.addEventListener("DOMContentLoaded", () => {
-    loadPublicCustomButtons();
-});
-
-
-
-
-
-// --- પબ્લિક વેબસાઇટ પર ફક્ત આજની કે આવનારી ઇવેન્ટ્સ જ લોડ કરવા માટે ---
+// --- ઇવેન્ટ્સ લોડ કરવા માટે ---
 async function loadPublicEvents() {
     const container = document.getElementById("events-container");
     if (!container) return;
 
-    const urlParams = new URLSearchParams(window.location.search);
-    let currentLgdCode = urlParams.get('id');
-
-    if (currentLgdCode) {
-        localStorage.setItem("currentPanchayatId", currentLgdCode);
-    } else {
-        currentLgdCode = localStorage.getItem("currentPanchayatId");
-    }
-
-    if (!currentLgdCode) {
-        container.innerHTML = `<p class="text-xs text-gray-400 col-span-full text-center py-2">પંચાયત ID મળ્યો નથી.</p>`;
-        return;
-    }
-
     try {
-        const eventsRef = collection(db, "panchayats", currentLgdCode, "events");
+        const eventsRef = collection(db, "panchayats", panchayatId, "events");
         const snap = await getDocs(eventsRef);
         
         container.innerHTML = "";
@@ -398,7 +318,7 @@ async function loadPublicEvents() {
         }
 
         const today = new Date();
-        today.setHours(0, 0, 0, 0); // સમય સરખાવવા માટે આજની તારીખનો ટાઈમ ઝીરો કરી દેવો
+        today.setHours(0, 0, 0, 0);
 
         let validEventsCount = 0;
 
@@ -409,7 +329,6 @@ async function loadPublicEvents() {
             const eventDateObj = new Date(item.eventDate);
             eventDateObj.setHours(0, 0, 0, 0);
 
-            // શરત: જો ઇવેન્ટની તારીખ આજની કે તેના પછીની હોય તો જ બતાવવી
             if (eventDateObj >= today) {
                 validEventsCount++;
                 container.innerHTML += `
@@ -430,9 +349,8 @@ async function loadPublicEvents() {
             }
         });
 
-        // જો બધી જ ઇવેન્ટ્સ જૂની હોય અને એક પણ વેલિડ ન બચે
         if (validEventsCount === 0) {
-            container.innerHTML = `<p class="text-xs text-gray-400 col-span-full text-center py-4 bg-gray-50 rounded-xl border border-dashed border-gray-200">હાલમાં કોઈ આવનારા કાર્યક્રમો કે પ્રસંગો ઉપલબ્ધ નથી.</p>';
+            container.innerHTML = `<p class="text-xs text-gray-400 col-span-full text-center py-4 bg-gray-50 rounded-xl border border-dashed border-gray-200">હાલમાં કોઈ આવનારા કાર્યક્રમો કે પ્રસંગો ઉપલબ્ધ નથી.</p>`;
         }
 
     } catch (err) {
@@ -441,12 +359,7 @@ async function loadPublicEvents() {
     }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-    loadPublicEvents();
-});
-// --- પબ્લિક વેબસાઇટ પર ઇવેન્ટ્સ લોડ કરવા માટે (કોડ પૂર્ણ)---
-
-// --- પબ્લિક વેબસાઇટ પર આપત્તિ વ્યવસ્થાપન મોડલ ઓપન અને લોડ કરવા માટે ---
+// --- આપત્તિ વ્યવસ્થાપન મોડલ ઓપન અને લોડ કરવા માટે ---
 async function openDisasterPage(pageKey, pageTitle) {
     const modal = document.getElementById("disaster-modal");
     const modalTitle = document.getElementById("disaster-modal-title");
@@ -457,28 +370,11 @@ async function openDisasterPage(pageKey, pageTitle) {
     modalTitle.innerText = pageTitle;
     modalContent.innerHTML = "<p class='text-center text-gray-500 py-4'>માહિતી લોડ થઈ રહી છે...</p>";
     
-    // મોડલ ઓપન કરવું (Tailwind classes મુજબ flex સેટ કરવું)
     modal.classList.remove("hidden");
     modal.classList.add("flex");
 
-    // LGD Code મેળવવો
-    const urlParams = new URLSearchParams(window.location.search);
-    let currentLgdCode = urlParams.get('id');
-
-    if (currentLgdCode) {
-        localStorage.setItem("currentPanchayatId", currentLgdCode);
-    } else {
-        currentLgdCode = localStorage.getItem("currentPanchayatId");
-    }
-
-    if (!currentLgdCode) {
-        modalContent.innerHTML = "<p class='text-red-500 text-center py-4'>પંચાયત ID મળ્યો નથી.</p>";
-        return;
-    }
-
     try {
-        // ફાયરબેઝમાંથી ડેટા ફેચ કરવો
-        const docRef = doc(db, "panchayats", currentLgdCode, "disaster_management", pageKey);
+        const docRef = doc(db, "panchayats", panchayatId, "disaster_management", pageKey);
         const snap = await getDoc(docRef);
 
         if (snap.exists() && snap.data().content) {
@@ -492,7 +388,6 @@ async function openDisasterPage(pageKey, pageTitle) {
     }
 }
 
-// મોડલ બંધ કરવા માટેનું ફંક્શન
 function closeDisasterPage() {
     const modal = document.getElementById("disaster-modal");
     if (modal) {
@@ -500,11 +395,11 @@ function closeDisasterPage() {
         modal.classList.add("hidden");
     }
 }
-// --- પબ્લિક વેબસાઇટ પર આપત્તિ વ્યવસ્થાપન મોડલ ઓપન અને લોડ કરવા માટે (કોડ પૂર્ણ)---
 
+// વૈશ્વિક સ્તરે ફંક્શન્સ ઉપલબ્ધ કરાવવા માટે
+window.openDisasterPage = openDisasterPage;
+window.closeDisasterPage = closeDisasterPage;
 
-
-    
 // 🚀 મુખ્ય ઇનિશિયલાઈઝેશન
 async function initApp() {
     const isAllowed = await checkSystemAccess();
@@ -515,10 +410,12 @@ async function initApp() {
     loadFrontendNotices();
     loadFrontendStaffAndCommittee();
     loadFrontendSchedule();
-    loadVillageDetailsMenu();
+    loadPublicVillageDetailsMenu();
+    loadPublicTaxLink();
+    loadPublicCustomButtons();
+    loadPublicEvents();
     await setupComplaintSection();
     updateDynamicLinks();
 }
 
 document.addEventListener("DOMContentLoaded", initApp);
-initApp();
