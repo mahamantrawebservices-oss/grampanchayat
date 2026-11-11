@@ -1097,34 +1097,118 @@ document.getElementById("tax-link-form")?.addEventListener("submit", async (e) =
 async function loadAdminCustomButtons() {
     const container = document.getElementById("admin-custom-buttons-list");
     if (!container || !lgdCode) return;
-    const snap = await getDocs(getPanchayatCol("custom_pages"));
-    container.innerHTML = "";
-    snap.forEach(d => {
-        const item = d.data();
-        container.innerHTML += `
-            <div class="flex justify-between items-center bg-gray-50 p-2 border rounded text-xs mb-1">
-                <span><b>${item.buttonTitle}</b></span>
-                <button onclick="deleteCustomBtn('${d.id}')" class="bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded">ડિલીટ</button>
-            </div>
-        `;
-    });
+
+    try {
+        const snap = await getDocs(getPanchayatCol("custom_pages"));
+        container.innerHTML = "";
+        
+        if (snap.empty) {
+            container.innerHTML = `<p class="text-xs text-gray-400 p-2">કોઈ કસ્ટમ બટન ઉપલબ્ધ નથી.</p>`;
+            return;
+        }
+
+        snap.forEach(d => {
+            const item = d.data();
+            container.innerHTML += `
+                <div class="flex justify-between items-center bg-white p-2 border rounded text-xs mb-1 shadow-sm">
+                    <span class="font-bold text-gray-800">📌 ${item.buttonTitle || 'બટન'}</span>
+                    <div class="flex gap-1">
+                        <button type="button" onclick="editCustomBtn('${d.id}', '${encodeURIComponent(item.buttonTitle || '')}', '${encodeURIComponent(item.htmlContent || '')}')" class="bg-amber-500 hover:bg-amber-600 text-white text-[10px] px-2 py-0.5 rounded font-semibold">એડિટ</button>
+                        <button type="button" onclick="deleteCustomBtn('${d.id}')" class="bg-red-600 hover:bg-red-700 text-white text-[10px] px-2 py-0.5 rounded font-semibold">ડિલીટ</button>
+                    </div>
+                </div>
+            `;
+        });
+    } catch (err) {
+        console.error("Load Custom Buttons Error:", err);
+    }
 }
 
 window.deleteCustomBtn = async (id) => {
-    if (confirm("બટન ડિલીટ કરવું છે?")) {
-        await deleteDoc(getPanchayatDoc("custom_pages", id));
-        loadAdminCustomButtons();
+    if (confirm("શું તમે આ કસ્ટમ બટન ડિલીટ કરવા માંગો છો?")) {
+        try {
+            await deleteDoc(getPanchayatDoc("custom_pages", id));
+            alert("કસ્ટમ બટન સફળતાપૂર્વક ડિલીટ થઈ ગયું!");
+            loadAdminCustomButtons();
+        } catch (err) {
+            console.error("Delete Custom Button Error:", err);
+            alert("ડિલીટ કરવામાં ભૂલ આવી.");
+        }
     }
 };
 
+window.editCustomBtn = (id, titleEncoded, htmlEncoded) => {
+    const titleInput = document.getElementById("custom-btn-title");
+    const htmlInput = document.getElementById("custom-page-html");
+    const editIdInput = document.getElementById("edit-custom-page-id");
+    const submitBtn = document.getElementById("custom-page-submit-btn");
+    const cancelBtn = document.getElementById("custom-page-cancel-btn");
+
+    if (titleInput) titleInput.value = decodeURIComponent(titleEncoded);
+    if (htmlInput) htmlInput.value = decodeURIComponent(htmlEncoded);
+    if (editIdInput) editIdInput.value = id;
+
+    if (submitBtn) submitBtn.innerText = "અપડેટ કરો";
+    if (cancelBtn) cancelBtn.classList.remove("hidden");
+
+    document.getElementById("add-page-button-form")?.scrollIntoView({ behavior: 'smooth' });
+};
+
+document.getElementById("custom-page-cancel-btn")?.addEventListener("click", () => {
+    const form = document.getElementById("add-page-button-form");
+    if (form) form.reset();
+
+    const editIdInput = document.getElementById("edit-custom-page-id");
+    if (editIdInput) editIdInput.value = "";
+
+    const submitBtn = document.getElementById("custom-page-submit-btn");
+    if (submitBtn) submitBtn.innerText = "ઉમેરો";
+
+    const cancelBtn = document.getElementById("custom-page-cancel-btn");
+    if (cancelBtn) cancelBtn.classList.add("hidden");
+});
+
 document.getElementById("add-page-button-form")?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const buttonTitle = document.getElementById("custom-btn-title").value;
-    const htmlContent = document.getElementById("custom-page-html").value;
-    await addDoc(getPanchayatCol("custom_pages"), { buttonTitle, htmlContent, createdAt: new Date() });
-    alert("કસ્ટમ બટન સાચવવામાં આવ્યું!");
-    e.target.reset();
-    loadAdminCustomButtons();
+    e.preventDefault(); // પેજ રિફ્રેશ અટકાવવા માટે
+
+    if (!lgdCode) {
+        alert("⚠️ ભૂલ: LGD Code મળ્યો નથી!");
+        return;
+    }
+
+    const editIdInput = document.getElementById("edit-custom-page-id");
+    const editId = editIdInput ? editIdInput.value.trim() : "";
+
+    const buttonTitle = document.getElementById("custom-btn-title")?.value.trim();
+    const htmlContent = document.getElementById("custom-page-html")?.value.trim();
+
+    if (!buttonTitle || !htmlContent) {
+        alert("⚠️ કૃપા કરીને બટનનું નામ અને HTML કન્ટેન્ટ બંને ભરો!");
+        return;
+    }
+
+    const payload = {
+        buttonTitle: buttonTitle,
+        htmlContent: htmlContent,
+        updatedAt: new Date()
+    };
+
+    try {
+        if (editId) {
+            await updateDoc(getPanchayatDoc("custom_pages", editId), payload);
+            alert("✅ કસ્ટમ બટન સફળતાપૂર્વક અપડેટ થઈ ગયું!");
+        } else {
+            payload.createdAt = new Date();
+            await addDoc(getPanchayatCol("custom_pages"), payload);
+            alert("✅ નવું કસ્ટમ બટન સફળતાપૂર્વક ઉમેરાઈ ગયું!");
+        }
+
+        document.getElementById("custom-page-cancel-btn")?.click();
+        loadAdminCustomButtons();
+    } catch (err) {
+        console.error("Save Custom Button Error:", err);
+        alert("સેવ કરવામાં ટેકનિકલ ભૂલ આવી: " + err.message);
+    }
 });
 
 // --- ૧૨. ઇવેન્ટ્સ મેનેજર ---
