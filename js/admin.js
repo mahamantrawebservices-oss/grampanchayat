@@ -1051,20 +1051,46 @@ document.getElementById("add-committee-group-form")?.addEventListener("submit", 
     }
 });
 
-// --- ૧૦. મિલકત વેરા લિંક ---
+// --- ૧૦. મિલકત વેરા લિંક લોડ અને સેવ કરવી ---
 async function loadAdminTaxLink() {
     if (!lgdCode) return;
-    const snap = await getDoc(getPanchayatDoc("settings", "tax_payment"));
-    if (snap.exists() && document.getElementById("tax-payment-url")) {
-        document.getElementById("tax-payment-url").value = snap.data().url || "";
+    try {
+        const snap = await getDoc(getPanchayatDoc("settings", "tax_payment"));
+        if (snap.exists()) {
+            const data = snap.data();
+            const taxInput = document.getElementById("tax-payment-url");
+            if (taxInput) {
+                taxInput.value = data.url || "";
+            }
+        }
+    } catch (err) {
+        console.error("Tax link load error:", err);
     }
 }
 
 document.getElementById("tax-link-form")?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const url = document.getElementById("tax-payment-url").value.trim();
-    await setDoc(getPanchayatDoc("settings", "tax_payment"), { url, updatedAt: new Date() }, { merge: true });
-    alert("મિલકત વેરા લિંક સાચવવામાં આવી!");
+    e.preventDefault(); // પેજ રિફ્રેશ થતું અટકાવવા માટે
+
+    if (!lgdCode) {
+        alert("⚠️ ભૂલ: પંચાયતનો LGD Code મળ્યો નથી!");
+        return;
+    }
+
+    const taxInput = document.getElementById("tax-payment-url");
+    const url = taxInput ? taxInput.value.trim() : "";
+
+    try {
+        await setDoc(getPanchayatDoc("settings", "tax_payment"), { 
+            url: url, 
+            updatedAt: new Date() 
+        }, { merge: true });
+        
+        alert("✅ મિલકત વેરા લિંક સફળતાપૂર્વક સાચવવામાં આવી!");
+        loadAdminTaxLink();
+    } catch (err) {
+        console.error("Save tax link error:", err);
+        alert("લિંક સેવ કરવામાં ટેકનિકલ ભૂલ આવી.");
+    }
 });
 
 // --- ૧૧. કસ્ટમ બટન અને પેજ મેનેજર ---
