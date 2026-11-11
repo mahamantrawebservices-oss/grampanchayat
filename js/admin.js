@@ -1283,41 +1283,131 @@ document.getElementById("add-page-button-form")?.addEventListener("submit", asyn
 });
 
 // --- ૧૨. ઇવેન્ટ્સ મેનેજર ---
+// --- ૧૨. ઇવેન્ટ્સ મેનેજર ---
 async function loadAdminEvents() {
     const container = document.getElementById("admin-events-list");
     if (!container || !lgdCode) return;
-    const snap = await getDocs(getPanchayatCol("events"));
-    container.innerHTML = "";
-    snap.forEach(d => {
-        const item = d.data();
-        container.innerHTML += `
-            <div class="flex justify-between items-center bg-gray-50 p-2 border rounded text-xs mb-1">
-                <span><b>${item.eventName}</b> (${item.eventDate})</span>
-                <button onclick="deleteEvent('${d.id}')" class="bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded">ડિલીટ</button>
-            </div>
-        `;
-    });
+
+    try {
+        const snap = await getDocs(getPanchayatCol("events"));
+        container.innerHTML = "";
+        
+        if (snap.empty) {
+            container.innerHTML = `<p class="text-xs text-gray-400 p-2">કોઈ ઇવેન્ટ ઉપલબ્ધ નથી.</p>`;
+            return;
+        }
+
+        snap.forEach(d => {
+            const item = d.data();
+            container.innerHTML += `
+                <div class="flex justify-between items-center bg-white p-2 border rounded text-xs mb-1 shadow-sm">
+                    <div>
+                        <span class="font-bold text-gray-800">📅 ${item.eventName || 'ઇવેન્ટ'}</span>
+                        <p class="text-[10px] text-gray-500">તારીખ: ${item.eventDate || '-'} | સ્થળ: ${item.eventLocation || '-'}</p>
+                    </div>
+                    <div class="flex gap-1">
+                        <button type="button" onclick="editEvent('${d.id}', '${encodeURIComponent(item.eventName || '')}', '${item.eventDate || ''}', '${encodeURIComponent(item.eventLocation || '')}')" class="bg-amber-500 hover:bg-amber-600 text-white text-[10px] px-2 py-0.5 rounded font-semibold">એડિટ</button>
+                        <button type="button" onclick="deleteEvent('${d.id}')" class="bg-red-600 hover:bg-red-700 text-white text-[10px] px-2 py-0.5 rounded font-semibold">ડિલીટ</button>
+                    </div>
+                </div>
+            `;
+        });
+    } catch (err) {
+        console.error("Load Admin Events Error:", err);
+    }
 }
 
 window.deleteEvent = async (id) => {
-    if (confirm("ઇવેન્ટ ડિલીટ કરવી છે?")) {
-        await deleteDoc(getPanchayatDoc("events", id));
-        loadAdminEvents();
+    if (confirm("શું તમે આ ઇવેન્ટ ડિલીટ કરવા માંગો છો?")) {
+        try {
+            await deleteDoc(getPanchayatDoc("events", id));
+            alert("ઇવેન્ટ સફળતાપૂર્વક ડિલીટ થઈ ગઈ!");
+            loadAdminEvents();
+        } catch (err) {
+            console.error("Delete Event Error:", err);
+            alert("ડિલીટ કરવામાં ભૂલ આવી.");
+        }
     }
 };
 
-document.getElementById("event-form")?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const payload = {
-        eventName: document.getElementById("event-name").value,
-        eventDate: document.getElementById("event-date").value,
-        eventLocation: document.getElementById("event-location").value
-    };
-    await addDoc(getPanchayatCol("events"), payload);
-    alert("ઇવેન્ટ ઉમેરાઈ ગઈ!");
-    e.target.reset();
-    loadAdminEvents();
+window.editEvent = (id, nameEnc, date, locEnc) => {
+    const editIdInput = document.getElementById("edit-event-id");
+    const nameInput = document.getElementById("event-name");
+    const dateInput = document.getElementById("event-date");
+    const locInput = document.getElementById("event-location");
+    const submitBtn = document.getElementById("event-submit-btn");
+    const cancelBtn = document.getElementById("event-cancel-btn");
+
+    if (editIdInput) editIdInput.value = id;
+    if (nameInput) nameInput.value = decodeURIComponent(nameEnc);
+    if (dateInput) dateInput.value = date;
+    if (locInput) locInput.value = decodeURIComponent(locEnc);
+
+    if (submitBtn) submitBtn.innerText = "અપડેટ કરો";
+    if (cancelBtn) cancelBtn.classList.remove("hidden");
+
+    document.getElementById("event-form")?.scrollIntoView({ behavior: 'smooth' });
+};
+
+document.getElementById("event-cancel-btn")?.addEventListener("click", () => {
+    const form = document.getElementById("event-form");
+    if (form) form.reset();
+
+    const editIdInput = document.getElementById("edit-event-id");
+    if (editIdInput) editIdInput.value = "";
+
+    const submitBtn = document.getElementById("event-submit-btn");
+    if (submitBtn) submitBtn.innerText = "ઇવેન્ટ ઉમેરો";
+
+    const cancelBtn = document.getElementById("event-cancel-btn");
+    if (cancelBtn) cancelBtn.classList.add("hidden");
 });
+
+document.getElementById("event-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault(); // પેજ રિફ્રેશ થતું અટકાવવા માટે
+
+    if (!lgdCode) {
+        alert("⚠️ ભૂલ: LGD Code મળ્યો નથી!");
+        return;
+    }
+
+    const editIdInput = document.getElementById("edit-event-id");
+    const editId = editIdInput ? editIdInput.value.trim() : "";
+
+    const eventName = document.getElementById("event-name")?.value.trim();
+    const eventDate = document.getElementById("event-date")?.value;
+    const eventLocation = document.getElementById("event-location")?.value.trim();
+
+    if (!eventName || !eventDate || !eventLocation) {
+        alert("⚠️ કૃપા કરીને તમામ વિગતો ભરો!");
+        return;
+    }
+
+    const payload = {
+        eventName: eventName,
+        eventDate: eventDate,
+        eventLocation: eventLocation,
+        updatedAt: new Date()
+    };
+
+    try {
+        if (editId) {
+            await updateDoc(getPanchayatDoc("events", editId), payload);
+            alert("✅ ઇવેન્ટ સફળતાપૂર્વક અપડેટ થઈ ગઈ!");
+        } else {
+            payload.createdAt = new Date();
+            await addDoc(getPanchayatCol("events"), payload);
+            alert("✅ નવી ઇવેન્ટ સફળતાપૂર્વક ઉમેરાઈ ગઈ!");
+        }
+
+        document.getElementById("event-cancel-btn")?.click();
+        loadAdminEvents();
+    } catch (err) {
+        console.error("Save/Update Event Error:", err);
+        alert("સેવ કરવામાં ટેકનિકલ ભૂલ આવી: " + err.message);
+    }
+});
+// --- ૧૨. ઇવેન્ટ્સ મેનેજર ( કોડ પૂર્ણ)---
 
 // --- ૧૩. આપત્તિ વ્યવસ્થાપન ---
 async function fetchDisasterContent() {
