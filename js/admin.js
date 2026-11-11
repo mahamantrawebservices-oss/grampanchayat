@@ -1592,7 +1592,7 @@ document.getElementById("disaster-gallery-form")?.addEventListener("submit", asy
         console.error("Save Gallery Error:", err);
         alert("સેવ કરવામાં ટેકનિકલ ભૂલ આવી.");
     }
-};
+});
 
 window.deleteDisasterGallery = async (id) => {
     if (!lgdCode) return;
@@ -1607,7 +1607,6 @@ window.deleteDisasterGallery = async (id) => {
         }
     }
 };
-// --- ૧૩. આપત્તિ વ્યવસ્થાપન મેનેજર (કોડ પૂર્ણ)---
 
 // --- ૧૪. સેટેલાઇટ & રેવન્યુ મેપ લિંક્સ ---
 async function fetchExistingMapLinks() {
