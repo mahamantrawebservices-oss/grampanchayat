@@ -365,6 +365,68 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
+
+// --- પબ્લિક વેબસાઇટ પર ઇવેન્ટ્સ લોડ કરવા માટે ---
+async function loadPublicEvents() {
+    const container = document.getElementById("events-container");
+    if (!container) return;
+
+    const urlParams = new URLSearchParams(window.location.search);
+    let currentLgdCode = urlParams.get('id');
+
+    if (currentLgdCode) {
+        localStorage.setItem("currentPanchayatId", currentLgdCode);
+    } else {
+        currentLgdCode = localStorage.getItem("currentPanchayatId");
+    }
+
+    if (!currentLgdCode) {
+        container.innerHTML = `<p class="text-xs text-gray-400 col-span-full text-center py-2">પંચાયત ID મળ્યો નથી.</p>`;
+        return;
+    }
+
+    try {
+        const eventsRef = collection(db, "panchayats", currentLgdCode, "events");
+        const snap = await getDocs(eventsRef);
+        
+        container.innerHTML = "";
+
+        if (snap.empty) {
+            container.innerHTML = `<p class="text-xs text-gray-400 col-span-full text-center py-4 bg-gray-50 rounded-xl border border-dashed border-gray-200">હાલમાં કોઈ આવનારા કાર્યક્રમો કે પ્રસંગો ઉપલબ્ધ નથી.</p>`;
+            return;
+        }
+
+        snap.forEach(d => {
+            const item = d.data();
+            container.innerHTML += `
+                <div class="bg-gradient-to-br from-amber-50/60 to-orange-50/60 border border-amber-200/70 p-4 rounded-2xl shadow-sm hover:shadow transition flex flex-col justify-between space-y-3">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="bg-amber-100 text-amber-800 text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
+                                <i class="fa-regular fa-calendar"></i> ${item.eventDate || '-'}
+                            </span>
+                        </div>
+                        <h4 class="font-bold text-gray-900 text-sm md:text-base mb-1">${item.eventName || 'કાર્યક્રમ'}</h4>
+                        <p class="text-xs text-gray-600 flex items-center gap-1.5">
+                            <i class="fa-solid fa-location-dot text-amber-600"></i> ${item.eventLocation || '-'}
+                        </p>
+                    </div>
+                </div>
+            `;
+        });
+    } catch (err) {
+        console.error("Public Events Load Error:", err);
+        container.innerHTML = `<p class="text-xs text-red-400 col-span-full text-center py-2">ઇવેન્ટ્સ લોડ કરવામાં ભૂલ આવી.</p>`;
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    loadPublicEvents();
+});
+
+
+
+
 // 🚀 મુખ્ય ઇનિશિયલાઈઝેશન
 async function initApp() {
     const isAllowed = await checkSystemAccess();
