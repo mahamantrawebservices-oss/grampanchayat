@@ -350,84 +350,155 @@ window.deleteGalleryImg = async (id) => {
 };
 
 // --- ૫. ગામ અને પંચાયત વિગત (Quill Editor) ---
+// --- ૫. ગામ અને પંચાયત વિગત (Quill Editor) ---
 let menuQuill = null;
 if (document.getElementById('menu-editor-container')) {
     menuQuill = new Quill('#menu-editor-container', {
         theme: 'snow',
-        modules: { toolbar: [['bold', 'italic', 'underline'], [{ 'list': 'ordered'}, { 'list': 'bullet' }]] }
+        modules: { 
+            toolbar: [
+                ['bold', 'italic', 'underline', 'strike'], 
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                [{ 'header': [1, 2, 3, false] }],
+                ['clean']
+            ] 
+        }
     });
 }
 
-document.getElementById("add-menu-form")?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const editId = document.getElementById("edit-menu-id").value;
-    const title = document.getElementById("menu-title").value.trim();
-    const content = menuQuill ? menuQuill.root.innerHTML : "";
-
-    if (editId) {
-        await setDoc(getPanchayatDoc("village_details", editId), { title, content, updatedAt: new Date() }, { merge: true });
-    } else {
-        await addDoc(getPanchayatCol("village_details"), { title, content, isShow: true, createdAt: new Date() });
-    }
-
+// --- કેન્સલ બટન માટેનું ઇવેન્ટ લિસનર ---
+document.getElementById("cancel-edit-btn")?.addEventListener("click", () => {
     document.getElementById("add-menu-form").reset();
     document.getElementById("edit-menu-id").value = "";
     if (menuQuill) menuQuill.root.innerHTML = "";
-    alert("મેનૂ સેવ થઈ ગયું!");
-    loadAdminMenuList();
+    
+    const saveBtn = document.getElementById("save-menu-btn");
+    if (saveBtn) saveBtn.innerText = "મેનૂ સેવ કરો";
+    
+    document.getElementById("cancel-edit-btn").classList.add("hidden");
+});
+
+document.getElementById("add-menu-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    if (!lgdCode) {
+        alert("⚠️ ભૂલ: પંચાયતનો LGD Code મળ્યો નથી!");
+        return;
+    }
+
+    const editId = document.getElementById("edit-menu-id").value.trim();
+    const title = document.getElementById("menu-title").value.trim();
+    const content = menuQuill ? menuQuill.root.innerHTML : "";
+
+    if (!title) {
+        alert("⚠️ કૃપા કરીને મેનૂનું નામ ભરો!");
+        return;
+    }
+
+    try {
+        if (editId) {
+            await setDoc(getPanchayatDoc("village_details", editId), { 
+                title, 
+                content, 
+                updatedAt: new Date() 
+            }, { merge: true });
+            alert("✅ મેનૂ સફળતાપૂર્વક અપડેટ થઈ ગયું!");
+        } else {
+            await addDoc(getPanchayatCol("village_details"), { 
+                title, 
+                content, 
+                isShow: true, 
+                createdAt: new Date() 
+            });
+            alert("✅ નવું મેનૂ સફળતાપૂર્વક સેવ થઈ ગયું!");
+        }
+
+        // ફોર્મ રીસેટ કરવું
+        document.getElementById("cancel-edit-btn")?.click();
+        loadAdminMenuList();
+    } catch (err) {
+        console.error("Save Menu Error:", err);
+        alert("સેવ કરવામાં ટેકનિકલ ભૂલ આવી.");
+    }
 });
 
 async function loadAdminMenuList() {
     const container = document.getElementById("admin-menu-list");
     if (!container || !lgdCode) return;
 
-    const snap = await getDocs(getPanchayatCol("village_details"));
-    container.innerHTML = "";
-    if (snap.empty) {
-        container.innerHTML = "<p class='text-xs text-gray-500'>કોઈ મેનૂ મળેલ નથી.</p>";
-        return;
-    }
+    try {
+        const snap = await getDocs(getPanchayatCol("village_details"));
+        container.innerHTML = "";
+        
+        if (snap.empty) {
+            container.innerHTML = "<p class='text-xs text-gray-500 p-2'>કોઈ મેનૂ મળેલ નથી.</p>";
+            return;
+        }
 
-    snap.forEach((docSnap) => {
-        const item = docSnap.data();
-        const id = docSnap.id;
-        const isShow = item.isShow !== false;
+        snap.forEach((docSnap) => {
+            const item = docSnap.data();
+            const id = docSnap.id;
+            const isShow = item.isShow !== false;
 
-        container.innerHTML += `
-            <div class="flex justify-between items-center bg-white p-2 border rounded text-xs mb-1">
-                <span class="font-semibold ${isShow ? 'text-gray-800' : 'text-gray-400 line-through'}">${item.title}</span>
-                <div class="flex gap-1">
-                    <button onclick="editMenu('${id}')" class="bg-blue-600 text-white text-[10px] px-2 py-0.5 rounded">એડિટ</button>
-                    <button onclick="toggleMenu('${id}', ${isShow})" class="text-white text-[10px] px-2 py-0.5 rounded ${isShow ? 'bg-amber-600' : 'bg-gray-500'}">${isShow ? 'સંતાડો' : 'બતાવો'}</button>
-                    <button onclick="deleteMenu('${id}')" class="bg-red-600 text-white text-[10px] px-2 py-0.5 rounded">ડિલીટ</button>
+            container.innerHTML += `
+                <div class="flex justify-between items-center bg-white p-2 border rounded text-xs mb-1.5 shadow-sm">
+                    <span class="font-semibold ${isShow ? 'text-gray-800' : 'text-gray-400 line-through'}">📂 ${item.title}</span>
+                    <div class="flex gap-1">
+                        <button type="button" onclick="editMenu('${id}')" class="bg-blue-600 hover:bg-blue-700 text-white text-[10px] px-2 py-0.5 rounded font-semibold">એડિટ</button>
+                        <button type="button" onclick="toggleMenu('${id}', ${isShow})" class="text-white text-[10px] px-2 py-0.5 rounded font-semibold ${isShow ? 'bg-amber-600 hover:bg-amber-700' : 'bg-gray-500 hover:bg-gray-600'}">${isShow ? 'સંતાડો' : 'બતાવો'}</button>
+                        <button type="button" onclick="deleteMenu('${id}')" class="bg-red-600 hover:bg-red-700 text-white text-[10px] px-2 py-0.5 rounded font-semibold">ડિલીટ</button>
+                    </div>
                 </div>
-            </div>
-        `;
-    });
+            `;
+        });
+    } catch (err) {
+        console.error("Load Admin Menu List Error:", err);
+    }
 }
 
 window.editMenu = async (id) => {
-    const snap = await getDoc(getPanchayatDoc("village_details", id));
-    if (snap.exists()) {
-        const data = snap.data();
-        document.getElementById("edit-menu-id").value = id;
-        document.getElementById("menu-title").value = data.title || "";
-        if (menuQuill) menuQuill.root.innerHTML = data.content || "";
+    if (!lgdCode) return;
+    try {
+        const snap = await getDoc(getPanchayatDoc("village_details", id));
+        if (snap.exists()) {
+            const data = snap.data();
+            document.getElementById("edit-menu-id").value = id;
+            document.getElementById("menu-title").value = data.title || "";
+            if (menuQuill) menuQuill.root.innerHTML = data.content || "";
+
+            const saveBtn = document.getElementById("save-menu-btn");
+            if (saveBtn) saveBtn.innerText = "અપડેટ કરો";
+
+            document.getElementById("cancel-edit-btn")?.classList.remove("hidden");
+            document.getElementById("add-menu-form")?.scrollIntoView({ behavior: 'smooth' });
+        }
+    } catch (err) {
+        console.error("Edit Menu Error:", err);
     }
 };
 
 window.toggleMenu = async (id, currentStatus) => {
-    await setDoc(getPanchayatDoc("village_details", id), { isShow: !currentStatus }, { merge: true });
-    loadAdminMenuList();
-};
-
-window.deleteMenu = async (id) => {
-    if (confirm("આ મેનૂ ડિલીટ કરવું છે?")) {
-        await deleteDoc(getPanchayatDoc("village_details", id));
+    if (!lgdCode) return;
+    try {
+        await setDoc(getPanchayatDoc("village_details", id), { isShow: !currentStatus }, { merge: true });
         loadAdminMenuList();
+    } catch (err) {
+        console.error("Toggle Menu Error:", err);
     }
 };
 
+window.deleteMenu = async (id) => {
+    if (!lgdCode) return;
+    if (confirm("શું તમે આ મેનૂ ડિલીટ કરવા માંગો છો?")) {
+        try {
+            await deleteDoc(getPanchayatDoc("village_details", id));
+            loadAdminMenuList();
+        } catch (err) {
+            console.error("Delete Menu Error:", err);
+            alert("ડિલીટ કરવામાં ભૂલ આવી.");
+        }
+    }
+};
 // --- ૧. ફરિયાદ વિભાગ સેટિંગ્સ અને દૈનિક મર્યાદા લોડ અને સેવ કરવી ---
 async function loadComplaintConfig() {
     if (!lgdCode) return;
