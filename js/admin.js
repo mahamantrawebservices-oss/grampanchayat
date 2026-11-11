@@ -1410,7 +1410,64 @@ document.getElementById("event-form")?.addEventListener("submit", async (e) => {
 // --- ૧૨. ઇવેન્ટ્સ મેનેજર ( કોડ પૂર્ણ)---
 
 // --- ૧૩. આપત્તિ વ્યવસ્થાપન મેનેજર ---
+// --- ૧૩. આપત્તિ વ્યવસ્થાપન મેનેજર ---
+async function fetchDisasterContent() {
+    const keySelect = document.getElementById('disaster-page-key');
+    const contentTextarea = document.getElementById('disaster-page-content');
+    
+    if (!keySelect || !contentTextarea || !lgdCode) return;
+    
+    const key = keySelect.value;
+    contentTextarea.value = "લોડ થઈ રહ્યું છે...";
 
+    try {
+        const snap = await getDoc(getPanchayatDoc("disaster_management", key));
+        if (snap.exists()) {
+            const data = snap.data();
+            contentTextarea.value = data.content || "";
+        } else {
+            contentTextarea.value = ""; // જો ડેટા ન હોય તો ખાલી રાખવું
+        }
+    } catch (err) {
+        console.error("Fetch Disaster Content Error:", err);
+        contentTextarea.value = "";
+    }
+}
+
+// જ્યારે ડ્રોપડાઉન બદલાય ત્યારે તે પેજનો ડેટા ઓટોમેટિક લોડ થવો જોઈએ
+document.getElementById('disaster-page-key')?.addEventListener('change', fetchDisasterContent);
+
+document.getElementById('disaster-management-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault(); // પેજ રિફ્રેશ અટકાવવા માટે
+
+    if (!lgdCode) {
+        alert("⚠️ ભૂલ: પંચાયતનો LGD Code મળ્યો નથી!");
+        return;
+    }
+
+    const key = document.getElementById('disaster-page-key').value;
+    const content = document.getElementById('disaster-page-content').value.trim();
+
+    try {
+        await setDoc(getPanchayatDoc("disaster_management", key), { 
+            content: content, 
+            updatedAt: new Date() 
+        }, { merge: true });
+        
+        alert("✅ આપત્તિ વ્યવસ્થાપન પેજ સફળતાપૂર્વક અપડેટ થઈ ગયું!");
+    } catch (err) {
+        console.error("Save Disaster Content Error:", err);
+        alert("સેવ કરવામાં ટેકનિકલ ભૂલ આવી.");
+    }
+});
+
+// એડમિન પેનલ લોડ થાય ત્યારે પહેલી ઓપ્શન (Important Contacts) નો ડેટາ ઓટોમેટિક લોડ કરવા માટે
+// (આ લાઇન તમે initAdminPanel() માં પણ ઉમેરી શકો છો)
+setTimeout(() => {
+    if (document.getElementById('disaster-page-key')) {
+        fetchDisasterContent();
+    }
+}, 1000);
 
 // --- ૧૪. સેટેલાઇટ & રેવન્યુ મેપ લિંક્સ ---
 async function fetchExistingMapLinks() {
