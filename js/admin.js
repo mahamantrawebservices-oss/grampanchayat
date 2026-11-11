@@ -911,18 +911,30 @@ window.editActiveComm = (id, committeeName) => {
 document.getElementById("add-committee-form")?.addEventListener("submit", async (e) => {
     e.preventDefault(); // 🛑 પેજ રિફ્રેશ થતું સંપૂર્ણ અટકાવશે
 
-    if (!lgdCode) {
-        alert("⚠️ ભૂલ: પંચાયતનો LGD Code મળ્યો નથી! કૃપા કરીને સુપર એડમિન પેનલમાંથી યોગ્ય લિંક દ્વારા પ્રવેશ કરો.");
+    // ૧. LGD Code મેળવવો
+    const urlParams = new URLSearchParams(window.location.search);
+    let currentLgdCode = urlParams.get('id') || (typeof lgdCode !== 'undefined' ? lgdCode : null) || localStorage.getItem("currentPanchayatId") || localStorage.getItem("panchayatId");
+
+    if (!currentLgdCode) {
+        alert("⚠️ ભૂલ: પંચાયતનો LGD Code મળ્યો નથી! કૃપા કરીને યોગ્ય લિંક દ્વારા પ્રવેશ કરો.");
         return;
+    }
+
+    // URL માં ID કાયમ જળવાઈ રહે તેની ખાતરી કરવી
+    if (!window.location.search.includes("id=")) {
+        window.history.replaceState({}, '', `${window.location.pathname}?id=${currentLgdCode}`);
     }
 
     const editIdInput = document.getElementById("comm-edit-id");
     const editId = editIdInput ? editIdInput.value : "";
 
-    const committeeName = document.getElementById("comm-name")?.value.trim() || document.getElementById("committee-name")?.value.trim();
+    // સમિતિનું નામ મેળવવું (બંને સંભવિત ID માટે સપોર્ટ)
+    const nameInput = document.getElementById("comm-name") || document.getElementById("committee-name");
+    const committeeName = nameInput ? nameInput.value.trim() : "";
 
     if (!committeeName) {
         alert("⚠️ કૃપા કરીને સમિતિનું નામ અવશ્ય ભરો!");
+        if (nameInput) nameInput.focus();
         return;
     }
 
@@ -933,7 +945,8 @@ document.getElementById("add-committee-form")?.addEventListener("submit", async 
 
     try {
         if (editId) {
-            const docRef = getPanchayatDoc("active_committees", editId);
+            // જો એડિટ થતું હોય તો અપડેટ કરવું
+            const docRef = doc(db, "panchayats", currentLgdCode, "active_committees", editId);
             await updateDoc(docRef, payload);
             alert("✅ સમિતિ સફળતાપૂર્વક અપડેટ થઈ ગઈ!");
 
@@ -945,19 +958,24 @@ document.getElementById("add-committee-form")?.addEventListener("submit", async 
                 submitBtn.classList.add("bg-emerald-600", "hover:bg-emerald-700");
             }
         } else {
+            // નવી સમિતિ ઉમેરવી
             payload.createdAt = new Date();
             payload.members = [];
-            await addDoc(getPanchayatCol("active_committees"), payload);
+            const committeeCollectionRef = collection(db, "panchayats", currentLgdCode, "active_committees");
+            await addDoc(committeeCollectionRef, payload);
             alert("✅ નવી સમિતિ સફળતાપૂર્વક ઉમેરાઈ ગઈ!");
         }
 
+        // ફોર્મ રિસેટ કરવું અને લિસ્ટ રિફ્રેશ કરવું
         e.target.reset();
         if (editIdInput) editIdInput.value = "";
+        
+        // ડેટા સેવ થયા પછી તરત જ લિસ્ટ અપડેટ થઈ જશે
         loadActiveCommittees(); 
 
     } catch (err) {
         console.error("Save/Update Committee Error:", err);
-        alert("સેવ કરવામાં ટેકનિકલ ભૂલ આવી.");
+        alert("સેવ કરવામાં ટેકનિકલ ભૂલ આવી: " + err.message);
     }
 });
 
