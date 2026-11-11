@@ -1720,3 +1720,14 @@ document.getElementById("proactive-admin-form")?.addEventListener("submit", asyn
     await setDoc(getPanchayatDoc("proactive_disclosure", "main_data"), { officer, updatedAt: new Date() }, { merge: true });
     alert("સ્વયં જાહેર કરેલ માહિતી સેવ થઈ!");
 });
+
+
+
+
+// --- લોગિન અને ડેશબોર્ડ ઓટોમેટિક ઇનિશિયલાઈઝ કરવા માટે ---
+document.addEventListener("DOMContentLoaded", () => {
+    checkAdminAuth();
+});
+
+// જો DOMContentLoaded પહેલેથી જ નીકળી ગયું હોય તો ડાયરેક્ટ રન કરવા માટે:
+checkAdminAuth();
