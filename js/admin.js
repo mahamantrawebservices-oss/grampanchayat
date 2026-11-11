@@ -1609,22 +1609,41 @@ window.deleteDisasterGallery = async (id) => {
 };
 
 // --- ૧૪. સેટેલાઇટ & રેવન્યુ મેપ લિંક્સ ---
+
 async function fetchExistingMapLinks() {
     if (!lgdCode) return;
-    const snap = await getDoc(getPanchayatDoc("village_map_settings", "links"));
-    if (snap.exists()) {
-        if (document.getElementById('admin-satellite-url')) document.getElementById('admin-satellite-url').value = snap.data().satelliteUrl || "";
-        if (document.getElementById('admin-revenue-pdf-url')) document.getElementById('admin-revenue-pdf-url').value = snap.data().revenuePdfUrl || "";
+    try {
+        const snap = await getDoc(getPanchayatDoc("village_map_settings", "links"));
+        if (snap.exists()) {
+            if (document.getElementById('admin-satellite-url')) document.getElementById('admin-satellite-url').value = snap.data().satelliteUrl || "";
+            if (document.getElementById('admin-revenue-pdf-url')) document.getElementById('admin-revenue-pdf-url').value = snap.data().revenuePdfUrl || "";
+        }
+    } catch (err) {
+        console.error("Map links fetch error:", err);
     }
 }
 
 document.getElementById('village-map-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
+    if (!lgdCode) return;
+
     const satelliteUrl = document.getElementById('admin-satellite-url').value.trim();
     const revenuePdfUrl = document.getElementById('admin-revenue-pdf-url').value.trim();
-    await setDoc(getPanchayatDoc("village_map_settings", "links"), { satelliteUrl, revenuePdfUrl, updatedAt: new Date() }, { merge: true });
-    alert("નક્શાની લિંક્સ સાચવાઈ ગઈ!");
+    
+    try {
+        await setDoc(getPanchayatDoc("village_map_settings", "links"), { 
+            satelliteUrl, 
+            revenuePdfUrl, 
+            updatedAt: new Date() 
+        }, { merge: true });
+        
+        alert("✅ નક્શાની લિંક્સ સફળતાપૂર્વક સાચવાઈ ગઈ!");
+    } catch (err) {
+        console.error("Map links save error:", err);
+        alert("લિંક સેવ કરવામાં ભૂલ આવી.");
+    }
 });
+// --- સેટેલાઇટ & રેવન્યુ મેપ લિંક્સ (પૂર્ણ) ---
 
 // --- ૧૫. મારૂ ગામ - એક નજરમાં ---
 async function loadAdminGlanceList() {
