@@ -425,35 +425,73 @@
                 </div>
             </div>
 
-            <!-- સેક્શન ૧૨: આપત્તિ વ્યવસ્થાપન (Disaster Management) મેનેજર -->
-            <div class="bg-slate-50 border border-slate-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[500px] overflow-y-auto">
-                <h3 class="font-bold text-gray-800 border-b pb-2 flex items-center gap-2">
-                    🚨 ૧૨. આપત્તિ વ્યવસ્થાપન (Disaster Management) મેનેજર
-                </h3>
-                
-                <form id="disaster-management-form" class="space-y-3">
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-1">પેજ પસંદ કરો:</label>
-                        <select id="disaster-page-key" required class="w-full text-xs p-2 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 outline-none bg-white">
-                            <option value="important_contacts">૧. Important Contacts (અગત્યના સંપર્ક નંબરો)</option>
-                            <option value="mock_drills">૨. Mock Drills (મોક ડ્રિલ)</option>
-                            <option value="vdrmp">૩. VDRMP (ગામ આપત્તિ વ્યવસ્થાપન યોજના)</option>
-                            <option value="disaster_gallery">૪. વ્યવસ્થાપન ગેલેરી</option>
-                        </select>
-                    </div>
+           <!-- સેક્શન ૧૨: આપત્તિ વ્યવસ્થાપન (Disaster Management) મેનેજર -->
+<div class="bg-slate-50 border border-slate-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[600px] overflow-y-auto">
+    <h3 class="font-bold text-gray-800 border-b pb-2 flex items-center gap-2">
+        🚨 ૧૨. આપત્તિ વ્યવસ્થાપન (Disaster Management) મેનેજર
+    </h3>
+    
+    <div class="space-y-3">
+        <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">પેજ પસંદ કરો:</label>
+            <select id="disaster-page-key" class="w-full text-xs p-2 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 outline-none bg-white">
+                <option value="important_contacts">૧. Important Contacts (અગત્યના સંપર્ક નંબરો)</option>
+                <option value="mock_drills">૨. Mock Drills (મોક ડ્રિલ)</option>
+                <option value="vdrmp">٣. VDRMP (ગામ આપત્તિ વ્યવસ્થાપન યોજના)</option>
+                <option value="disaster_gallery">૪. વ્યવસ્થાપન ગેલેરી (Photos & Images)</option>
+            </select>
+        </div>
 
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-1">પેજ કન્ટેન્ટ (HTML અથવા સાદો ટેક્સ્ટ લખો):</label>
-                        <textarea id="disaster-page-content" rows="6" placeholder="અહીં HTML કોડ અથવા સાદુ લખાણ ઉમેરો..." required
-                            class="w-full text-xs p-2 border border-gray-300 rounded font-mono focus:ring-1 focus:ring-blue-500 outline-none bg-white"></textarea>
-                    </div>
+        <!-- સામાન્ય પેજ (Contacts, Mock Drills, VDRMP) માટેનું ફોર્મ -->
+        <div id="standard-disaster-box" class="space-y-3">
+            <form id="disaster-management-form" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">પેજ કન્ટેન્ટ (HTML અથવા સાદો ટેક્સ્ટ લખો):</label>
+                    <textarea id="disaster-page-content" rows="5" placeholder="અહીં HTML કોડ અથવા સાદુ લખાણ ઉમેરો..." 
+                        class="w-full text-xs p-2 border border-gray-300 rounded font-mono focus:ring-1 focus:ring-blue-500 outline-none bg-white"></textarea>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2 rounded transition shadow">
+                    માહિતી સાચવો / અપડેટ કરો
+                </button>
+            </form>
+        </div>
 
-                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2 rounded transition shadow">
-                        માહિતી સાચવો / અપડેટ કરો
+        <!-- ફક્ત ગેલેરી (disaster_gallery) માટે જ દેખાશે તેવી વ્યવસ્થા -->
+        <div id="gallery-disaster-box" class="hidden space-y-3 border-t pt-3">
+            <h4 class="text-xs font-bold text-gray-700">📸 ગેલેરી ફોટો મેનેજર (મેક્સિમમ ૨૦ ફોટા)</h4>
+            <form id="disaster-gallery-form" class="space-y-2 bg-white p-3 border rounded-lg">
+                <input type="hidden" id="edit-gallery-id">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">ફોટાનું શીર્ષક (Title):</label>
+                    <input type="text" id="gallery-title" placeholder="દા.ત. મોક ડ્રિલ ૨૦૨૬" 
+                        class="w-full text-xs p-2 border border-gray-300 rounded outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">ઇમેજ લિંક (Image URL):</label>
+                    <input type="url" id="gallery-img-url" placeholder="https://example.com/photo.jpg" 
+                        class="w-full text-xs p-2 border border-gray-300 rounded outline-none">
+                </div>
+                <div class="flex gap-2">
+                    <button type="submit" id="gallery-submit-btn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2 rounded transition shadow">
+                        ફોટો ઉમેરો
                     </button>
-                </form>
-            </div>
+                    <button type="button" id="gallery-cancel-btn" class="hidden w-1/3 bg-gray-500 hover:bg-gray-600 text-white text-xs font-bold py-2 rounded transition">
+                        રદ કરો
+                    </button>
+                </div>
+            </form>
 
+            <div class="border-t pt-2">
+                <h5 class="text-xs font-bold text-gray-700 mb-2">હાલના ઉમેરેલા ફોટાઓ:</h5>
+                <div id="admin-disaster-gallery-list" class="space-y-1 max-h-40 overflow-y-auto">
+                    <p class="text-xs text-gray-400">લોડ થઈ રહ્યું છે...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+ <!-- સેક્શન ૧૨: આપત્તિ વ્યવસ્થાપન (Disaster Management) મેનેજર (કોડ પૂર્ણ)-->
+            
             <!-- ગામના નક્શાની લિંક્સ માટેનું સેક્શન -->
             <div class="bg-white p-5 rounded-2xl shadow-md border space-y-4">
                 <h3 class="font-bold text-sm text-emerald-800 flex items-center gap-2 border-b pb-2">
