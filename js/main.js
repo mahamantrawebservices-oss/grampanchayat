@@ -240,6 +240,50 @@ async function loadVillageDetailsMenu() {
 }
 
 
+// --- ૧૦. મિલકત વેરા લિંક લોડ અને સેવ કરવી ---
+async function loadAdminTaxLink() {
+    if (!lgdCode) return;
+    try {
+        const snap = await getDoc(getPanchayatDoc("settings", "tax_payment"));
+        if (snap.exists()) {
+            const data = snap.data();
+            const taxInput = document.getElementById("tax-payment-url");
+            if (taxInput) {
+                taxInput.value = data.url || "";
+            }
+        }
+    } catch (err) {
+        console.error("Tax link load error:", err);
+    }
+}
+
+document.getElementById("tax-link-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault(); // પેજ રિફ્રેશ થતું અટકાવવા માટે
+
+    if (!lgdCode) {
+        alert("⚠️ ભૂલ: પંચાયતનો LGD Code મળ્યો નથી!");
+        return;
+    }
+
+    const taxInput = document.getElementById("tax-payment-url");
+    const url = taxInput ? taxInput.value.trim() : "";
+
+    try {
+        await setDoc(getPanchayatDoc("settings", "tax_payment"), { 
+            url: url, 
+            updatedAt: new Date() 
+        }, { merge: true });
+        
+        alert("✅ મિલકત વેરા લિંક સફળતાપૂર્વક સાચવવામાં આવી!");
+        loadAdminTaxLink();
+    } catch (err) {
+        console.error("Save tax link error:", err);
+        alert("લિંક સેવ કરવામાં ટેકનિકલ ભૂલ આવી.");
+    }
+});
+
+
+
 // 🚀 મુખ્ય ઇનિશિયલાઈઝેશન
 async function initApp() {
     const isAllowed = await checkSystemAccess();
