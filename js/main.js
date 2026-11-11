@@ -240,48 +240,42 @@ async function loadVillageDetailsMenu() {
 }
 
 
-// --- ૧૦. મિલકત વેરા લિંક લોડ અને સેવ કરવી ---
-async function loadAdminTaxLink() {
-    if (!lgdCode) return;
+// --- પબ્લિક વેબસાઇટ પર મિલકત વેરા લિંક ડાયનેમિક સેટ કરવા માટે ---
+async function loadPublicTaxLink() {
+    // 1. URL અથવા LocalStorage માંથી LGD Code પકડવો
+    const urlParams = new URLSearchParams(window.location.search);
+    let currentLgdCode = urlParams.get('id');
+
+    if (currentLgdCode) {
+        localStorage.setItem("currentPanchayatId", currentLgdCode);
+    } else {
+        currentLgdCode = localStorage.getItem("currentPanchayatId");
+    }
+
+    if (!currentLgdCode) return;
+
     try {
-        const snap = await getDoc(getPanchayatDoc("settings", "tax_payment"));
-        if (snap.exists()) {
+        // 2. ફાયરબેઝમાંથી તે પંચાયતની tax_payment લિંક મેળવવી
+        const taxDocRef = doc(db, "panchayats", currentLgdCode, "settings", "tax_payment");
+        const snap = await getDoc(taxDocRef);
+        
+        const taxBtn = document.getElementById("pay-tax-btn");
+        if (snap.exists() && taxBtn) {
             const data = snap.data();
-            const taxInput = document.getElementById("tax-payment-url");
-            if (taxInput) {
-                taxInput.value = data.url || "";
+            // જો એડમિને લિંક નાખી હોય તો બટનની લિંક બદલી નાખવી
+            if (data.url && data.url.trim() !== "") {
+                taxBtn.href = data.url.trim();
             }
         }
     } catch (err) {
-        console.error("Tax link load error:", err);
+        console.error("Public Tax Link Load Error:", err);
     }
 }
 
-document.getElementById("tax-link-form")?.addEventListener("submit", async (e) => {
-    e.preventDefault(); // પેજ રિફ્રેશ થતું અટકાવવા માટે
-
-    if (!lgdCode) {
-        alert("⚠️ ભૂલ: પંચાયતનો LGD Code મળ્યો નથી!");
-        return;
-    }
-
-    const taxInput = document.getElementById("tax-payment-url");
-    const url = taxInput ? taxInput.value.trim() : "";
-
-    try {
-        await setDoc(getPanchayatDoc("settings", "tax_payment"), { 
-            url: url, 
-            updatedAt: new Date() 
-        }, { merge: true });
-        
-        alert("✅ મિલકત વેરા લિંક સફળતાપૂર્વક સાચવવામાં આવી!");
-        loadAdminTaxLink();
-    } catch (err) {
-        console.error("Save tax link error:", err);
-        alert("લિંક સેવ કરવામાં ટેકનિકલ ભૂલ આવી.");
-    }
+// પેજ લોડ થાય ત્યારે આ ફંક્શન ઓટોમેટિક રન થશે
+document.addEventListener("DOMContentLoaded", () => {
+    loadPublicTaxLink();
 });
-
 
 
 // 🚀 મુખ્ય ઇનિશિયલાઈઝેશન
