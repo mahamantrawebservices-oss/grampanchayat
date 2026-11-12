@@ -118,6 +118,23 @@ document.getElementById("logout-btn")?.addEventListener("click", () => {
 
 checkAdminAuth();
 
+// એડમિન હેડરમાં પંચાયતનું નામ ડાયનેમિક સેટ કરવા માટેનું ફંક્શન
+async function updateAdminHeaderTitle(activeLgd) {
+    try {
+        const snap = await getDoc(doc(db, "panchayats", activeLgd, "settings", "general"));
+        const titleEl = document.getElementById("dashboard-header-title");
+        
+        if (snap.exists() && snap.data().name && titleEl) {
+            titleEl.textContent = `ગ્રામ પંચાયત એડમિન પેનલ - ${snap.data().name}`;
+        } else if (titleEl) {
+            // જો નામ ન મળે તો ઓછામાં ઓછો LGD Code બતાવે
+            titleEl.textContent = `ગ્રામ પંચાયત એડમિન પેનલ (LGD: ${activeLgd})`;
+        }
+    } catch (err) {
+        console.error("Header Title Error:", err);
+    }
+}
+
 // તમામ ફંક્શન્સને એકસાથે રન કરવા માટેનું ઇનિશિયલાઈઝર
 function initAdminPanel() {
     loadWebsiteSettings();
