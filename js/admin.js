@@ -1835,7 +1835,7 @@ document.getElementById("contact-admin-form")?.addEventListener("submit", async 
 });
 
 
-// --- ૧૭. યુઝર ફીડબેક લોડિંગ, ડિલીટ અને ઈમેલ રિપ્લાય બટન ---
+// --- ૧૭. યુઝર ફીડબેક લોડિંગ, ડિલીટ અને સ્માર્ટ ઈમેલ રિપ્લાય બટન ---
 function loadAdminFeedbacks() {
     const container = document.getElementById("admin-feedback-list");
     if (!container || !lgdCode) return;
@@ -1857,12 +1857,13 @@ function loadAdminFeedbacks() {
                 dateStr = data.createdAt.toDate().toLocaleString('gu-IN', { dateStyle: 'short', timeStyle: 'short' });
             }
 
-            // 🌟 સુધારેલ mailto link (encodeURIComponent સાથે જેથી લિંક ક્યારેય બગડે નહીં)
-            let mailtoLink = "#";
+            // 🌟 Gmail Web Link (ડેસ્કટોપ અને મોબાઈલ બંનેમાં 100% કામ કરશે)
+            let gmailWebLink = "#";
             if (data.email) {
                 const subject = encodeURIComponent("Reply from Gram Panchayat regarding your feedback");
                 const body = encodeURIComponent(`નમસ્કાર ${data.name || ''},\n\nઆપના પ્રતિસાદ સંદર્ભે:\n"${data.message || ''}"\n\n`);
-                mailtoLink = `mailto:${data.email}?subject=${subject}&body=${body}`;
+                // આ લિંક સીધી બ્રાઉઝરમાં જ Gmail ખોલશે
+                gmailWebLink = `https://mail.google.com/mail/?view=cm&fs=1&to=${data.email}&su=${subject}&body=${body}`;
             }
 
             container.innerHTML += `
@@ -1880,7 +1881,7 @@ function loadAdminFeedbacks() {
                     
                     <div class="flex gap-2 justify-end pt-1">
                         ${data.email ? `
-                            <a href="${mailtoLink}" class="bg-blue-600 hover:bg-blue-700 text-white text-[11px] px-3 py-1.5 rounded font-semibold flex items-center gap-1 transition">
+                            <a href="${gmailWebLink}" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white text-[11px] px-3 py-1.5 rounded font-semibold flex items-center gap-1 transition">
                                 <i class="fa-solid fa-envelope"></i> ઈમેલ કરો / જવાબ આપો
                             </a>
                         ` : ''}
