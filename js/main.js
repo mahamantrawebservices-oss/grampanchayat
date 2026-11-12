@@ -506,6 +506,7 @@ async function initApp() {
     loadPublicTaxLink();
     loadPublicCustomButtons();
     loadPublicEvents();
+    loadFrontendGallery();
     await setupComplaintSection();
     updateDynamicLinks();
 }
