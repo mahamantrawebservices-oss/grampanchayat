@@ -524,11 +524,15 @@
             modal.classList.add("hidden");
         }
 
-        // PDF Generation function
+// PDF Generation function (બટનોને પ્રોગ્રામમેટિકલી હાઇડ કરીને PDF બનાવવા માટે)
         function exportToPDF() {
             const element = document.querySelector(".max-w-4xl");
             
-            // માત્ર લિંક્સ / બટનોની જગ્યાએ જ કાનૂની સુરક્ષા માટે નોટિસ સેટ કરવી
+            // ૧. PDF જનરેટ થાય તે પહેલાં ઉપરના બટનોવાળા ડિવને તરત જ છૂપાવી દો
+            const topNavDiv = document.querySelector(".no-print");
+            if (topNavDiv) topNavDiv.style.display = "none";
+
+            // ૨. લિંક્સ / બટનોની જગ્યાએ કાનૂની સુરક્ષા માટે નોટિસ સેટ કરવી
             const proactiveLinks = element.querySelectorAll(".proactive-link, button[onclick*='openPopup']");
             proactiveLinks.forEach(l => {
                 const span = document.createElement("span");
@@ -545,6 +549,7 @@
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
+            // ૩. PDF સેવ થયા પછી પેજ રીલોડ કરો જેથી બટનો પાછા યથાવત આવી જાય
             html2pdf().from(element).set(opt).save().then(() => {
                 window.location.reload();
             });
