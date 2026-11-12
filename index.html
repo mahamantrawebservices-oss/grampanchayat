@@ -333,7 +333,14 @@
     const db = getFirestore(app);
 
     const urlParams = new URLSearchParams(window.location.search);
-    const panchayatId = urlParams.get('id') || "ahmedabad_daskroi_motapipalva"; // Default demo ID
+let panchayatId = urlParams.get('id');
+
+if (panchayatId) {
+    localStorage.setItem("currentPanchayatId", panchayatId);
+} else {
+    // 🌟 ડિફોલ્ટ આઈડી પોપીપુર (Popipur) સેટ કર્યો
+    panchayatId = localStorage.getItem("currentPanchayatId") || "500000";
+}
 
     // Step 1: Global Developer Maintenance Mode Guard Check
     onSnapshot(doc(db, "system_settings", "global_config"), (maintSnap) => {
