@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ડાઉનલોડ્સ - ગ્રામ પંચાયત</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="shortcut icon" href="#">
+</head>
+<body class="bg-slate-50 min-h-screen py-8 px-4 font-sans text-gray-800">
+
+    <div class="max-w-4xl mx-auto space-y-6">
+        
+        <!-- Back Home Link -->
+        <div class="flex justify-between items-center">
+            <a id="back-home-btn" href="index.html" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-2 rounded-xl shadow transition flex items-center gap-1.5">
+                <i class="fa-solid fa-arrow-left"></i> મુખ્ય પૃષ્ઠ
+            </a>
+        </div>
+
+        <!-- Header Banner -->
+        <div class="bg-emerald-800 text-white p-6 rounded-2xl shadow-lg text-center space-y-2">
+            <h1 class="text-xl md:text-2xl font-bold flex items-center justify-center gap-2">
+                <i class="fa-solid fa-download text-amber-300"></i> ડાઉનલોડ્સ અને મહત્વના ફોર્મ્સ
+            </h1>
+            <p id="header-gp-name" class="text-xs text-emerald-100">ગ્રામ પંચાયત કચેરી દ્વારા ઉપલબ્ધ કરાવવામાં આવતી ડાઉનલોડ ફાઇલો</p>
+        </div>
+
+        <!-- Top Text / HTML Section (Admin Controlled) -->
+        <div id="downloads-text-container" class="bg-white p-6 rounded-2xl shadow-md border space-y-3 hidden">
+            <div id="downloads-custom-content" class="text-xs md:text-sm leading-relaxed text-gray-700"></div>
+        </div>
+
+        <!-- Download Files List Section -->
+        <div class="bg-white p-6 rounded-2xl shadow-md border space-y-4">
+            <h3 class="font-bold text-emerald-800 text-sm border-b pb-2 flex items-center gap-2">
+                <i class="fa-solid fa-file-pdf text-emerald-600"></i> ઉપલબ્ધ ડાઉનલોડ ફાઇલોની યાદી
+            </h3>
+            
+            <div id="downloads-list" class="space-y-3">
+                <p class="text-xs text-gray-500">માહિતી લોડ થઈ રહી છે...</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Firebase Script -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCMhWWI_6oxPIVEQEVlq2SIBf72EI2o8NI",
+            authDomain: "gram-panchayat-33c86.firebaseapp.com",
+            projectId: "gram-panchayat-33c86",
+            storageBucket: "gram-panchayat-33c86.firebasestorage.app",
+            messagingSenderId: "1025176315779",
+            appId: "1:1025176315779:web:a24ca10a06c55edcc8f8b6",
+            measurementId: "G-TQBSXCWNBV"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // LGD Code Safety
+        const urlParams = new URLSearchParams(window.location.search);
+        let panchayatId = urlParams.get('id');
+        if (panchayatId) {
+            localStorage.setItem("currentPanchayatId", panchayatId);
+        } else {
+            panchayatId = localStorage.getItem("currentPanchayatId") || "517045";
+        }
+
+        document.getElementById("back-home-btn").href = `index.html?id=${panchayatId}`;
+
+        // Load Header Panchayat Name
+        async function loadPanchayatName() {
+            try {
+                const snap = await getDoc(doc(db, "panchayats", panchayatId, "settings", "general"));
+                if (snap.exists() && snap.data().name) {
+                    document.getElementById("header-gp-name").textContent = `ગ્રામ પંચાયત: ${snap.data().name}`;
+                }
+            } catch (err) { console.error(err); }
+        }
+        loadPanchayatName();
+
+        // Real-time Downloads Data Listener
+        onSnapshot(doc(db, "panchayats", panchayatId, "downloads_page", "main_content"), (docSnap) => {
+            const listContainer = document.getElementById("downloads-list");
+            const textContainer = document.getElementById("downloads-text-container");
+            const customContent = document.getElementById("downloads-custom-content");
+
+            if (!docSnap.exists()) {
+                listContainer.innerHTML = `<p class="text-xs text-gray-500 py-4 text-center">હાલ કોઈ ડાઉનલોડ ઉપલબ્ધ નથી.</p>`;
+                return;
+            }
+
+            const data = docSnap.data();
+
+            // Render Top Text/HTML
+            if (data.pageText && data.pageText.trim() !== "") {
+                textContainer.classList.remove("hidden");
+                customContent.innerHTML = data.pageText; // HTML કે સાદો ટેક્સ્ટ બંને સપોર્ટ કરશે
+            } else {
+                textContainer.classList.add("hidden");
+            }
+
+            // Render Files List
+            const files = data.files || [];
+            if (files.length === 0) {
+                listContainer.innerHTML = `<p class="text-xs text-gray-500 py-4 text-center">હાલ કોઈ ડાઉનલોડ ઉપલબ્ધ નથી.</p>";
+                return;
+            }
+
+            listContainer.innerHTML = "";
+            files.forEach((file, index) => {
+                listContainer.innerHTML += `
+                    <div class="bg-gray-50 border p-3.5 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 hover:bg-emerald-50/50 transition">
+                        <div class="space-y-1">
+                            <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">ક્રમ નં. ${index + 1}</span>
+                            <h4 class="font-bold text-gray-900 text-sm">${file.title || 'નામ વગરની ફાઇલ'}</h4>
+                            <p class="text-gray-600 text-xs">${file.description || ''}</p>
+                        </div>
+                        <a href="${file.link || '#'}" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3.5 py-2 rounded-lg text-xs shadow transition flex items-center gap-1.5 flex-shrink-0">
+                            <i class="fa-solid fa-download"></i> ડાઉનલોડ કરો
+                        </a>
+                    </div>
+                `;
+            });
+        });
+    </script>
+</body>
+</html>
