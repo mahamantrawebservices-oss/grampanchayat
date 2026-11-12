@@ -1794,54 +1794,118 @@ document.getElementById("add-glance-form")?.addEventListener("submit", async (e)
 });
 // --- ૧૫. મારૂ ગામ - એક નજરમાં (Glance Manager કોડ પૂર્ણ) ---
 
-// --- ૧૬. સંપર્ક પેજ વિગતો ---
+// --- ૧૬. સંપર્ક પેજ વિગતો મેનેજ કરો ---
 async function loadContactAdminData() {
     if (!lgdCode) return;
-    const snap = await getDoc(getPanchayatDoc("contact_info", "main_contact"));
-    if (snap.exists()) {
-        const data = snap.data();
-        if (document.getElementById("adm-panchayat-name")) document.getElementById("adm-panchayat-name").value = data.panchayatName || "";
-        if (document.getElementById("adm-address")) document.getElementById("adm-address").value = data.address || "";
-        if (document.getElementById("adm-email")) document.getElementById("adm-email").value = data.email || "";
-        if (document.getElementById("adm-phone")) document.getElementById("adm-phone").value = data.phone || "";
-        if (document.getElementById("adm-extra")) document.getElementById("adm-extra").value = data.extraInfo || "";
+    try {
+        const snap = await getDoc(getPanchayatDoc("settings", "contact_info"));
+        if (snap.exists()) {
+            const data = snap.data();
+            if (document.getElementById("adm-panchayat-name")) document.getElementById("adm-panchayat-name").value = data.panchayatName || "";
+            if (document.getElementById("adm-address")) document.getElementById("adm-address").value = data.address || "";
+            if (document.getElementById("adm-email")) document.getElementById("adm-email").value = data.email || "";
+            if (document.getElementById("adm-phone")) document.getElementById("adm-phone").value = data.phone || "";
+            if (document.getElementById("adm-extra")) document.getElementById("adm-extra").value = data.extraInfo || "";
+        }
+    } catch (err) {
+        console.error("Load Contact Admin Error:", err);
     }
 }
 
 document.getElementById("contact-admin-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
+    if (!lgdCode) return;
+
     const payload = {
-        panchayatName: document.getElementById("adm-panchayat-name").value,
-        address: document.getElementById("adm-address").value,
-        email: document.getElementById("adm-email").value,
-        phone: document.getElementById("adm-phone").value,
-        extraInfo: document.getElementById("adm-extra").value
+        panchayatName: document.getElementById("adm-panchayat-name").value.trim(),
+        address: document.getElementById("adm-address").value.trim(),
+        email: document.getElementById("adm-email").value.trim(),
+        phone: document.getElementById("adm-phone").value.trim(),
+        extraInfo: document.getElementById("adm-extra").value.trim(),
+        updatedAt: new Date()
     };
-    await setDoc(getPanchayatDoc("contact_info", "main_contact"), payload, { merge: true });
-    alert("સંપર્ક વિગતો અપડેટ થઈ ગઈ!");
+
+    try {
+        await setDoc(getPanchayatDoc("settings", "contact_info"), payload, { merge: true });
+        alert("✅ સંપર્ક વિગતો સફળતાપૂર્વક અપડેટ થઈ ગઈ!");
+    } catch (err) {
+        console.error("Save Contact Error:", err);
+        alert("સંપર્ક વિગતો સેવ કરવામાં ભૂલ આવી.");
+    }
 });
 
-// --- ૧૭. યુઝર ફીડબેક લોડિંગ ---
+
+// --- ૧૭. યુઝર ફીડબેક લોડિંગ, ડિલીટ અને ઈમેલ રિપ્લાય બટન ---
 function loadAdminFeedbacks() {
     const container = document.getElementById("admin-feedback-list");
     if (!container || !lgdCode) return;
+
     onSnapshot(getPanchayatCol("user_feedbacks"), (snapshot) => {
         container.innerHTML = "";
+        
         if (snapshot.empty) {
-            container.innerHTML = `<p class="text-xs text-gray-500">કોઈ પ્રતિભાવ મળેલ નથી.</p>`;
+            container.innerHTML = `<p class="text-xs text-gray-500 p-2">હાલમાં કોઈ પ્રતિભાવ મળેલ નથી.</p>`;
             return;
         }
+
         snapshot.forEach(d => {
             const data = d.data();
+            const id = d.id;
+            
+            let dateStr = "";
+            if (data.createdAt && data.createdAt.toDate) {
+                dateStr = data.createdAt.toDate().toLocaleString('gu-IN', { dateStyle: 'short', timeStyle: 'short' });
+            }
+
+            // ઈમેલ મોકલવા માટે mailto ലിങ്ക് (વિષય અને નામ સાથે ઓટોમેટિક સેટ થશે)
+            const mailtoLink = data.email 
+                ? `mailto:${data.email}?subject=Reply from Gram Panchayat&body=Hello ${data.name || ''},\n\nRegarding your feedback: "${data.message || ''}"\n\n`
+                : `#`;
+
             container.innerHTML += `
-                <div class="bg-gray-50 border p-2 rounded text-xs mb-1">
-                    <div class="font-bold">${data.name} (${data.phone})</div>
-                    <p>${data.message}</p>
+                <div class="bg-gray-50 border p-3 rounded-xl shadow-sm text-xs space-y-2">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="font-bold text-emerald-900 text-sm">👤 ${data.name || 'અનામી'}</span>
+                            <span class="text-gray-500 ml-2">📞 ${data.phone || 'નંબર નથી'}</span>
+                            ${data.email ? `<span class="text-blue-600 block text-[11px]">📧 ${data.email}</span>` : ''}
+                        </div>
+                        ${dateStr ? `<span class="text-[10px] text-gray-400">${dateStr}</span>` : ''}
+                    </div>
+                    
+                    <p class="text-gray-700 bg-white p-2 rounded border whitespace-pre-line">${data.message || ''}</p>
+                    
+                    <div class="flex gap-2 justify-end pt-1">
+                        ${data.email ? `
+                            <a href="${mailtoLink}" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white text-[11px] px-3 py-1.5 rounded font-semibold flex items-center gap-1 transition">
+                                <i class="fa-solid fa-envelope"></i> ઈમેલ કરો / જવાબ આપો
+                            </a>
+                        ` : ''}
+                        <button type="button" onclick="deleteFeedback('${id}')" class="bg-red-600 hover:bg-red-700 text-white text-[11px] px-3 py-1.5 rounded font-semibold flex items-center gap-1 transition">
+                            <i class="fa-solid fa-trash"></i> ડિલીટ
+                        </button>
+                    </div>
                 </div>
             `;
         });
+    }, (error) => {
+        console.error("Feedback Load Error:", error);
     });
 }
+
+// ફીડબેક ડિલીટ કરવા માટેનું ફંક્શન
+window.deleteFeedback = async (id) => {
+    if (!lgdCode) return;
+    if (confirm("શું તમે આ પ્રતિસાદ ડિલીટ કરવા માંગો છો?")) {
+        try {
+            await deleteDoc(getPanchayatDoc("user_feedbacks", id));
+            alert("✅ પ્રતિસાદ સફળતાપૂર્વક ડિલીટ થઈ ગયો!");
+        } catch (err) {
+            console.error("Delete Feedback Error:", err);
+            alert("ડિલીટ કરવામાં ભૂલ આવી.");
+        }
+    }
+};
 
 // --- ૧૮. સ્વયં જાહેર કરેલ માહિતી (Proactive Disclosure) ---
 async function loadProactiveAdminData() {
