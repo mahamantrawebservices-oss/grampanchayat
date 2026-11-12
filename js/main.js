@@ -68,9 +68,20 @@ async function loadSettings() {
         const docSnap = await getDoc(doc(db, "panchayats", panchayatId, "settings", "general"));
         if (docSnap.exists()) {
             const data = docSnap.data();
-            if(data.name && document.getElementById("gp-name")) document.getElementById("gp-name").innerText = data.name;
+            
+            // પંચાયતનું નામ અલગ-અલગ જગ્યાએ સેટ કરવું
+            if(data.name) {
+                if(document.getElementById("gp-name")) document.getElementById("gp-name").innerText = data.name;
+                if(document.getElementById("banner-gp-name")) document.getElementById("banner-gp-name").innerText = data.name;
+                
+                // 👈 ફૂટરમાં પંચાયતનું નામ સેટ કરવા માટે (દા.ત. "વડોલા ગ્રામ પંચાયત")
+                const footerGpNameEl = document.getElementById("footer-gp-name");
+                if(footerGpNameEl) {
+                    footerGpNameEl.innerText = `${data.name} ગ્રામ પંચાયત`;
+                }
+            }
+
             if(data.tagline && document.getElementById("gp-tagline")) document.getElementById("gp-tagline").innerText = data.tagline;
-            if(data.name && document.getElementById("banner-gp-name")) document.getElementById("banner-gp-name").innerText = data.name;
             if(data.tagline && document.getElementById("banner-gp-tagline")) document.getElementById("banner-gp-tagline").innerText = data.tagline;
         }
     } catch (err) {
@@ -517,11 +528,22 @@ document.getElementById("image-modal")?.addEventListener("click", (e) => {
 // --- Blogger ફોટો ગેલેરી ફ્રન્ટએન્ડ લોડિંગ અને લાઈટબોક્સ (કોડ પૂર્ણ)---
 
 
+// --- ફૂટર અને કોપીરાઇટ ડાયનેમિક સેટ કરવા માટે ---
+function setupFooterDetails() {
+    // વર્તમાન વર્ષ ઓટોમેટિક સેટ કરવું
+    const yearEl = document.getElementById("current-year");
+    if (yearEl) {
+        yearEl.innerText = new Date().getFullYear();
+    }
+}
+// --- ફૂટર અને કોપીરાઇટ ડાયનેમિક સેટ કરવા માટે (કોડ પૂર્ણ)---
+
 // 🚀 મુખ્ય ઇનિશિયલાઈઝેશન
 async function initApp() {
     const isAllowed = await checkSystemAccess();
     if (!isAllowed) return;
 
+    setupFooterDetails(); // 👈 વર્ષ સેટ કરવા માટે
     loadSettings();
     loadPosts();
     loadFrontendNotices();
