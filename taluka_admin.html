@@ -244,7 +244,8 @@
             }
         }
 
-       // Global function to fetch and show panchayat sub-data in popup
+        
+// Global function to fetch and show panchayat sub-data in popup
 window.showPanchayatData = async function(lgdCode, dataType, title) {
     const modal = document.getElementById("data-modal");
     const modalTitle = document.getElementById("modal-title");
@@ -256,49 +257,68 @@ window.showPanchayatData = async function(lgdCode, dataType, title) {
 
     try {
         let foundData = null;
-        let targetSubCol = "";
-        
-        // ડેટાના પ્રકાર મુજબ ફાયરબેઝ સબ-કલેક્શન નક્કી કરવા
-        if (dataType === 'about') targetSubCol = 'village_details';
-        else if (dataType === 'staff') targetSubCol = 'panchayat_staff';
-        else if (dataType === 'committees') targetSubCol = 'active_committees';
+        const dbRef = doc(db, "panchayats", lgdCode);
+        const mainDocSnap = await getDoc(dbRef);
 
-        // ૧. પહેલો પ્રયાસ: સબ-કલેક્શનમાંથી 'data' ડોક્યુમેન્ટ મેળવવો
-        const subDocRef = doc(db, "panchayats", lgdCode, targetSubCol, "data");
-        const subDocSnap = await getDoc(subDocRef);
+        if (mainDocSnap.exists()) {
+            const mainData = mainDocSnap.data();
 
-        if (subDocSnap.exists()) {
-            foundData = subDocSnap.data();
-        } else {
-            // ૨. બીજો પ્રયાસ: મેઈન પંચાયત ડોક્યુમેન્ટમાંથી સીધો ડેટા મેળવવો
-            const mainDocRef = doc(db, "panchayats", lgdCode);
-            const mainDocSnap = await getDoc(mainDocRef);
+            // ૧. ચેક કરો કે ડેટા મેઈન ડોક્યુમેન્ટની અંદર સીધો સચવાયેલો છે કે નહીં
+            if (mainData[dataType]) {
+                foundData = mainData[dataType];
+            } 
+            // ૨. અથવા settings કે અન્ય অব્જેક્ટની અંદર છે કે નહીં
+            else if (mainData.settings && mainData.settings[dataType]) {
+                foundData = mainData.settings[dataType];
+            }
+        }
 
-            if (mainDocSnap.exists()) {
-                const mainData = mainDocSnap.data();
-                if (mainData[dataType]) {
-                    foundData = mainData[dataType];
-                } else if (mainData.settings && mainData.settings[dataType]) {
-                    foundData = mainData.settings[dataType];
+        // ૩. જો મેઈન ડોક્યુમેન્ટમાં ન મળે, તો સબ-કલેક્શન (Sub-collections) માં તપાસ કરો
+        if (!foundData) {
+            let subColNames = [];
+            if (dataType === 'about') subColNames = ['village_details', 'about', 'village_glance'];
+            else if (dataType === 'staff') subColNames = ['panchayat_staff', 'staff'];
+            else if (dataType === 'committees') subColNames = ['active_committees', 'committees', 'panchayat_committee'];
+
+            for (let colName of subColNames) {
+                try {
+                    // પહેલા 'data' નામના ડોક્યુમેન્ટથી ટ્રાય કરો
+                    const subDocRef = doc(db, "panchayats", lgdCode, colName, "data");
+                    const subDocSnap = await getDoc(subDocRef);
+                    if (subDocSnap.exists()) {
+                        foundData = subDocSnap.data();
+                        break;
+                    } else {
+                        // જો 'data' નામનો ડોક ન હોય, તો કલેક્શનના તમામ ડોક્યુમેન્ટ્સ ફેચ કરો
+                        const subColRefColl = collection(db, "panchayats", lgdCode, colName);
+                        const subColSnap = await getDocs(subColRefColl);
+                        if (!subColSnap.empty) {
+                            let listData = [];
+                            subColSnap.forEach(d => listData.push({ id: d.id, ...d.data() }));
+                            foundData = listData;
+                            break;
+                        }
+                    }
+                } catch (subErr) {
+                    console.log("Sub-collection check error for:", colName, subErr);
                 }
             }
         }
 
-        // જો ડેટા મળી જાય તો તેને સુંદર રીતે ફોર્મેટ કરીને બતાવવો
+        // પરિણામ દર્શાવો
         if (foundData) {
-            // જો ડેટા ઓબ્જેક્ટ કે એરે હોય તો તેને JSON ફોર્મેટમાં ફેરવવો
             if (typeof foundData === 'object') {
                 modalContent.textContent = JSON.stringify(foundData, null, 2);
             } else {
                 modalContent.textContent = foundData;
             }
         } else {
-            modalContent.textContent = `⚠️ આ પંચાયત માટે હજુ સુધી "${title}" ની માહિતી ભરવામાં આવી નથી અથવા ડેટા ઉપલબ્ધ નથી.`;
+            modalContent.textContent = `⚠️ આ પંચાયત (LGD Code: ${lgdCode}) માટે હજુ સુધી "${title}" ની માહિતી ફાયરબેઝમાં દાખલ કરવામાં આવી નથી.`;
         }
 
     } catch (err) {
         console.error("Error fetching panchayat data:", err);
-        modalContent.textContent = "ડેટા મેળવવામાં ટેક્નિકલ એરર આવી: " + err.message;
+        modalContent.textContent = "ડેટા મેળવવામાં એરર આવી: " + err.message;
     }
 };
 
