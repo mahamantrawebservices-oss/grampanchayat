@@ -28,7 +28,7 @@
         <!-- Main Content Area -->
         <main class="flex-1 p-6 max-w-7xl mx-auto w-full space-y-6">
             
-            <!-- Section 1: Maintenance Mode Settings -->
+            <!-- Section 1: Maintenance Mode Manager -->
             <div class="bg-white p-6 rounded-xl shadow-sm border">
                 <h2 class="text-lg font-bold text-emerald-900 mb-3"><i class="fa-solid fa-screwdriver-wrench text-emerald-600 mr-2"></i> મેન્ટેનન્સ મોડ સેટિંગ્સ</h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
@@ -79,7 +79,7 @@
                 </form>
             </div>
 
-            <!-- Section 3: Taluka Admin Credentials & Control Manager -->
+            <!-- 🌟 નવું ઉમેરેલું ફીચર: Taluka Admin Credentials & Control Manager -->
             <div class="bg-white p-6 rounded-xl shadow-sm border space-y-4">
                 <h2 class="text-lg font-bold text-emerald-900"><i class="fa-solid fa-key text-emerald-600 mr-2"></i> તાલુકા એડમિન પાસવર્ડ અને સ્ટેટસ મેનેજમેન્ટ</h2>
                 <p class="text-xs text-gray-600">અહીંથી કોઈપણ તાલુકા માટે પાસવર્ડ સેટ કરી શકાય છે અને તેનું લૉગિન ચાલુ (Active) અથવા બંધ (Deactive) કરી શકાય છે.</p>
@@ -106,7 +106,7 @@
                 </div>
             </div>
 
-            <!-- Section 4: All Panchayats List Table -->
+            <!-- Section 3: Real-time List Table (અસલ કોડ મુજબ) -->
             <div class="bg-white p-6 rounded-xl shadow-sm border space-y-4">
                 <div class="flex justify-between items-center flex-wrap gap-2">
                     <h2 class="text-lg font-bold text-emerald-900">નોંધાયેલી તમામ પંચાયતોની યાદી</h2>
@@ -137,7 +137,7 @@
         </main>
     </div>
 
-    <!-- Firebase Script Logic -->
+    <!-- Firebase Script Logic (અસલ કોડ + તાલુકા મેનેજમેન્ટ ફંક્શન) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -182,16 +182,16 @@
                     isMaintenance,
                     maintenanceMessage,
                     updatedAt: new Date()
-                }, { merge: true });
+                });
 
-                alert("✅ મેન્ટેનન્સ સેટિંગ્સ સફળતાપૂર્વક સેવ થઈ ગયા!");
+                alert("ડેવલપર મેન્ટેનન્સ સેટિંગ્સ સફળતાપૂર્વક સેવ થઈ ગયા!");
             } catch (err) {
                 console.error("Error saving maintenance settings:", err);
                 alert("સેટિંગ્સ સેવ કરવામાં ભૂલ આવી.");
             }
         });
 
-        // 2. Taluka Settings Manager
+        // 🌟 Taluka Settings Manager (નવું ઉમેરેલું)
         window.saveTalukaSettingsFromUI = async function() {
             const talukaName = document.getElementById("taluka-name-input").value.trim();
             const passInput = document.getElementById("taluka-pass-input").value.trim();
@@ -234,7 +234,7 @@
                 .replace(/[^\w_]/g, "");
         }
 
-        // 3. Add New Panchayat
+        // 2. Add New Panchayat (અસલ કોડ મુજબ)
         const addForm = document.getElementById("add-panchayat-form");
         addForm?.addEventListener("submit", async (e) => {
             e.preventDefault();
@@ -243,6 +243,7 @@
                 const taluka = document.getElementById("p-taluka").value.trim();
                 const panchayatName = document.getElementById("p-name").value.trim();
                 const phone = document.getElementById("p-phone").value.trim();
+                const isActive = true; // ડિફોલ્ટ એક્ટિવ
 
                 const docId = generateDocId(district, taluka, panchayatName);
 
@@ -251,11 +252,11 @@
                     taluka,
                     panchayatName,
                     phone,
-                    isActive: true,
+                    isActive,
                     createdAt: new Date()
                 }, { merge: true });
 
-                alert(`✅ ${panchayatName} ગ્રામ પંચાયત સફળતાપૂર્વક ઉમેરાઈ ગઈ!`);
+                alert(`${panchayatName} ગ્રામ પંચાયત સફળતાપૂર્વક ઉમેરાઈ ગઈ!`);
                 addForm.reset();
             } catch (err) {
                 console.error("Error adding panchayat:", err);
@@ -263,7 +264,7 @@
             }
         });
 
-        // 4. Real-time List Render & Toggle Status
+        // 3. Real-time List Render & Toggle Status (અસલ કોડ મુજબ)
         let allPanchayats = [];
 
         onSnapshot(collection(db, "panchayats"), (snapshot) => {
@@ -285,16 +286,16 @@
 
             tbody.innerHTML = list.map(item => `
                 <tr class="border-b hover:bg-slate-50">
-                    <td class="p-3 font-semibold text-gray-800">${item.district || '-'} / ${item.taluka || '-'}</td>
-                    <td class="p-3 font-bold text-emerald-800">${item.panchayatName || item.settings?.general?.name || '-'}</td>
-                    <td class="p-3 text-gray-600">${item.phone || '-'}</td>
-                    <td class="p-3 text-center">
+                    <td class="p-2.5 font-semibold text-gray-800">${item.district || '-'} / ${item.taluka || '-'}</td>
+                    <td class="p-2.5 font-bold text-emerald-800">${item.panchayatName || '-'}</td>
+                    <td class="p-2.5 text-gray-600">${item.phone || '-'}</td>
+                    <td class="p-2.5 text-center">
                         <button onclick="togglePanchayatStatus('${item.id}', ${item.isActive})" 
                             class="px-3 py-1 rounded-full text-[10px] font-bold shadow ${item.isActive ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-red-100 text-red-800 border border-red-300'}">
                             ${item.isActive ? 'Active (ON)' : 'Deactive (OFF)'}
                         </button>
                     </td>
-                    <td class="p-3 text-center">
+                    <td class="p-2.5 text-center">
                         <a href="index.html?id=${item.id}" target="_blank" class="text-blue-600 hover:underline font-bold">
                             <i class="fa-solid fa-arrow-up-right-from-square"></i> જુઓ
                         </a>
@@ -314,7 +315,7 @@
             }
         };
 
-        // Filter Search
+        // Filter Search (અસલ કોડ મુજબ)
         document.getElementById("search-input")?.addEventListener("input", (e) => {
             const query = e.target.value.toLowerCase();
             const filtered = allPanchayats.filter(p => 
