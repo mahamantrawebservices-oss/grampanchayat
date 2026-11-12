@@ -251,7 +251,7 @@
         }
 
         
-// HTML ટેગ્સ સાફ કરવા માટેનું હેલ્પર ફંક્શન
+// HTML ટેગ્સ દૂર કરવા માટે
 function stripHtml(html) {
     if (!html) return "-";
     let tmp = document.createElement("DIV");
@@ -259,7 +259,7 @@ function stripHtml(html) {
     return tmp.textContent || tmp.innerText || "-";
 }
 
-// Global function to fetch and show panchayat sub-data in Table Format
+// Global function to fetch and render exact website layout in popup
 window.showPanchayatData = async function(lgdCode, dataType, title) {
     const modal = document.getElementById("data-modal");
     const modalTitle = document.getElementById("modal-title");
@@ -270,151 +270,195 @@ window.showPanchayatData = async function(lgdCode, dataType, title) {
     modal.classList.remove("hidden");
 
     try {
-        let items = [];
+        let rawData = null;
         let subColNames = [];
 
         if (dataType === 'about') subColNames = ['village_details', 'about', 'village_glance'];
-        else if (dataType === 'staff') subColNames = ['panchayat_staff', 'panchayat_committee', 'staff'];
+        else if (dataType === 'staff') subColNames = ['panchayat_staff', 'staff', 'panchayat_committee'];
         else if (dataType === 'committees') subColNames = ['active_committees', 'committees', 'panchayat_committee'];
 
-        // ૧. સબ-કલેક્શનમાંથી ડેટા મેળવો
+        // ૧. ફાયરબેઝમાંથી સબ-કલેક્શન અથવા ડોક્યુમેન્ટ મેળવો
         for (let colName of subColNames) {
-            const subColSnap = await getDocs(collection(db, "panchayats", lgdCode, colName));
-            if (!subColSnap.empty) {
-                subColSnap.forEach(d => {
-                    const dData = d.data();
-                    // જો data નામના ડોક્યુમેન્ટમાં list કે array હોય તો
-                    if (d.id === 'data' && Array.isArray(dData.list)) {
-                        items.push(...dData.list);
-                    } else if (d.id === 'data' && Object.keys(dData).length > 0 && !dData.title && !dData.name) {
-                        Object.values(dData).forEach(val => {
-                            if (typeof val === 'object' && val !== null) items.push(val);
-                        });
-                    } else {
-                        items.push({ _col: colName, ...dData });
-                    }
-                });
+            const subDocRef = doc(db, "panchayats", lgdCode, colName, "data");
+            const subDocSnap = await getDoc(subDocRef);
+            if (subDocSnap.exists()) {
+                rawData = subDocSnap.data();
+                break;
+            } else {
+                // જો સબ-કલેક્શનમાં મલ્ટીપલ ડોક્યુમેન્ટ્સ હોય
+                const subColSnap = await getDocs(collection(db, "panchayats", lgdCode, colName));
+                if (!subColSnap.empty) {
+                    rawData = {};
+                    subColSnap.forEach(d => {
+                        rawData[d.id] = d.data();
+                    });
+                    break;
+                }
             }
         }
 
-        // ૨. જો સબ-કલેક્શન ખાલી હોય તો મેઈન ડોક્યુમેન્ટ તપાસો
-        if (items.length === 0) {
+        // જો સબ-કલેક્શનમાં ન મળે તો મેઈન ડોક્યુમેન્ટ તપાસો
+        if (!rawData) {
             const mainDocSnap = await getDoc(doc(db, "panchayats", lgdCode));
             if (mainDocSnap.exists()) {
                 const mainData = mainDocSnap.data();
-                const raw = mainData[dataType] || mainData.settings?.[dataType];
-                if (Array.isArray(raw)) items = raw;
-                else if (typeof raw === 'object' && raw !== null) items = [raw];
+                rawData = mainData[dataType] || mainData.settings?.[dataType];
             }
         }
 
-        if (items.length === 0) {
-            modalContent.innerHTML = `<div class="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-lg text-center">⚠️ આ પંચાયત (LGD Code: ${lgdCode}) માટે હજુ સુધી "${title}" ની માહિતી ભરવામાં આવી નથી.</div>`;
+        if (!rawData || (typeof rawData === 'object' && Object.keys(rawData).length === 0)) {
+            modalContent.innerHTML = `<div class="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-lg text-center text-xs">⚠️ આ પંચાયત (LGD Code: ${lgdCode}) માટે હજુ સુધી "${title}" ની માહિતી ભરવામાં આવી નથી.</div>`;
             return;
         }
 
-        // ૩. ડેટાના પ્રકાર મુજબ વેબસાઇટ જેવું ટેબલ બનાવો
+        let htmlOutput = "";
+
+        // 🌟 ૨. "મારૂ ગામ - એક નજરમાં" (Village at a Glance - Screenshot 390 મુજબ)
         if (dataType === 'about') {
-            // મારૂ ગામ - એક નજરમાં (વિભાગ મુજબ ટેબલ)
-            let rowsHtml = items.map((item, idx) => `
-                <tr class="border-b hover:bg-gray-50">
-                    <td class="p-3 font-bold text-gray-600 align-top w-12">${idx + 1}</td>
-                    <td class="p-3 font-bold text-emerald-900 align-top w-1/3">${item.title || item.heading || item.label || 'વિગત'}</td>
-                    <td class="p-3 text-gray-700 leading-relaxed">${item.content || item.description || item.value || '-'}</td>
-                </tr>
-            `).join("");
-
-            modalContent.innerHTML = `
-                <table class="w-full text-left border-collapse border rounded-lg overflow-hidden text-xs">
-                    <thead class="bg-emerald-800 text-white">
-                        <tr>
-                            <th class="p-3">ક્રમ</th>
-                            <th class="p-3">વિષય / શીર્ષક</th>
-                            <th class="p-3">વિગતવાર માહિતી</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-200 bg-white">${rowsHtml}</tbody>
-                </table>
-            `;
+            // કેટેગરી કે સેクション મુજબ ડેટા ગોઠવવો (જેમ કે ભૌગોલિક માહિતી, આંગણવાડી, વગેરે)
+            let categories = rawData.categories || rawData.sections || rawData;
+            
+            if (Array.isArray(categories)) {
+                htmlOutput = categories.map(cat => renderGlanceCategory(cat.categoryName || cat.title || "વિગત", cat.items || cat.list || [])).join("");
+            } else if (typeof categories === 'object') {
+                // જો ઓબ્જેક્ટ format માં હોય
+                htmlOutput = Object.keys(categories).map(key => {
+                    let catData = categories[key];
+                    let items = Array.isArray(catData) ? catData : (catData.items || [catData]);
+                    return renderGlanceCategory(catData.title || key, items);
+                }).join("");
+            }
         } 
+        // 🌟 ૩. "પંચાયત કમિટી અને સ્ટાફ" (Screenshot 388 મુજબ)
         else if (dataType === 'staff') {
-            // પંચાયત કમિટી અને સ્ટાફ (ટેબલ ફોર્મેટ)
-            let rowsHtml = items.map((item, idx) => `
-                <tr class="border-b hover:bg-gray-50">
-                    <td class="p-3 font-bold text-gray-600">${idx + 1}</td>
-                    <td class="p-3 font-bold text-gray-900">${item.name || item.memberName || item.staffName || '-'}</td>
-                    <td class="p-3 text-emerald-800 font-semibold">${item.designation || item.post || item.role || '-'}</td>
-                    <td class="p-3 font-mono text-gray-700">${item.mobile || item.phone || item.contact || '-'}</td>
-                </tr>
-            `).join("");
+            let sections = rawData.sections || rawData;
+            if (!Array.isArray(sections)) {
+                sections = [
+                    { title: "૧. ચૂંટાયેલ પંચાયત કમિટી", list: rawData.elected || rawData.committee || rawData.list || [] },
+                    { title: "૨. ગ્રામ પંચાયત કર્મચારીઓ", list: rawData.employees || rawData.staff || [] }
+                ];
+            }
 
-            modalContent.innerHTML = `
-                <table class="w-full text-left border-collapse border rounded-lg overflow-hidden text-xs">
-                    <thead class="bg-emerald-800 text-white">
-                        <tr>
-                            <th class="p-3">ક્રમ</th>
-                            <th class="p-3">નામ</th>
-                            <th class="p-3">હોદ્દો</th>
-                            <th class="p-3">મોબાઈલ નંબર</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-200 bg-white">${rowsHtml}</tbody>
-                </table>
-            `;
-        } 
-        else if (dataType === 'committees') {
-            // કાર્યરત સમિતિઓ (ટેબલ ફોર્મેટ)
-            let rowsHtml = items.map((item, idx) => {
-                // જો સભ્યોની યાદી એરે કે ટેક્સ્ટમાં હોય તો
-                let membersText = "-";
-                if (Array.isArray(item.members)) {
-                    membersText = item.members.map(m => typeof m === 'object' ? `${m.name} (${m.role || 'સભ્ય'})` : m).join(", ");
-                } else if (item.members || item.memberName || item.details) {
-                    membersText = item.members || item.memberName || stripHtml(item.details);
-                }
+            htmlOutput = sections.map(sec => {
+                let list = sec.list || sec.items || [];
+                if (!list.length) return "";
+
+                let rows = list.map((item, idx) => `
+                    <tr class="border-b hover:bg-gray-50 text-xs">
+                        <td class="p-2.5 font-bold text-gray-600">${idx + 1}</td>
+                        <td class="p-2.5 font-bold text-gray-900">${item.name || item.memberName || item.staffName || '-'}</td>
+                        <td class="p-2.5 text-blue-800 font-semibold">${item.designation || item.post || item.role || '-'}</td>
+                        <td class="p-2.5 text-gray-700">${item.ward || item.wardNo || '-'}</td>
+                        <td class="p-2.5 font-mono text-gray-800">${item.mobile || item.phone || '-'}</td>
+                    </tr>
+                `).join("");
 
                 return `
-                    <tr class="border-b hover:bg-gray-50">
-                        <td class="p-3 font-bold text-gray-600 align-top">${idx + 1}</td>
-                        <td class="p-3 font-bold text-emerald-900 align-top">${item.committeeName || item.title || item.name || '-'}</td>
-                        <td class="p-3 text-gray-800 align-top">${item.president || item.chairman || item.head || '-'}</td>
-                        <td class="p-3 text-gray-700 leading-relaxed">${membersText}</td>
-                    </tr>
+                    <div class="mb-4 border rounded-xl overflow-hidden shadow-sm bg-white">
+                        <div class="bg-indigo-900 text-white px-4 py-2 font-bold text-xs flex justify-between items-center">
+                            <span><i class="fa-solid fa-users mr-1.5"></i> ${sec.title || "કમિટી / સ્ટાફ"}</span>
+                            ${sec.tenure ? `<span class="bg-amber-400 text-amber-950 px-2 py-0.5 rounded text-[10px]">મુદત: ${sec.tenure}</span>` : ''}
+                        </div>
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-gray-100 text-gray-700 text-xs border-b">
+                                <tr>
+                                    <th class="p-2.5">ક્રમ</th>
+                                    <th class="p-2.5">નામ</th>
+                                    <th class="p-2.5">હોદ્દો</th>
+                                    <th class="p-2.5">વર્ડ નં.</th>
+                                    <th class="p-2.5">મોબાઈલ નંબર</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y">${rows}</tbody>
+                        </table>
+                    </div>
                 `;
             }).join("");
+        }
+        // 🌟 ૪. "કાર્યરત સમિતિઓ" (Screenshot 389 મુજબ)
+        else if (dataType === 'committees') {
+            let commList = rawData.committees || rawData.list || (Array.isArray(rawData) ? rawData : Object.values(rawData));
 
-            modalContent.innerHTML = `
-                <table class="w-full text-left border-collapse border rounded-lg overflow-hidden text-xs">
-                    <thead class="bg-emerald-800 text-white">
-                        <tr>
-                            <th class="p-3">ક્રમ</th>
-                            <th class="p-3">સમિતિનું નામ</th>
-                            <th class="p-3">અધ્યક્ષ / પ્રમુખ</th>
-                            <th class="p-3">સભ્યો / વિગતો</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-200 bg-white">${rowsHtml}</tbody>
-                </table>
-            `;
+            htmlOutput = commList.map((comm, cIdx) => {
+                let members = comm.members || comm.memberList || [];
+                let memberRows = members.map((m, mIdx) => `
+                    <tr class="border-b hover:bg-gray-50 text-xs">
+                        <td class="p-2 text-gray-600 font-bold">${mIdx + 1}</td>
+                        <td class="p-2 font-bold text-gray-900">${m.name || m.memberName || m || '-'}</td>
+                        <td class="p-2 text-purple-800">${m.originalRole || m.role || '-'}</td>
+                        <td class="p-2 text-gray-700">${m.committeeRole || m.designation || 'સભ્ય'}</td>
+                    </tr>
+                `).join("");
+
+                return `
+                    <div class="mb-4 border rounded-xl overflow-hidden shadow-sm bg-white">
+                        <div class="bg-purple-900 text-white px-4 py-2 font-bold text-xs">
+                            <i class="fa-solid fa-people-group mr-1.5"></i> ${cIdx + 1}. ${comm.committeeName || comm.title || "સમિતિ"}
+                        </div>
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-gray-100 text-gray-700 text-xs border-b">
+                                <tr>
+                                    <th class="p-2">ક્રમ</th>
+                                    <th class="p-2">સભ્યનું નામ</th>
+                                    <th class="p-2">મૂળ હોદ્દો</th>
+                                    <th class="p-2">સમિતિમાં હોદ્દો</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y">${memberRows || '<tr><td colspan="4" class="p-3 text-center text-gray-500 text-xs">સભ્યો ઉમેરેલા નથી.</td></tr>'}</tbody>
+                        </table>
+                    </div>
+                `;
+            }).join("");
         }
 
+        modalContent.innerHTML = htmlOutput || `<div class="text-center text-gray-500 py-6 text-xs">ડેટા ઉપલબ્ધ નથી.</div>`;
+
     } catch (err) {
-        console.error("Error fetching panchayat data:", err);
-        modalContent.innerHTML = `<div class="text-red-600 p-4">ડેટા મેળવવામાં એરર આવી: ${err.message}</div>`;
+        console.error("Error rendering panchayat layout:", err);
+        modalContent.innerHTML = `<div class="text-red-600 p-4 text-xs">ડેટા લોડ કરવામાં એરર આવી: ${err.message}</div>`;
     }
 };
+
+// હેલ્પર ફંક્શન: "મારૂ ગામ" ના ટેબલ માટે
+function renderGlanceCategory(title, items) {
+    if (!items || !items.length) return "";
+    let rows = items.map(item => `
+        <tr class="border-b hover:bg-gray-50 text-xs">
+            <td class="p-2.5 font-bold text-emerald-900 w-1/3">${item.label || item.title || item.name || '-'}</td>
+            <td class="p-2.5 font-semibold text-blue-700">${item.mainValue || item.value || item.count || '-'}</td>
+            <td class="p-2.5 text-gray-600">${item.extraValue || item.details || '-'}</td>
+        </tr>
+    `).join("");
+
+    return `
+        <div class="mb-4 border rounded-xl overflow-hidden shadow-sm bg-white">
+            <div class="bg-emerald-800 text-white px-4 py-2 font-bold text-xs">
+                <i class="fa-solid fa-folder-open mr-1.5"></i> ${title}
+            </div>
+            <table class="w-full text-left border-collapse">
+                <thead class="bg-gray-100 text-gray-700 text-xs border-b">
+                    <tr>
+                        <th class="p-2.5">વિગત / સુવિધા</th>
+                        <th class="p-2.5">આંકડો / મુખ્ય માહિતી</th>
+                        <th class="p-2.5">વધારાની વિગત</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y">${rows}</tbody>
+            </table>
+        </div>
+    `;
+}
 
 window.closeDataModal = function() {
     document.getElementById("data-modal").classList.add("hidden");
 };
 
-// ટેબલનો સ્વચ્છ ટેક્સ્ટ કોપી કરવા માટેનું ફંક્શન (Excel કે Word માં સીધું પેસ્ટ થઈ શકે તેવું)
 window.copyModalContent = function() {
     const contentEl = document.getElementById("modal-content");
-    const textToCopy = contentEl.innerText; // innerText લેવાથી ટેબલના કોલમ Tab સાથે સરસ રીતે કોપી થશે
+    const textToCopy = contentEl.innerText;
     
     navigator.clipboard.writeText(textToCopy).then(() => {
-        alert("📋 માહિતી ટેબલ ફોર્મેટમાં કોપી થઈ ગઈ છે! તમે તેને સીધી Excel કે Word માં પેસ્ટ કરી શકો છો.");
+        alert("📋 માહિતી ટેબલ ફોર્મેટમાં સફળતાપૂર્વક કોપી થઈ ગઈ છે! તમે તેને Excel કે Word માં પેસ્ટ કરી શકો છો.");
     }).catch(err => {
         alert("કોપી કરવામાં નિષ્ફળતા.");
     });
