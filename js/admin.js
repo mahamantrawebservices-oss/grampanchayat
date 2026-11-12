@@ -137,6 +137,7 @@ function initAdminPanel() {
     loadAdminGlanceList();
     loadContactAdminData();
     loadAdminFeedbacks();
+    loadDownloadsAdminData();
     loadProactiveAdminData();
 }
 
