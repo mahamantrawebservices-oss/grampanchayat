@@ -297,59 +297,88 @@ window.deleteNotice = async (id) => {
 // --- ૪. Blogger ફોટો ગેલેરી મેનેજર (૨૦ ફોટા લિમિટ & સ્ક્રોલ લિસ્ટ) ---
 document.getElementById("gallery-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const title = document.getElementById("img-title").value.trim();
-    const url = document.getElementById("img-url").value.trim();
+    if (!lgdCode) return;
 
-    const snap = await getDocs(getPanchayatCol("gallery"));
-    if (snap.size >= 20) {
-        alert("⚠️ ગેલેરી લિમિટ પૂરી થઈ ગઈ છે! તમે ફક્ત મહત્તમ ૨૦ ફોટા જ ઉમેરી શકો છો.");
-        return;
+    const titleInput = document.getElementById("img-title");
+    const urlInput = document.getElementById("img-url");
+    if (!titleInput || !urlInput) return;
+
+    const title = titleInput.value.trim();
+    const url = urlInput.value.trim();
+
+    try {
+        const galleryColRef = getPanchayatCol("gallery");
+        const snap = await getDocs(galleryColRef);
+        
+        if (snap.size >= 20) {
+            alert("⚠️ ગેલેરી લિમિટ પૂરી થઈ ગઈ છે! તમે ફક્ત મહત્તમ ૨૦ ફોટા જ ઉમેરી શકો છો.");
+            return;
+        }
+
+        await addDoc(galleryColRef, { 
+            title: title, 
+            imageUrl: url, 
+            createdAt: new Date() 
+        });
+        
+        alert("✅ ફોટો સફળતાપૂર્વક ઉમેરાઈ ગયો!");
+        e.target.reset();
+        loadAdminGallery();
+    } catch (err) {
+        console.error("Add Gallery Error:", err);
+        alert("ફોટો ઉમેરવામાં ટેકનિકલ ભૂલ આવી.");
     }
-
-    await addDoc(getPanchayatCol("gallery"), { title, imageUrl: url, createdAt: new Date() });
-    alert("ફોટો ઉમેરાઈ ગયો!");
-    e.target.reset();
-    loadAdminGallery();
 });
 
 async function loadAdminGallery() {
     const container = document.getElementById("admin-gallery-list");
     if (!container || !lgdCode) return;
 
-    const snap = await getDocs(getPanchayatCol("gallery"));
-    container.innerHTML = "";
-    
-    const countEl = document.getElementById("gallery-count");
-    if (countEl) countEl.innerText = `કુલ ફોટા: ${snap.size} / 20`;
+    try {
+        const snap = await getDocs(getPanchayatCol("gallery"));
+        container.innerHTML = "";
+        
+        const countEl = document.getElementById("gallery-count");
+        if (countEl) countEl.innerText = `કુલ: ${snap.size} / 20`;
 
-    if (snap.empty) {
-        container.innerHTML = "<p class='text-xs text-gray-500'>કોઈ ફોટો નથી.</p>";
-        return;
-    }
+        if (snap.empty) {
+            container.innerHTML = "<p class='text-xs text-gray-500 p-2'>હાલમાં કોઈ ફોટો નથી.</p>";
+            return;
+        }
 
-    snap.forEach((docSnap) => {
-        const item = docSnap.data();
-        const id = docSnap.id;
-        container.innerHTML += `
-            <div class="flex justify-between items-center bg-white p-2 border rounded shadow-sm text-xs mb-1">
-                <div class="flex items-center gap-2 overflow-hidden">
-                    <img src="${item.imageUrl}" class="w-8 h-8 object-cover rounded flex-shrink-0">
-                    <span class="font-semibold text-gray-700 truncate">${item.title}</span>
+        snap.forEach((docSnap) => {
+            const item = docSnap.data();
+            const id = docSnap.id;
+            container.innerHTML += `
+                <div class="flex justify-between items-center bg-white p-2 border rounded shadow-sm text-xs mb-1">
+                    <div class="flex items-center gap-2 overflow-hidden">
+                        <img src="${item.imageUrl}" class="w-8 h-8 object-cover rounded flex-shrink-0 border" onerror="this.src='https://via.placeholder.com/40'">
+                        <span class="font-semibold text-gray-700 truncate">${item.title || 'ફોટો'}</span>
+                    </div>
+                    <button type="button" onclick="deleteGalleryImg('${id}')" class="bg-red-600 hover:bg-red-700 text-white text-[10px] px-2 py-1 rounded font-semibold">ડિલીટ</button>
                 </div>
-                <button onclick="deleteGalleryImg('${id}')" class="bg-red-600 text-white text-[10px] px-2 py-1 rounded">ડિલીટ</button>
-            </div>
-        `;
-    });
+            `;
+        });
+    } catch (err) {
+        console.error("Load Admin Gallery Error:", err);
+    }
 }
 
 window.deleteGalleryImg = async (id) => {
-    if (confirm("આ ફોટો કાઢી નાખવો છે?")) {
-        await deleteDoc(getPanchayatDoc("gallery", id));
-        loadAdminGallery();
+    if (!lgdCode) return;
+    if (confirm("શું તમે આ ફોટો કાઢી નાખવા માંગો છો?")) {
+        try {
+            await deleteDoc(getPanchayatDoc("gallery", id));
+            alert("ફોટો સફળતાપૂર્વક ડિલીટ થઈ ગયો!");
+            loadAdminGallery();
+        } catch (err) {
+            console.error("Delete Gallery Error:", err);
+            alert("ડિલીટ કરવામાં ભૂલ આવી.");
+        }
     }
 };
+// --- ૪. Blogger ફોટો ગેલેરી મેનેજર (૨૦ ફોટા લિમિટ & સ્ક્રોલ લિસ્ટ કોડ પૂર્ણ) ---
 
-// --- ૫. ગામ અને પંચાયત વિગત (Quill Editor) ---
 // --- ૫. ગામ અને પંચાયત વિગત (Quill Editor) ---
 let menuQuill = null;
 if (document.getElementById('menu-editor-container')) {
