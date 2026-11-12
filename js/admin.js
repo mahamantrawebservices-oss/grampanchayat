@@ -104,14 +104,16 @@ loginForm?.addEventListener("submit", async (e) => {
     }
 });
 
-// Logout Button
+// Logout Button (કન્ફર્મેશન સાથે)
 document.getElementById("logout-btn")?.addEventListener("click", () => {
-    const currentParams = new URLSearchParams(window.location.search);
-    let activeLgd = currentParams.get('id') || lgdCode || localStorage.getItem("currentPanchayatId");
-    if (activeLgd) {
-        sessionStorage.removeItem(`admin_logged_${activeLgd}`);
+    if (confirm("શું તમે ખરેખર એડમિન પેનલમાંથી લોગઆઉટ કરવા માંગો છો?")) {
+        const currentParams = new URLSearchParams(window.location.search);
+        let activeLgd = currentParams.get('id') || lgdCode || localStorage.getItem("currentPanchayatId");
+        if (activeLgd) {
+            sessionStorage.removeItem(`admin_logged_${activeLgd}`);
+        }
+        checkAdminAuth();
     }
-    checkAdminAuth();
 });
 
 checkAdminAuth();
