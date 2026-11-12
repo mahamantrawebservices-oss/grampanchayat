@@ -69,15 +69,14 @@ async function loadSettings() {
         if (docSnap.exists()) {
             const data = docSnap.data();
             
-            // પંચાયતનું નામ અલગ-અલગ જગ્યાએ સેટ કરવું
             if(data.name) {
                 if(document.getElementById("gp-name")) document.getElementById("gp-name").innerText = data.name;
                 if(document.getElementById("banner-gp-name")) document.getElementById("banner-gp-name").innerText = data.name;
                 
-                // 👈 ફૂટરમાં પંચાયતનું નામ સેટ કરવા માટે (દા.ત. "વડોલા ગ્રામ પંચાયત")
+                // 👈 અહીંથી વધારાનો "ગ્રામ પંચાયત" શબ્દ કાઢી નાખ્યો છે, જેથી માત્ર પંચાયતનું સાચું નામ જ આવે
                 const footerGpNameEl = document.getElementById("footer-gp-name");
                 if(footerGpNameEl) {
-                    footerGpNameEl.innerText = `${data.name} ગ્રામ પંચાયત`;
+                    footerGpNameEl.innerText = data.name;
                 }
             }
 
