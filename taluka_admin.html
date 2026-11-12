@@ -244,48 +244,76 @@
             }
         }
 
-        // Global functions for modal and data view
-        window.showPanchayatData = async function(lgdCode, subCollectionName, title) {
-            const modal = document.getElementById("data-modal");
-            const modalTitle = document.getElementById("modal-title");
-            const modalContent = document.getElementById("modal-content");
+       // Global function to fetch and show panchayat sub-data in popup
+window.showPanchayatData = async function(lgdCode, dataType, title) {
+    const modal = document.getElementById("data-modal");
+    const modalTitle = document.getElementById("modal-title");
+    const modalContent = document.getElementById("modal-content");
 
-            modalTitle.textContent = `${title} (${lgdCode})`;
-            modalContent.textContent = "માહિતી લોડ થઈ રહી છે...";
-            modal.classList.remove("hidden");
+    modalTitle.textContent = `${title} (LGD Code: ${lgdCode})`;
+    modalContent.textContent = "માહિતી લોડ થઈ રહી છે...";
+    modal.classList.remove("hidden");
 
-            try {
-                // ફાયરબેઝમાંથી સંબંધિત સબ-કલૅક્શન કે ડોક્યુમેન્ટ ફેચ કરવું
-                const docRef = doc(db, "panchayats", lgdCode, subCollectionName, "data") || doc(db, "panchayats", lgdCode);
-                const snap = await getDoc(docRef);
+    try {
+        let foundData = null;
+        let targetSubCol = "";
+        
+        // ડેટાના પ્રકાર મુજબ ફાયરબેઝ સબ-કલેક્શન નક્કી કરવા
+        if (dataType === 'about') targetSubCol = 'village_details';
+        else if (dataType === 'staff') targetSubCol = 'panchayat_staff';
+        else if (dataType === 'committees') targetSubCol = 'active_committees';
 
-                if (snap.exists()) {
-                    modalContent.textContent = JSON.stringify(snap.data(), null, 2);
-                } else {
-                    // જો સબ-ડોક્યુમેન્ટ ન હોય તો મેઈન પંચાયત ડેટામાંથી ચેક કરો
-                    const mainSnap = await getDoc(doc(db, "panchayats", lgdCode));
-                    if (mainSnap.exists() && mainSnap.data()[subCollectionName]) {
-                        modalContent.textContent = JSON.stringify(mainSnap.data()[subCollectionName], null, 2);
-                    } else {
-                        modalContent.textContent = "⚠️ આ પંચાયત માટે હજુ સુધી આ માહિતી ભરવામાં આવી નથી.";
-                    }
+        // ૧. પહેલો પ્રયાસ: સબ-કલેક્શનમાંથી 'data' ડોક્યુમેન્ટ મેળવવો
+        const subDocRef = doc(db, "panchayats", lgdCode, targetSubCol, "data");
+        const subDocSnap = await getDoc(subDocRef);
+
+        if (subDocSnap.exists()) {
+            foundData = subDocSnap.data();
+        } else {
+            // ૨. બીજો પ્રયાસ: મેઈન પંચાયત ડોક્યુમેન્ટમાંથી સીધો ડેટા મેળવવો
+            const mainDocRef = doc(db, "panchayats", lgdCode);
+            const mainDocSnap = await getDoc(mainDocRef);
+
+            if (mainDocSnap.exists()) {
+                const mainData = mainDocSnap.data();
+                if (mainData[dataType]) {
+                    foundData = mainData[dataType];
+                } else if (mainData.settings && mainData.settings[dataType]) {
+                    foundData = mainData.settings[dataType];
                 }
-            } catch (err) {
-                console.error(err);
-                modalContent.textContent = "ડેટા મેળવવામાં એરર આવી: " + err.message;
             }
-        };
+        }
 
-        window.closeDataModal = function() {
-            document.getElementById("data-modal").classList.add("hidden");
-        };
+        // જો ડેટા મળી જાય તો તેને સુંદર રીતે ફોર્મેટ કરીને બતાવવો
+        if (foundData) {
+            // જો ડેટા ઓબ્જેક્ટ કે એરે હોય તો તેને JSON ફોર્મેટમાં ફેરવવો
+            if (typeof foundData === 'object') {
+                modalContent.textContent = JSON.stringify(foundData, null, 2);
+            } else {
+                modalContent.textContent = foundData;
+            }
+        } else {
+            modalContent.textContent = `⚠️ આ પંચાયત માટે હજુ સુધી "${title}" ની માહિતી ભરવામાં આવી નથી અથવા ડેટા ઉપલબ્ધ નથી.`;
+        }
 
-        window.copyModalContent = function() {
-            const text = document.getElementById("modal-content").textContent;
-            navigator.clipboard.writeText(text).then(() => {
-                alert("📋 માહિતી ક્લિપબોર્ડમાં કોપી થઈ ગઈ!");
-            });
-        };
+    } catch (err) {
+        console.error("Error fetching panchayat data:", err);
+        modalContent.textContent = "ડેટા મેળવવામાં ટેક્નિકલ એરર આવી: " + err.message;
+    }
+};
+
+window.closeDataModal = function() {
+    document.getElementById("data-modal").classList.add("hidden");
+};
+
+window.copyModalContent = function() {
+    const text = document.getElementById("modal-content").textContent;
+    navigator.clipboard.writeText(text).then(() => {
+        alert("📋 માહિતી સફળતાપૂર્વક ક્લિપબોર્ડમાં કોપી થઈ ગઈ!");
+    }).catch(err => {
+        alert("કોપી કરવામાં નિષ્ફળતા.");
+    });
+};
 
         checkTalukaAuth();
     </script>
