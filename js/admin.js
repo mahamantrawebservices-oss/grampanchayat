@@ -50,7 +50,7 @@ const adminDashboard = document.getElementById("admin-dashboard");
 const loginForm = document.getElementById("admin-login-form");
 
 async function checkAdminAuth() {
-    // લૉગિન અને ઓથોરાઇઝેશન વખતે પણ LGD Code ની ખાતરી કરવી
+    // URL અથવા LocalStorage માંથી એક્ટિવ LGD Code મેળવો
     const currentParams = new URLSearchParams(window.location.search);
     let activeLgd = currentParams.get('id') || lgdCode || localStorage.getItem("currentPanchayatId");
     
@@ -59,6 +59,11 @@ async function checkAdminAuth() {
     if (sessionStorage.getItem(`admin_logged_${activeLgd}`) === "true") {
         if (loginModal) loginModal.classList.add("hidden");
         if (adminDashboard) adminDashboard.classList.remove("hidden");
+        
+        // ડાયનેમિક હેડર ટાઇટલ અને પેનલ ઇનિશિયલાઈઝ કરો
+        if (typeof updateAdminHeaderTitle === 'function') {
+            updateAdminHeaderTitle(activeLgd);
+        }
         initAdminPanel();
     } else {
         if (loginModal) loginModal.classList.remove("hidden");
@@ -66,37 +71,49 @@ async function checkAdminAuth() {
     }
 }
 
+// 🌟 LGD Code અને Password બંને વેરિફાઈ કરવા માટેનું ફોર્મ સબમિટ ઇવેન્ટ
 loginForm?.addEventListener("submit", async (e) => {
     e.preventDefault(); // 🛑 પેજ રિફ્રેશ થતું અટકાવવા માટે
+    
+    // યુઝરે ફોર્મમાં દાખલ કરેલા LGD Code અને Password મેળવો
+    const enteredLgd = document.getElementById("login-lgd")?.value.trim();
     const enteredPass = document.getElementById("login-password")?.value.trim();
 
-    const currentParams = new URLSearchParams(window.location.search);
-    let activeLgd = currentParams.get('id') || lgdCode || localStorage.getItem("currentPanchayatId");
-
-    if (!activeLgd) {
-        alert("⚠️ પંચાયત આઈડી (LGD Code) મળ્યો નથી.");
+    if (!enteredLgd || !enteredPass) {
+        alert("⚠️ કૃપા કરીને LGD Code અને પાસવર્ડ બંને દાખલ કરો.");
         return;
     }
 
     try {
-        const panchayatDocRef = doc(db, "panchayats", activeLgd);
+        // ફાયરબેઝમાંથી તે LGD Code વાળું ડૉક્યુમેન્ટ ફેચ કરો
+        const panchayatDocRef = doc(db, "panchayats", enteredLgd);
         const snap = await getDoc(panchayatDocRef);
 
         if (snap.exists()) {
             const data = snap.data();
-            const correctPass = data.adminPassword || "admin123";
+            const correctPass = data.adminPassword || "admin123"; // ડિફોલ્ટ પાસવર્ડ સેફ્ટી
 
             if (enteredPass === correctPass) {
-                sessionStorage.setItem(`admin_logged_${activeLgd}`, "true");
+                // સેશન અને લોકલ સ્ટોરેજમાં LGD Code અને લોગિન સ્ટેટ સેવ કરો
+                sessionStorage.setItem(`admin_logged_${enteredLgd}`, "true");
+                localStorage.setItem("currentPanchayatId", enteredLgd);
+                lgdCode = enteredLgd;
+
                 if (loginModal) loginModal.classList.add("hidden");
                 if (adminDashboard) adminDashboard.classList.remove("hidden");
-                alert("સફળતાપૂર્વક લૉગિન થઈ ગયું!");
+                
+                alert("✅ સફળતાપૂર્વક લૉગિન થઈ ગયું!");
+                
+                // હેડર ટાઇટલ અપડેટ કરો અને પેનલ શરૂ કરો
+                if (typeof updateAdminHeaderTitle === 'function') {
+                    updateAdminHeaderTitle(enteredLgd);
+                }
                 initAdminPanel();
             } else {
-                alert("ખોટો પાસવર્ડ! કૃપા કરીને સાચો પાસવર્ડ દાખલ કરો.");
+                alert("❌ ખોટો પાસવર્ડ! કૃપા કરીને સાચો પાસવર્ડ દાખલ કરો.");
             }
         } else {
-            alert("આ LGD Code વાળી પંચાયત મળી નથી.");
+            alert("❌ આ LGD Code વાળી પંચાયત સિસ્ટમમાં નોંધાયેલી નથી.");
         }
     } catch (err) {
         console.error("Login error:", err);
