@@ -15,18 +15,25 @@
 </head>
 <body class="min-h-screen flex flex-col font-sans" style="background-color: #97B3DE;">
 
-    <!-- Login Modal -->
-    <div id="login-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-        <div class="bg-white p-8 rounded-xl shadow-2xl w-96">
-            <h2 class="text-2xl font-bold text-gray-800 mb-1 text-center">એડમિન લોગિન</h2>
-            <p id="panchayat-login-title" class="text-xs text-center text-emerald-700 font-bold mb-4">ગ્રામ પંચાયત પસંદ થઈ રહી છે...</p>
-<form id="admin-login-form" class="space-y-4">
-    <p class="text-xs text-slate-600 text-center">પંચાયત એડમિન પાસવર્ડ દાખલ કરો</p>
-    <input type="password" id="login-password" placeholder="પાસવર્ડ" required class="w-full border p-2.5 rounded text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500">
-    <button type="submit" class="w-full bg-emerald-600 text-white font-bold py-2.5 rounded hover:bg-emerald-700 transition">લોગિન કરો</button>
-</form>
-        </div>
+ <!-- Login Modal -->
+<div id="login-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+    <div class="bg-white p-8 rounded-xl shadow-2xl w-96">
+        <h2 class="text-2xl font-bold text-gray-800 mb-1 text-center">એડમિન લોગિન</h2>
+        <p id="panchayat-login-title" class="text-xs text-center text-emerald-700 font-bold mb-4">પંચાયત એડમિન પોર્ટલ</p>
+        
+        <form id="admin-login-form" class="space-y-3">
+            <div>
+                <label class="block text-xs font-bold text-gray-700 mb-1">LGD Code (પંચાયત આઈડી)</label>
+                <input type="text" id="login-lgd" placeholder="દા.ત. 500000 કે 517045" required class="w-full border p-2.5 rounded text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-700 mb-1">એડમિન પાસવર્ડ</label>
+                <input type="password" id="login-password" placeholder="પાસવર્ડ દાખલ કરો" required class="w-full border p-2.5 rounded text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500">
+            </div>
+            <button type="submit" class="w-full bg-emerald-600 text-white font-bold py-2.5 rounded hover:bg-emerald-700 transition mt-2">લોગિન કરો</button>
+        </form>
     </div>
+</div>
 
     <!-- Main Admin Dashboard -->
     <div id="admin-dashboard" class="hidden min-h-screen flex flex-col">
