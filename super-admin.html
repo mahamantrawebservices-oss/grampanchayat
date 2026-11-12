@@ -3,172 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>સુપર એડમિન પેનલ - ગ્રામ પંચાયત મેનેજમેન્ટ</title>
+    <title>સુપર એડમિન પેનલ - ગ્રામ પંચાયત પોર્ટલ</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-slate-100 min-h-screen font-sans text-gray-800 p-4 md:p-8">
+<body class="bg-gray-100 text-gray-800 font-sans">
 
-    <!-- Super Admin Login Modal -->
-    <div id="super-login-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-        <div class="bg-white p-8 rounded-2xl shadow-2xl w-96 space-y-4">
-            <h2 class="text-xl font-bold text-slate-800 text-center flex items-center justify-center gap-2">
-                <i class="fa-solid fa-lock text-amber-500"></i> સુપર એડમિન લૉગિન
-            </h2>
-            <p class="text-xs text-slate-500 text-center">કૃપા કરીને કંટ્રોલ પેનલ ઍક્સેસ કરવા માટે સુપર એડમિન પાસવર્ડ દાખલ કરો.</p>
-            <form id="super-login-form" class="space-y-3">
-                <input type="password" id="super-pass-input" placeholder="સુપર એડમિન પાસવર્ડ" required class="w-full border p-2.5 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500 outline-none">
-                <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold p-2.5 rounded-lg text-xs transition">
-                    લૉગિન કરો
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Main Super Admin Dashboard -->
-    <div id="super-dashboard" class="max-w-6xl mx-auto space-y-6 hidden">
-
+    <!-- Super Admin Dashboard Container -->
+    <div class="min-h-screen flex flex-col">
+        
         <!-- Header -->
-        <div class="bg-slate-900 text-white p-6 rounded-2xl shadow-xl flex flex-col md:flex-row justify-between items-center gap-4">
+        <header class="bg-emerald-900 text-white shadow-md py-4 px-6 flex justify-between items-center">
             <div>
-                <h1 class="text-2xl font-bold flex items-center gap-2">
-                    <i class="fa-solid fa-user-gear text-amber-400"></i> સુપર એડમિન કંટ્રોલ પેનલ
-                </h1>
-                <p class="text-xs text-slate-400 mt-1">ગુજરાતની ગ્રામ પંચાયતોનું સેન્ટ્રલ મેનેજમેન્ટ અને LGD Code આધારિત સુરક્ષિત કંટ્રોલ</p>
+                <h1 class="text-xl font-bold">સુપર એડમિન કંટ્રોલ પેનલ</h1>
+                <p class="text-xs text-emerald-200">ગ્લોબલ સિસ્ટમ અને પંચાયત મેનેજમેન્ટ</p>
             </div>
-            <div class="flex items-center gap-3">
-                <span id="total-panchayats-count" class="bg-slate-800 px-4 py-2 rounded-xl text-xs font-semibold text-emerald-400 border border-slate-700">
-                    કુલ પંચાયતો: ૦
-                </span>
-                <button id="change-super-pass-btn" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5" title="સુપર એડમિન પાસવર્ડ બદલો">
-                    <i class="fa-solid fa-key"></i> પાસવર્ડ બદલો
-                </button>
-                <button id="super-logout-btn" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-xl text-xs font-bold transition">
-                    લૉગઆઉટ
-                </button>
-            </div>
-        </div>
+            <a href="index.html" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-4 py-2 rounded-lg transition shadow">
+                <i class="fa-solid fa-globe mr-1"></i> મુખ્ય વેબસાઇટ જુઓ
+            </a>
+        </header>
 
-        <!-- Developer Maintenance Manager Section -->
-        <div class="bg-amber-50 border border-amber-300 p-5 rounded-2xl shadow-sm space-y-4">
-            <h3 class="font-bold text-amber-900 text-sm flex items-center gap-2 border-b border-amber-200 pb-2">
-                <i class="fa-solid fa-screwdriver-wrench text-amber-600"></i> ડેવલપર મેન્ટેનન્સ મેસેજ કંટ્રોલ (Global Maintenance Mode)
-            </h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end text-xs">
-                <div>
-                    <label class="block font-medium text-amber-900 mb-1">મેન્ટેનન્સ મોડ સ્વિચ:</label>
-                    <select id="maint-mode-select" class="w-full border p-2 rounded-lg bg-white font-bold">
-                        <option value="false">OFF (વેબસાઇટ્સ ચાલુ રાખવી)</option>
-                        <option value="true">ON (મેન્ટેનન્સ મોડ ચાલુ કરવો)</option>
-                    </select>
-                </div>
-                <div class="md:col-span-2">
-                    <label class="block font-medium text-amber-900 mb-1">નાગરિકો માટે મેન્ટેનન્સ મેસેજ:</label>
-                    <input type="text" id="maint-msg-input" class="w-full border p-2 rounded-lg bg-white" placeholder="દા.ત. સિસ્ટમ અપડેટ ચાલુ હોવાથી વેબસાઇટ થોડીવાર માટે બંધ રહેશે.">
-                </div>
-            </div>
-            <button id="save-maint-btn" class="bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs px-4 py-2 rounded-lg shadow transition flex items-center gap-2">
-                <i class="fa-solid fa-floppy-disk"></i> મેન્ટેનન્સ સેટિંગ્સ સેવ કરો
-            </button>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-            <!-- Form: Register New Panchayat with LGD Code -->
-            <div class="bg-white p-5 rounded-2xl shadow-md border space-y-4">
-                <h3 class="font-bold text-sm text-slate-800 flex items-center gap-2 border-b pb-2">
-                    <i class="fa-solid fa-plus-circle text-emerald-600"></i> નવી પંચાયત ઉમેરો (LGD Code સાથે)
-                </h3>
-
-                <form id="add-panchayat-form" class="space-y-3 text-xs">
+        <!-- Main Content Area -->
+        <main class="flex-1 p-6 max-w-7xl mx-auto w-full space-y-6">
+            
+            <!-- Section 1: Maintenance Mode Settings -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border">
+                <h2 class="text-lg font-bold text-emerald-900 mb-3"><i class="fa-solid fa-screwdriver-wrench text-emerald-600 mr-2"></i> મેન્ટેનન્સ મોડ સેટિંગ્સ</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                     <div>
-                        <label class="block font-medium text-gray-700 mb-1">ગ્રામ પંચાયતનો LGD Code (યુનિક આઈડી):</label>
-                        <input type="text" id="p-lgd-code" class="w-full border p-2 rounded bg-gray-50 font-mono font-bold text-indigo-700" placeholder="દા.ત. 516909" required>
-                    </div>
-                    <div>
-                        <label class="block font-medium text-gray-700 mb-1">જિલ્લો (District):</label>
-                        <input type="text" id="p-district" class="w-full border p-2 rounded bg-gray-50" placeholder="દા.ત. આણંદ" required>
-                    </div>
-                    <div>
-                        <label class="block font-medium text-gray-700 mb-1">તાલુકો (Taluka):</label>
-                        <input type="text" id="p-taluka" class="w-full border p-2 rounded bg-gray-50" placeholder="દા.ત. પેટલાદ" required>
-                    </div>
-                    <div>
-                        <label class="block font-medium text-gray-700 mb-1">ગ્રામ પંચાયતનું નામ:</label>
-                        <input type="text" id="p-name" class="w-full border p-2 rounded bg-gray-50" placeholder="દા.ત. કાસોર" required>
-                    </div>
-                    <div>
-                        <label class="block font-medium text-gray-700 mb-1">તલાટી/સંપર્ક નંબર:</label>
-                        <input type="text" id="p-phone" class="w-full border p-2 rounded bg-gray-50" placeholder="મોબાઈલ નંબર">
-                    </div>
-                    <div>
-                        <label class="block font-medium text-gray-700 mb-1">એડમિન પાસવર્ડ (Admin Password):</label>
-                        <input type="text" id="p-password" class="w-full border p-2 rounded bg-gray-50 font-mono" placeholder="દા.ત. Admin@123" required>
-                    </div>
-                    <div>
-                        <label class="block font-medium text-gray-700 mb-1">એક્ટિવેશન સ્ટેટસ:</label>
-                        <select id="p-status" class="w-full border p-2 rounded bg-gray-50 font-bold">
-                            <option value="true">Active (વેબસાઇટ ચાલુ રાખવી)</option>
-                            <option value="false">Deactive (પેન્ડિંગ/બંધ રાખવી)</option>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">મેન્ટેનન્સ સ્ટેટસ</label>
+                        <select id="maint-mode-select" class="w-full border p-2.5 rounded text-sm bg-white">
+                            <option value="false">બંધ (Site Active)</option>
+                            <option value="true">ચાલુ (Under Maintenance)</option>
                         </select>
                     </div>
-
-                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold p-2.5 rounded-lg shadow transition mt-2 flex justify-center items-center gap-2">
-                        <i class="fa-solid fa-cloud-arrow-up"></i> પંચાયત રજીસ્ટર કરો
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-bold text-gray-700 mb-1">મેન્ટેનન્સ મેસેજ (યુઝર્સ માટે)</label>
+                        <input type="text" id="maint-msg-input" placeholder="વેબસાઇટ પર દેખાવા માટેનો મેસેજ લખો..." class="w-full border p-2.5 rounded text-sm">
+                    </div>
+                </div>
+                <div class="mt-4 text-right">
+                    <button id="save-maint-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-5 py-2.5 rounded shadow transition">
+                        <i class="fa-solid fa-floppy-disk mr-1"></i> સેટિંગ્સ સેવ કરો
                     </button>
+                </div>
+            </div>
+
+            <!-- Section 2: Add New Panchayat Form -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border">
+                <h2 class="text-lg font-bold text-emerald-900 mb-3"><i class="fa-solid fa-circle-plus text-emerald-600 mr-2"></i> નવી ગ્રામ પંચાયત ઉમેરો</h2>
+                <form id="add-panchayat-form" class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">જિલ્લો</label>
+                        <input type="text" id="p-district" placeholder="દા.ત. Ahmedabad" required class="w-full border p-2.5 rounded text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">તાલુકો</label>
+                        <input type="text" id="p-taluka" placeholder="દા.ત. Daskroi" required class="w-full border p-2.5 rounded text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">પંચાયતનું નામ</label>
+                        <input type="text" id="p-name" placeholder="દા.ત. Popipur" required class="w-full border p-2.5 rounded text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">સંપર્ક નંબર</label>
+                        <input type="text" id="p-phone" placeholder="મોબાઈલ નંબર" class="w-full border p-2.5 rounded text-sm">
+                    </div>
+                    <div>
+                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold p-2.5 rounded text-sm shadow transition">
+                            <i class="fa-solid fa-plus mr-1"></i> પંચાયત ઉમેરો
+                        </button>
+                    </div>
                 </form>
             </div>
 
-            <!-- List of Panchayats with District & Taluka Filters -->
-            <div class="md:col-span-2 bg-white p-5 rounded-2xl shadow-md border space-y-4">
-                <div class="flex flex-col gap-3 border-b pb-3">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-                        <h3 class="font-bold text-sm text-slate-800 flex items-center gap-2">
-                            <i class="fa-solid fa-list-check text-blue-600"></i> નોંધાયેલ ગ્રામ પંચાયતોની યાદી
-                        </h3>
-                        <input type="text" id="search-input" placeholder="નામ કે LGD Code થી શોધો..." class="border p-1.5 rounded-lg text-xs w-48">
+            <!-- Section 3: Taluka Admin Credentials & Control Manager -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border space-y-4">
+                <h2 class="text-lg font-bold text-emerald-900"><i class="fa-solid fa-key text-emerald-600 mr-2"></i> તાલુકા એડમિન પાસવર્ડ અને સ્ટેટસ મેનેજમેન્ટ</h2>
+                <p class="text-xs text-gray-600">અહીંથી કોઈપણ તાલુકા માટે પાસવર્ડ સેટ કરી શકાય છે અને તેનું લૉગિન ચાલુ (Active) અથવા બંધ (Deactive) કરી શકાય છે.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg border">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">તાલુકાનું નામ (ID)</label>
+                        <input type="text" id="taluka-name-input" placeholder="દા.ત. Daskroi" class="w-full border p-2 rounded text-sm bg-white">
                     </div>
-                    
-                    <!-- Filters Row -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                        <div>
-                            <select id="filter-district" class="w-full border p-1.5 rounded-lg bg-gray-50 font-medium">
-                                <option value="">તમામ જિલ્લાઓ (All Districts)</option>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">નવો પાસવર્ડ</label>
+                        <input type="text" id="taluka-pass-input" placeholder="પાસવર્ડ દાખલ કરો" class="w-full border p-2 rounded text-sm bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">લૉગિન સ્ટેટસ</label>
+                        <div class="flex gap-2">
+                            <select id="taluka-status-select" class="w-full border p-2 rounded text-sm bg-white">
+                                <option value="true">ચાલુ (Active)</option>
+                                <option value="false">બંધ (Deactive)</option>
                             </select>
-                        </div>
-                        <div>
-                            <select id="filter-taluka" class="w-full border p-1.5 rounded-lg bg-gray-50 font-medium">
-                                <option value="">તમામ તાલુકાઓ (All Talukas)</option>
-                            </select>
+                            <button type="button" onclick="saveTalukaSettingsFromUI()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded shadow">સેવ</button>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse text-xs">
-                        <thead>
-                            <tr class="bg-slate-100 text-slate-700 border-b">
-                                <th class="p-2.5">જિલ્લો / તાલુકો</th>
-                                <th class="p-2.5">LGD Code & પંચાયત નામ & પાસવર્ડ</th>
-                                <th class="p-2.5 text-center">સ્ટેટસ</th>
-                                <th class="p-2.5 text-center">કંટ્રોલ & એક્શન</th>
+            <!-- Section 4: All Panchayats List Table -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border space-y-4">
+                <div class="flex justify-between items-center flex-wrap gap-2">
+                    <h2 class="text-lg font-bold text-emerald-900">નોંધાયેલી તમામ પંચાયતોની યાદી</h2>
+                    <div class="flex gap-2">
+                        <input type="text" id="search-input" placeholder="શોધો (જિલ્લો/તાલુકો/નામ)..." class="border p-2 rounded text-sm w-64">
+                        <span id="total-panchayats-count" class="text-xs bg-emerald-100 text-emerald-800 font-bold px-3 py-2 rounded-full flex items-center">કુલ પંચાયતો: 0</span>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto border rounded-lg">
+                    <table class="w-full text-left border-collapse text-sm">
+                        <thead class="bg-emerald-800 text-white text-xs">
+                            <tr>
+                                <th class="p-3">જિલ્લો / તાલુકો</th>
+                                <th class="p-3">ગ્રામ પંચાયતનું નામ</th>
+                                <th class="p-3">સંપર્ક નંબર</th>
+                                <th class="p-3 text-center">પંચાયત સ્ટેટસ</th>
+                                <th class="p-3 text-center">એક્શન</th>
                             </tr>
                         </thead>
-                        <tbody id="panchayat-table-body">
-                            <tr><td colspan="4" class="p-4 text-center text-gray-500">ડેટા લોડ થઈ રહ્યો છે...</td></tr>
+                        <tbody id="panchayat-table-body" class="divide-y divide-gray-200 text-xs">
+                            <tr><td colspan="5" class="p-4 text-center text-gray-500">ડેટા લોડ થઈ રહ્યો છે...</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
 
-        </div>
-
+        </main>
     </div>
 
-    <!-- INLINE FIREBASE & LOGIC SCRIPT -->
+    <!-- Firebase Script Logic -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, updateDoc, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCMhWWI_6oxPIVEQEVlq2SIBf72EI2o8NI",
@@ -183,76 +155,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // --- Super Admin Password & Session Management ---
-        const superLoginModal = document.getElementById("super-login-modal");
-        const superDashboard = document.getElementById("super-dashboard");
-        const superLoginForm = document.getElementById("super-login-form");
-        const superPassInput = document.getElementById("super-pass-input");
-        const superLogoutBtn = document.getElementById("super-logout-btn");
-        const changeSuperPassBtn = document.getElementById("change-super-pass-btn");
-
-        async function checkSuperAuth() {
-            try {
-                const snap = await getDoc(doc(db, "system_settings", "super_admin"));
-                let correctPass = "admin123";
-                if (snap.exists() && snap.data().password) {
-                    correctPass = snap.data().password;
-                } else {
-                    await setDoc(doc(db, "system_settings", "super_admin"), { password: "admin123" }, { merge: true });
-                }
-
-                if (sessionStorage.getItem("super_admin_logged") === "true") {
-                    superLoginModal.classList.add("hidden");
-                    superDashboard.classList.remove("hidden");
-                    loadMaintenanceSettings();
-                } else {
-                    superLoginModal.classList.remove("hidden");
-                    superDashboard.classList.add("hidden");
-                }
-            } catch (err) {
-                console.error("Auth check error:", err);
-            }
-        }
-
-        superLoginForm.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const entered = superPassInput.value.trim();
-            const snap = await getDoc(doc(db, "system_settings", "super_admin"));
-            const correctPass = snap.exists() ? snap.data().password : "admin123";
-
-            if (entered === correctPass) {
-                sessionStorage.setItem("super_admin_logged", "true");
-                superLoginModal.classList.add("hidden");
-                superDashboard.classList.remove("hidden");
-                loadMaintenanceSettings();
-                superPassInput.value = "";
-            } else {
-                alert("ખોટો સુપર એડમિન પાસવર્ડ!");
-            }
-        });
-
-        superLogoutBtn.addEventListener("click", () => {
-            sessionStorage.removeItem("super_admin_logged");
-            checkSuperAuth();
-        });
-
-        changeSuperPassBtn.addEventListener("click", async () => {
-            const snap = await getDoc(doc(db, "system_settings", "super_admin"));
-            const currentPass = snap.exists() ? snap.data().password : "admin123";
-            const newPass = prompt("નવો સુપર એડમિન પાસવર્ડ દાખલ કરો:", currentPass);
-            if (newPass !== null) {
-                const trimmed = newPass.trim();
-                if (!trimmed) {
-                    alert("પાસવર્ડ ખાલી રાખી શકાતો નથી!");
-                    return;
-                }
-                await setDoc(doc(db, "system_settings", "super_admin"), { password: trimmed }, { merge: true });
-                alert("સુપર એડમિન પાસવર્ડ સફળતાપૂર્વક બદલાઈ ગયો!");
-            }
-        });
-
-        checkSuperAuth();
-
         // 1. Maintenance Mode Manager
         const maintModeSelect = document.getElementById("maint-mode-select");
         const maintMsgInput = document.getElementById("maint-msg-input");
@@ -263,8 +165,8 @@
                 const snap = await getDoc(doc(db, "system_settings", "global_config"));
                 if (snap.exists()) {
                     const data = snap.data();
-                    if (maintModeSelect) maintModeSelect.value = data.isMaintenance ? "true" : "false";
-                    if (maintMsgInput) maintMsgInput.value = data.maintenanceMessage || "";
+                    maintModeSelect.value = data.isMaintenance ? "true" : "false";
+                    maintMsgInput.value = data.maintenanceMessage || "";
                 }
             } catch (err) {
                 console.error("Error loading system settings:", err);
@@ -282,64 +184,87 @@
                     updatedAt: new Date()
                 }, { merge: true });
 
-                alert("ડેવલપર મેન્ટેનન્સ સેટિંગ્સ સફળતાપૂર્વક સેવ થઈ ગયા!");
+                alert("✅ મેન્ટેનન્સ સેટિંગ્સ સફળતાપૂર્વક સેવ થઈ ગયા!");
             } catch (err) {
                 console.error("Error saving maintenance settings:", err);
                 alert("સેટિંગ્સ સેવ કરવામાં ભૂલ આવી.");
             }
         });
 
-        // 2. Add New Panchayat Form Handler (Using LGD Code as Document ID)
+        // 2. Taluka Settings Manager
+        window.saveTalukaSettingsFromUI = async function() {
+            const talukaName = document.getElementById("taluka-name-input").value.trim();
+            const passInput = document.getElementById("taluka-pass-input").value.trim();
+            const statusSelect = document.getElementById("taluka-status-select").value;
+            const passkey = prompt("સુરક્ષા માટે સુપર એડમિન પાસકી (Passkey) દાખલ કરો:");
+
+            if (passkey !== "super123") {
+                alert("❌ ખોટી પાસકી (Passkey)! ફેરફાર અમાન્ય છે.");
+                return;
+            }
+
+            if (!talukaName) {
+                alert("⚠️ કૃપા કરીને તાલુકાનું નામ દાખલ કરો.");
+                return;
+            }
+
+            try {
+                await setDoc(doc(db, "system_settings", "taluka_credentials"), {
+                    [talukaName]: {
+                        password: passInput || "taluka123",
+                        isActive: statusSelect === "true",
+                        updatedAt: new Date()
+                    }
+                }, { merge: true });
+
+                alert(`✅ ${talukaName} તાલુકાના સેટિંગ્સ સફળતાપૂર્વક સેવ થઈ ગયા!`);
+                document.getElementById("taluka-name-input").value = "";
+                document.getElementById("taluka-pass-input").value = "";
+            } catch (err) {
+                console.error("Error saving taluka settings:", err);
+                alert("તાલુકા સેટિંગ્સ સેવ કરવામાં ભૂલ આવી.");
+            }
+        };
+
+        // Helper for generating unique ID
+        function generateDocId(district, taluka, panchayat) {
+            return `${district}_${taluka}_${panchayat}`
+                .toLowerCase()
+                .replace(/\s+/g, "_")
+                .replace(/[^\w_]/g, "");
+        }
+
+        // 3. Add New Panchayat
         const addForm = document.getElementById("add-panchayat-form");
         addForm?.addEventListener("submit", async (e) => {
             e.preventDefault();
             try {
-                const lgdCode = document.getElementById("p-lgd-code").value.trim();
                 const district = document.getElementById("p-district").value.trim();
                 const taluka = document.getElementById("p-taluka").value.trim();
                 const panchayatName = document.getElementById("p-name").value.trim();
                 const phone = document.getElementById("p-phone").value.trim();
-                const adminPassword = document.getElementById("p-password").value.trim();
-                const isActive = document.getElementById("p-status").value === "true";
 
-                if (!lgdCode) {
-                    alert("કૃપા કરીને માન્ય LGD Code દાખલ કરો!");
-                    return;
-                }
+                const docId = generateDocId(district, taluka, panchayatName);
 
-                // Check if LGD code already exists
-                const docRef = doc(db, "panchayats", lgdCode);
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    alert(`આ LGD Code (${lgdCode}) વાળી પંચાયત પહેલેથી જ નોંધાયેલ છે!`);
-                    return;
-                }
-
-                // Save directly using LGD Code as ID
-                await setDoc(docRef, {
-                    lgdCode,
+                await setDoc(doc(db, "panchayats", docId), {
                     district,
                     taluka,
                     panchayatName,
                     phone,
-                    adminPassword,
-                    isActive,
+                    isActive: true,
                     createdAt: new Date()
-                });
+                }, { merge: true });
 
-                alert(`"${panchayatName}" (LGD Code: ${lgdCode}) ગ્રામ પંચાયત સફળતાપૂર્વક ઉમેરાઈ ગઈ!`);
+                alert(`✅ ${panchayatName} ગ્રામ પંચાયત સફળતાપૂર્વક ઉમેરાઈ ગઈ!`);
                 addForm.reset();
             } catch (err) {
                 console.error("Error adding panchayat:", err);
-                alert("પંચાયત ઉમેરવામાં ભૂલ આવી: " + err.message);
+                alert("પંચાયત ઉમેરવામાં ભૂલ આવી.");
             }
         });
 
-        // 3. Real-time List Render & Filters
+        // 4. Real-time List Render & Toggle Status
         let allPanchayats = [];
-        const filterDistrict = document.getElementById("filter-district");
-        const filterTaluka = document.getElementById("filter-taluka");
-        const searchInput = document.getElementById("search-input");
 
         onSnapshot(collection(db, "panchayats"), (snapshot) => {
             allPanchayats = [];
@@ -347,198 +272,60 @@
                 allPanchayats.push({ id: docSnap.id, ...docSnap.data() });
             });
 
-            const totalCountEl = document.getElementById("total-panchayats-count");
-            if (totalCountEl) {
-                totalCountEl.textContent = `કુલ પંચાયતો: ${allPanchayats.length}`;
-            }
-
-            updateDropdownFilters();
-            filterAndRenderTable();
+            document.getElementById("total-panchayats-count").textContent = `કુલ પંચાયતો: ${allPanchayats.length}`;
+            renderPanchayatTable(allPanchayats);
         });
-
-        function updateDropdownFilters() {
-            const districts = [...new Set(allPanchayats.map(p => p.district).filter(Boolean))].sort();
-            const currentDist = filterDistrict.value;
-
-            filterDistrict.innerHTML = `<option value="">તમામ જિલ્લાઓ (All Districts)</option>` + 
-                districts.map(d => `<option value="${d}" ${d === currentDist ? 'selected' : ''}>${d}</option>`).join("");
-
-            updateTalukaDropdown();
-        }
-
-        function updateTalukaDropdown() {
-            const selectedDist = filterDistrict.value;
-            const talukas = [...new Set(allPanchayats
-                .filter(p => !selectedDist || p.district === selectedDist)
-                .map(p => p.taluka).filter(Boolean))].sort();
-            
-            const currentTaluka = filterTaluka.value;
-
-            filterTaluka.innerHTML = `<option value="">તમામ તાલુકાઓ (All Talukas)</option>` + 
-                talukas.map(t => `<option value="${t}" ${t === currentTaluka ? 'selected' : ''}>${t}</option>`).join("");
-        }
-
-        filterDistrict.addEventListener("change", () => {
-            updateTalukaDropdown();
-            filterAndRenderTable();
-        });
-
-        filterTaluka.addEventListener("change", filterAndRenderTable);
-        searchInput.addEventListener("input", filterAndRenderTable);
-
-        function filterAndRenderTable() {
-            const distVal = filterDistrict.value;
-            const talukaVal = filterTaluka.value;
-            const query = searchInput.value.toLowerCase().trim();
-
-            const filtered = allPanchayats.filter(p => {
-                const matchDist = !distVal || p.district === distVal;
-                const matchTaluka = !talukaVal || p.taluka === talukaVal;
-                const matchSearch = !query || 
-                    (p.panchayatName && p.panchayatName.toLowerCase().includes(query)) ||
-                    (p.lgdCode && p.lgdCode.toLowerCase().includes(query)) ||
-                    (p.id && p.id.toLowerCase().includes(query));
-                return matchDist && matchTaluka && matchSearch;
-            });
-
-            renderPanchayatTable(filtered);
-        }
 
         function renderPanchayatTable(list) {
             const tbody = document.getElementById("panchayat-table-body");
-            if (!tbody) return;
-
             if (!list.length) {
-                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-500">કોઈ પંચાયત મળી નથી.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-500">કોઈ પંચાયત મળી નથી.</td></tr>`;
                 return;
             }
 
-            const baseUrl = window.location.origin + window.location.pathname.replace("super-admin.html", "index.html");
-
-            tbody.innerHTML = list.map(item => {
-                const panchayatId = item.lgdCode || item.id;
-                const shareUrl = `${baseUrl}?id=${panchayatId}`;
-                const passwordDisplay = item.adminPassword || "નથી રાખેલ";
-
-                return `
-                    <tr class="border-b hover:bg-slate-50">
-                        <td class="p-2.5 font-semibold text-gray-800">${item.district || '-'} / ${item.taluka || '-'}</td>
-                        <td class="p-2.5 font-bold text-emerald-800">
-                            ${item.panchayatName || '-'}
-                            <div class="text-[10px] text-indigo-700 font-mono mt-0.5" title="LGD Code (ID)">
-                                🆔 LGD Code: <span class="select-all font-bold">${panchayatId}</span>
-                            </div>
-                            <div class="text-[10px] text-gray-500 font-normal mt-0.5">
-                                ફોન: ${item.phone || '-'}
-                            </div>
-                            <div class="text-[11px] text-purple-700 font-mono mt-0.5 flex items-center gap-1">
-                                🔑 પાસવર્ડ: <strong>${passwordDisplay}</strong>
-                                <button onclick="changePanchayatPassword('${panchayatId}', '${item.panchayatName}', '${item.adminPassword || ''}')" class="text-xs text-blue-600 hover:underline ml-1 font-sans" title="પાસવર્ડ બદલો">
-                                    (બદલો)
-                                </button>
-                            </div>
-                        </td>
-                        <td class="p-2.5 text-center">
-                            <button onclick="togglePanchayatStatus('${panchayatId}', ${item.isActive})" 
-                                class="px-3 py-1 rounded-full text-[10px] font-bold shadow transition ${item.isActive ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-red-100 text-red-800 border border-red-300'}">
-                                ${item.isActive ? 'Active (ON)' : 'Deactive (OFF)'}
-                            </button>
-                        </td>
-                        <td class="p-2.5 text-center space-x-1 space-y-1">
-                            <a href="${shareUrl}" target="_blank" class="inline-block bg-blue-50 text-blue-700 border border-blue-200 px-2 py-1 rounded font-bold hover:bg-blue-100 text-[11px]" title="વેબસાઇટ ખોલો">
-                                <i class="fa-solid fa-arrow-up-right-from-square"></i> ખોલો
-                            </a>
-                            <button onclick="copyPanchayatLink('${shareUrl}')" class="bg-slate-100 text-slate-700 border border-slate-300 px-2 py-1 rounded font-bold hover:bg-slate-200 text-[11px]" title="લિંક કોપી કરો">
-                                <i class="fa-solid fa-copy"></i> લિંક કોપી
-                            </button>
-                            <a href="admin.html?id=${panchayatId}" target="_blank" class="inline-block bg-purple-50 text-purple-700 border border-purple-200 px-2 py-1 rounded font-bold hover:bg-purple-100 text-[11px]" title="એડમિન કંટ્રોલ પેનલ">
-                                <i class="fa-solid fa-gear"></i> એડમિન
-                            </a>
-                            <button onclick="deletePanchayat('${panchayatId}', '${item.panchayatName}')" class="bg-red-50 text-red-700 border border-red-200 px-2 py-1 rounded font-bold hover:bg-red-100 text-[11px]" title="પંચાયત ડિલીટ કરો">
-                                <i class="fa-solid fa-trash"></i> ડિલીટ
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            }).join("");
+            tbody.innerHTML = list.map(item => `
+                <tr class="border-b hover:bg-slate-50">
+                    <td class="p-3 font-semibold text-gray-800">${item.district || '-'} / ${item.taluka || '-'}</td>
+                    <td class="p-3 font-bold text-emerald-800">${item.panchayatName || item.settings?.general?.name || '-'}</td>
+                    <td class="p-3 text-gray-600">${item.phone || '-'}</td>
+                    <td class="p-3 text-center">
+                        <button onclick="togglePanchayatStatus('${item.id}', ${item.isActive})" 
+                            class="px-3 py-1 rounded-full text-[10px] font-bold shadow ${item.isActive ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-red-100 text-red-800 border border-red-300'}">
+                            ${item.isActive ? 'Active (ON)' : 'Deactive (OFF)'}
+                        </button>
+                    </td>
+                    <td class="p-3 text-center">
+                        <a href="index.html?id=${item.id}" target="_blank" class="text-blue-600 hover:underline font-bold">
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i> જુઓ
+                        </a>
+                    </td>
+                </tr>
+            `).join("");
         }
 
-        // Global functions
+        // Global function to toggle active status
         window.togglePanchayatStatus = async (id, currentStatus) => {
             try {
-                await updateDoc(doc(db, "panchayats", id), { isActive: !currentStatus });
+                await updateDoc(doc(db, "panchayats", id), {
+                    isActive: currentStatus === undefined ? false : !currentStatus
+                });
             } catch (err) {
                 console.error("Error updating status:", err);
             }
         };
 
-        window.changePanchayatPassword = async (id, panchayatName, oldPassword) => {
-            const newPassword = prompt(`"${panchayatName}" માટે નવો એડમિન પાસવર્ડ દાખલ કરો:`, oldPassword);
-            if (newPassword !== null) {
-                const trimmed = newPassword.trim();
-                if (!trimmed) {
-                    alert("પાસવર્ડ ખાલી રાખી શકાતો નથી!");
-                    return;
-                }
-                try {
-                    await updateDoc(doc(db, "panchayats", id), { adminPassword: trimmed });
-                    alert(`"${panchayatName}" નો પાસવર્ડ સફળતાપૂર્વક અપડેટ થઈ ગયો!`);
-                } catch (err) {
-                    console.error("Error updating password:", err);
-                    alert("પાસવર્ડ અપડેટ કરવામાં ભૂલ આવી: " + err.message);
-                }
-            }
-        };
+        // Filter Search
+        document.getElementById("search-input")?.addEventListener("input", (e) => {
+            const query = e.target.value.toLowerCase();
+            const filtered = allPanchayats.filter(p => 
+                (p.district && p.district.toLowerCase().includes(query)) ||
+                (p.taluka && p.taluka.toLowerCase().includes(query)) ||
+                (p.panchayatName && p.panchayatName.toLowerCase().includes(query))
+            );
+            renderPanchayatTable(filtered);
+        });
 
-        // પંચાયત અને તેનો આખો ડેટા (sub-collections) ડિલીટ કરવા માટેનું ફંક્શન
-        window.deletePanchayat = async (id, panchayatName) => {
-            const confirmed = confirm(`ચેતવણી: શું તમે ખરેખર "${panchayatName}" પંચાયત અને તેનો આખો ડેટા કાયમી ધોરણે ડિલીટ કરવા માગો છો?\n\nઆ પ્રક્રિયા પાછી ખેંચી શકાશે નહીં.`);
-            if (confirmed) {
-                const superPass = prompt(`સુરક્ષા ખાતર તમારો 'સુપર એડમિન પાસવર્ડ' દાખલ કરો:`);
-                if (superPass !== null) {
-                    try {
-                        const snap = await getDoc(doc(db, "system_settings", "super_admin"));
-                        const correctPass = snap.exists() ? snap.data().password : "admin123";
-
-                        if (superPass.trim() === correctPass) {
-                            const subCollectionsList = [
-                                "posts", "notices", "gallery", "village_details", 
-                                "complaints", "panchayat_meta", "panchayat_committee", 
-                                "panchayat_staff", "panchayat_schedule", "active_committees", 
-                                "settings", "custom_pages", "events", "disaster_management", 
-                                "village_map_settings", "village_glance", "contact_info", 
-                                "user_feedbacks", "proactive_disclosure"
-                            ];
-
-                            for (const subCol of subCollectionsList) {
-                                const subColRef = collection(db, "panchayats", id, subCol);
-                                const subSnap = await getDocs(subColRef);
-                                
-                                const deletePromises = subSnap.docs.map(subDoc => deleteDoc(subDoc.ref));
-                                await Promise.all(deletePromises);
-                            }
-
-                            await deleteDoc(doc(db, "panchayats", id));
-
-                            alert(`"${panchayatName}" પંચાયત અને તેનો બધો ડેટા સફળતાપૂર્વક ડિલીટ થઈ ગયો છે!`);
-                        } else {
-                            alert("ખોટો સુપર એડમિન પાસવર્ડ! પંચાયત ડિલીટ કરવામાં આવી નથી.");
-                        }
-                    } catch (err) {
-                        console.error("Error deleting panchayat and sub-data:", err);
-                        alert("પંચાયત ડિલીટ કરવામાં ભૂલ આવી: " + err.message);
-                    }
-                }
-            }
-        };
-
-        window.copyPanchayatLink = (link) => {
-            navigator.clipboard.writeText(link).then(() => {
-                alert("ગ્રામ પંચાયતની વેબસાઇટ લિંક કોપી થઈ ગઈ છે!\n\n" + link);
-            }).catch(err => {
-                console.error("Copy failed:", err);
-            });
-        };
+        loadMaintenanceSettings();
     </script>
 </body>
 </html>
