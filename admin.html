@@ -620,67 +620,72 @@
     </div>
 </div>
 
-            <!-- સ્વયં જાહેર કરેલ માહિતી -->
-            <div class="bg-white p-5 rounded-2xl shadow-md border space-y-6 md:col-span-2 lg:col-span-3">
-                <h3 class="font-bold text-sm text-emerald-800 flex items-center gap-2 border-b pb-2">
-                    <i class="fa-solid fa-file-pen text-emerald-600"></i> સ્વયં જાહેર કરેલ માહિતી મેનેજ કરો
-                </h3>
+<!-- સ્વયં જાહેર કરેલ માહિતી -->
+<div class="bg-white p-5 rounded-2xl shadow-md border space-y-6 md:col-span-2 lg:col-span-3">
+    <h3 class="font-bold text-sm text-emerald-800 flex items-center gap-2 border-b pb-2">
+        <i class="fa-solid fa-file-pen text-emerald-600"></i> સ્વયં જાહેર કરેલ માહિતી મેનેજ કરો (Proactive Disclosure)
+    </h3>
 
-                <form id="proactive-admin-form" class="space-y-6 text-xs">
-                    
-                    <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
-                        <h4 class="font-bold text-gray-800 border-b pb-1">૧. જાહેર માહિતી અધિકારીની વિગતો</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                            <div>
-                                <label class="block font-medium text-gray-700 mb-1">તલાટી કમ મંત્રીનું નામ</label>
-                                <input type="text" id="off-name" class="w-full border p-2 rounded bg-white" placeholder="નામ લખો" required>
-                            </div>
-                            <div>
-                                <label class="block font-medium text-gray-700 mb-1">મોબાઈલ નંબર</label>
-                                <input type="text" id="off-phone" class="w-full border p-2 rounded bg-white" placeholder="નંબર લખો" required>
-                            </div>
-                            <div>
-                                <label class="block font-medium text-gray-700 mb-1">પ્રથમ અપીલ અધિકારીશ્રી</label>
-                                <input type="text" id="off-appeal" class="w-full border p-2 rounded bg-white" placeholder="અધિકારીનું નામ" required>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
-                        <h4 class="font-bold text-gray-800 border-b pb-1">૨. ગામની વસ્તી વિશેની માહિતી</h4>
-                        <div id="population-rows" class="space-y-2"></div>
-                        <button type="button" onclick="addPopulationRow()" class="bg-blue-600 text-white px-3 py-1 rounded text-[11px] font-bold">+ નવી વિગત ઉમેરો</button>
-                    </div>
-
-                    <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
-                        <h4 class="font-bold text-gray-800 border-b pb-1">૩. ગામના પાણીની વિગત</h4>
-                        <div id="water-rows" class="space-y-2"></div>
-                        <button type="button" onclick="addWaterRow()" class="bg-blue-600 text-white px-3 py-1 rounded text-[11px] font-bold">+ જળાશય ઉમેરો</button>
-                    </div>
-
-                    <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
-                        <h4 class="font-bold text-gray-800 border-b pb-1">૪. પંચાયતની મિલકત</h4>
-                        <div id="prop-rows" class="space-y-2"></div>
-                        <button type="button" onclick="addPropRow()" class="bg-blue-600 text-white px-3 py-1 rounded text-[11px] font-bold">+ મિલકત ઉમેરો</button>
-                    </div>
-
-                    <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
-                        <h4 class="font-bold text-gray-800 border-b pb-1">૫. પેજના સૌથી નીચે ઉમેરવાની અન્ય માહિતી (વૈકલ્પિક)</h4>
-                        <div>
-                            <label class="block font-medium text-gray-700 mb-1">શિર્ષક (Title):</label>
-                            <input type="text" id="extra-title-input" class="w-full border p-2 rounded bg-white" placeholder="દા.ત. વિશેષ નોંધ અથવા અન્ય વિગત">
-                        </div>
-                        <div>
-                            <label class="block font-medium text-gray-700 mb-1">માહિતી / લખાણ (Content):</label>
-                            <textarea id="extra-content-input" rows="3" class="w-full border p-2 rounded bg-white" placeholder="અહીં વિગતવાર લખાણ લખો..."></textarea>
-                        </div>
-                    </div>
-
-                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white p-3 rounded-lg font-bold text-sm shadow transition">
-                        બધી માહિતી સેવ / અપડેટ કરો
-                    </button>
-                </form>
+    <form id="proactive-admin-form" class="space-y-6 text-xs">
+        
+        <!-- ૧. જાહેર માહિતી અધિકારીની વિગતો -->
+        <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
+            <h4 class="font-bold text-gray-800 border-b pb-1">૧. જાહેર માહિતી અધિકારીની વિગતો</h4>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div>
+                    <label class="block font-medium text-gray-700 mb-1">તલાટી કમ મંત્રીનું નામ</label>
+                    <input type="text" id="off-name" class="w-full border p-2 rounded bg-white" placeholder="નામ લખો" required>
+                </div>
+                <div>
+                    <label class="block font-medium text-gray-700 mb-1">મોબાઈલ નંબર</label>
+                    <input type="text" id="off-phone" class="w-full border p-2 rounded bg-white" placeholder="નંબર લખો" required>
+                </div>
+                <div>
+                    <label class="block font-medium text-gray-700 mb-1">પ્રથમ અપીલ અધિકારીશ્રી</label>
+                    <input type="text" id="off-appeal" class="w-full border p-2 rounded bg-white" placeholder="અધિકારીનું નામ" required>
+                </div>
             </div>
+        </div>
+
+        <!-- ૨. ગામની વસ્તી વિશેની માહિતી -->
+        <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
+            <h4 class="font-bold text-gray-800 border-b pb-1">૨. ગામની વસ્તી વિશેની માહિતી</h4>
+            <div id="population-rows" class="space-y-2"></div>
+            <button type="button" onclick="addPopulationRow()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-[11px] font-bold transition">+ નવી વસ્તી વિગત ઉમેરો</button>
+        </div>
+
+        <!-- ૩. ગામના પાણીની વિગત -->
+        <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
+            <h4 class="font-bold text-gray-800 border-b pb-1">૩. ગામના પાણીની વિગત (જળાશય)</h4>
+            <div id="water-rows" class="space-y-2"></div>
+            <button type="button" onclick="addWaterRow()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-[11px] font-bold transition">+ જળાશય ઉમેરો</button>
+        </div>
+
+        <!-- ૪. પંચાયતની મિલકત -->
+        <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
+            <h4 class="font-bold text-gray-800 border-b pb-1">૪. પંચાયતની મિલકત</h4>
+            <div id="prop-rows" class="space-y-2"></div>
+            <button type="button" onclick="addPropRow()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-[11px] font-bold transition">+ મિલકત ઉમેરો</button>
+        </div>
+
+        <!-- ૫. પેજના સૌથી નીચે ઉમેરવાની અન્ય માહિતી -->
+        <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
+            <h4 class="font-bold text-gray-800 border-b pb-1">૫. પેજના સૌથી નીચે ઉમેરવાની અન્ય માહિતી (વૈકલ્પિક)</h4>
+            <div>
+                <label class="block font-medium text-gray-700 mb-1">શિર્ષક (Title):</label>
+                <input type="text" id="extra-title-input" class="w-full border p-2 rounded bg-white" placeholder="દા.ત. વિશેષ નોંધ અથવા અન્ય વિગત">
+            </div>
+            <div>
+                <label class="block font-medium text-gray-700 mb-1">માહિતી / લખાણ (Content):</label>
+                <textarea id="extra-content-input" rows="3" class="w-full border p-2 rounded bg-white" placeholder="અહીં વિગતવાર લખાણ લખો..."></textarea>
+            </div>
+        </div>
+
+        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white p-3 rounded-lg font-bold text-sm shadow transition">
+            બધી માહિતી સેવ / અપડેટ કરો
+        </button>
+    </form>
+</div>
 
         </main>
     </div>
