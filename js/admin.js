@@ -1862,6 +1862,7 @@ function loadAdminFeedbacks() {
                 ? `mailto:${data.email}?subject=Reply from Gram Panchayat&body=Hello ${data.name || ''},\n\nRegarding your feedback: "${data.message || ''}"\n\n`
                 : `#`;
 
+           // 👈 અહીંથી target="_blank" કાઢી નાખ્યું છે, જેથી સીધી જ ઈમેલ એપ ખૂલે
             container.innerHTML += `
                 <div class="bg-gray-50 border p-3 rounded-xl shadow-sm text-xs space-y-2">
                     <div class="flex justify-between items-start">
@@ -1877,7 +1878,7 @@ function loadAdminFeedbacks() {
                     
                     <div class="flex gap-2 justify-end pt-1">
                         ${data.email ? `
-                            <a href="${mailtoLink}" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white text-[11px] px-3 py-1.5 rounded font-semibold flex items-center gap-1 transition">
+                            <a href="${mailtoLink}" class="bg-blue-600 hover:bg-blue-700 text-white text-[11px] px-3 py-1.5 rounded font-semibold flex items-center gap-1 transition">
                                 <i class="fa-solid fa-envelope"></i> ઈમેલ કરો / જવાબ આપો
                             </a>
                         ` : ''}
