@@ -2140,8 +2140,10 @@ window.addDownloadRow = (data = {}) => {
 // એડમિન ફોર્મ સબમિટ (સેવ/અપડેટ)
 document.getElementById("downloads-admin-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
+    
+    // 🌟 1. LGD Code ની ખાતરી કરો
     if (!lgdCode) {
-        alert("⚠️ LGD Code મળ્યો નથી!");
+        alert("❌ ભૂલ: LGD Code (Panchayat ID) મળ્યો નથી! કૃપા કરીને પેજ રીલોડ કરો.");
         return;
     }
 
@@ -2163,13 +2165,19 @@ document.getElementById("downloads-admin-form")?.addEventListener("submit", asyn
     };
 
     try {
+        // 🌟 2. ફાયરબેઝ પાથ સાચો છે કે નહીં તેની ચકાસણી માટે કન્સોલ પ્રિન્ટ
+        console.log("Saving to path: panchayats/" + lgdCode + "/downloads_page/main_content");
+        
         await setDoc(getPanchayatDoc("downloads_page", "main_content"), payload, { merge: true });
-        alert("✅ ડાઉનલોડ્સ માહિતી સફળતાપૂર્વક સેવ થઈ ગઈ!");
+        
+        alert("✅ ડાઉનલોડ્સ માહિતી સફળતાપૂર્વક ફાયરબેઝમાં સેવ થઈ ગઈ!");
+        
+        // સેવ થયા પછી ડેટા રીલોડ કરો જેથી ખાતરી થાય
+        loadDownloadsAdminData();
     } catch (err) {
-        console.error("Save Downloads Error:", err);
-        alert("માહિતી સેવ કરવામાં ભૂલ આવી.");
+        console.error("Save Downloads Error Details:", err);
+        alert("❌ સેવ કરતી વખતે એરર આવી: " + err.message);
     }
 });
-
 
 
