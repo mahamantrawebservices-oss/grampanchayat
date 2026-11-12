@@ -72,7 +72,7 @@
             </button>
         </div>
 
-        <!-- 🌟 નવું ઉમેરેલું ફીચર: Taluka Admin Credentials & Control Manager -->
+        <!-- Taluka Admin Credentials & Control Manager -->
         <div class="bg-emerald-50 border border-emerald-300 p-5 rounded-2xl shadow-sm space-y-4">
             <h3 class="font-bold text-emerald-900 text-sm flex items-center gap-2 border-b border-emerald-200 pb-2">
                 <i class="fa-solid fa-building-shield text-emerald-600"></i> તાલુકા એડમિન પાસવર્ડ અને લૉગિન કંટ્રોલ મેનેજમેન્ટ
@@ -99,6 +99,27 @@
                             સેવ કરો
                         </button>
                     </div>
+                </div>
+            </div>
+
+            <!-- 🌟 નવું ઉમેરેલું: તાલુકાઓનું સ્ક્રોલિંગ લિસ્ટ ટેબલ -->
+            <div class="mt-4 pt-3 border-t border-emerald-200">
+                <h4 class="font-bold text-emerald-900 text-xs mb-2"><i class="fa-solid fa-list mr-1"></i> નોંધાયેલા તાલુકાઓની યાદી અને કંટ્રોલ સ્ટેટસ:</h4>
+                <div class="max-h-48 overflow-y-auto border rounded-lg bg-white">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead class="bg-emerald-700 text-white sticky top-0">
+                            <tr>
+                                <th class="p-2">ક્રમ</th>
+                                <th class="p-2">તાલુકાનું નામ</th>
+                                <th class="p-2">પાસવર્ડ</th>
+                                <th class="p-2 text-center">સ્ટેટસ (Active/Deactive)</th>
+                                <th class="p-2 text-center">એક્શન</th>
+                            </tr>
+                        </thead>
+                        <tbody id="taluka-list-table-body" class="divide-y divide-gray-200">
+                            <tr><td colspan="5" class="p-3 text-center text-gray-500">તાલુકાઓ લોડ થઈ રહ્યા છે...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -236,6 +257,7 @@
                     superLoginModal.classList.add("hidden");
                     superDashboard.classList.remove("hidden");
                     loadMaintenanceSettings();
+                    loadTalukasList();
                 } else {
                     superLoginModal.classList.remove("hidden");
                     superDashboard.classList.add("hidden");
@@ -256,6 +278,7 @@
                 superLoginModal.classList.add("hidden");
                 superDashboard.classList.remove("hidden");
                 loadMaintenanceSettings();
+                loadTalukasList();
                 superPassInput.value = "";
             } else {
                 alert("ખોટો સુપર એડમિન પાસવર્ડ!");
@@ -320,7 +343,7 @@
             }
         });
 
-        // 🌟 Taluka Admin Credentials & Control Manager (નવું ઉમેરેલું ફીચર)
+        // Taluka Admin Credentials & Control Manager
         const saveTalukaBtn = document.getElementById("save-taluka-btn");
         saveTalukaBtn?.addEventListener("click", async () => {
             const talukaName = document.getElementById("taluka-name-input").value.trim();
@@ -344,11 +367,122 @@
                 alert(`✅ "${talukaName}" તાલુકાના એડમિન સેટિંગ્સ સફળતાપૂર્વક સેવ થઈ ગયા!`);
                 document.getElementById("taluka-name-input").value = "";
                 document.getElementById("taluka-pass-input").value = "";
+                loadTalukasList();
             } catch (err) {
                 console.error("Error saving taluka settings:", err);
                 alert("તાલુકા સેટિંગ્સ સેવ કરવામાં ભૂલ આવી: " + err.message);
             }
         });
+
+        // Load Talukas List into Table (Scrollable)
+        async function loadTalukasList() {
+            const tbody = document.getElementById("taluka-list-table-body");
+            if (!tbody) return;
+
+            try {
+                // 1. Get unique talukas from registered panchayats
+                const panchayatsSnap = await getDocs(collection(db, "panchayats"));
+                const talukaSet = new Set();
+                panchayatsSnap.forEach(docSnap => {
+                    const data = docSnap.data();
+                    if (data.taluka) talukaSet.add(data.taluka.trim());
+                });
+
+                // 2. Get saved taluka credentials from system_settings
+                const credsSnap = await getDoc(doc(db, "system_settings", "taluka_credentials"));
+                const talukaCreds = credsSnap.exists() ? credsSnap.data() : {};
+
+                // Combine all talukas (from panchayats and explicitly saved ones)
+                Object.keys(talukaCreds).forEach(t => talukaSet.add(t));
+
+                const talukasList = Array.from(talukaSet).sort();
+
+                if (!talukasList.length) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="p-3 text-center text-gray-500">કોઈ તાલુકો નોંધાયેલ નથી.</td></tr>`;
+                    return;
+                }
+
+                let count = 0;
+                tbody.innerHTML = talukasList.map(taluka => {
+                    count++;
+                    const info = talukaCreds[taluka] || { password: "taluka123", isActive: true };
+                    const passDisplay = info.password || "taluka123";
+                    const isActive = info.isActive !== false;
+
+                    return `
+                        <tr class="hover:bg-gray-50">
+                            <td class="p-2 font-bold">${count}</td>
+                            <td class="p-2 font-bold text-emerald-900">${taluka}</td>
+                            <td class="p-2 font-mono text-xs text-purple-700">${passDisplay}</td>
+                            <td class="p-2 text-center">
+                                <button onclick="toggleTalukaStatus('${taluka}', ${isActive})" 
+                                    class="px-2.5 py-0.5 rounded-full text-[10px] font-bold shadow transition ${isActive ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-red-100 text-red-800 border border-red-300'}">
+                                    ${isActive ? 'Active (ON)' : 'Deactive (OFF)'}
+                                </button>
+                            </td>
+                            <td class="p-2 text-center">
+                                <button onclick="quickEditTaluka('${taluka}', '${passDisplay}', ${isActive})" class="bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded font-bold hover:bg-blue-100 text-[11px]">
+                                    <i class="fa-solid fa-pen-to-square"></i> ફેરફાર કરો
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }).join("");
+
+            } catch (err) {
+                console.error("Error loading talukas list:", err);
+                tbody.innerHTML = `<tr><td colspan="5" class="p-3 text-center text-red-500">તાલુકા યાદી લોડ કરવામાં એરર આવી.</td></tr>`;
+            }
+        }
+
+        // Global functions for Taluka Table Actions
+        window.toggleTalukaStatus = async (talukaName, currentStatus) => {
+            try {
+                const credsSnap = await getDoc(doc(db, "system_settings", "taluka_credentials"));
+                const currentData = credsSnap.exists() ? credsSnap.data() : {};
+                
+                if (!currentData[talukaName]) {
+                    currentData[talukaName] = { password: "taluka123", isActive: true };
+                }
+
+                currentData[talukaName].isActive = !currentStatus;
+                currentData[talukaName].updatedAt = new Date();
+
+                await setDoc(doc(db, "system_settings", "taluka_credentials"), currentData);
+                loadTalukasList();
+            } catch (err) {
+                console.error("Error toggling taluka status:", err);
+                alert("સ્ટેટસ બદલવામાં ભૂલ આવી.");
+            }
+        };
+
+        window.quickEditTaluka = async (talukaName, oldPass, oldStatus) => {
+            const newPass = prompt(`"${talukaName}" તાલુકા માટે નવો પાસવર્ડ દાખલ કરો:`, oldPass);
+            if (newPass !== null) {
+                const trimmed = newPass.trim();
+                if (!trimmed) {
+                    alert("પાસવર્ડ ખાલી રાખી શકાતો નથી!");
+                    return;
+                }
+                try {
+                    const credsSnap = await getDoc(doc(db, "system_settings", "taluka_credentials"));
+                    const currentData = credsSnap.exists() ? credsSnap.data() : {};
+                    
+                    currentData[talukaName] = {
+                        password: trimmed,
+                        isActive: oldStatus,
+                        updatedAt: new Date()
+                    };
+
+                    await setDoc(doc(db, "system_settings", "taluka_credentials"), currentData);
+                    alert(`"${talukaName}" તાલુકાનો પાસવર્ડ સફળતાપૂર્વક અપડેટ થઈ ગયો!`);
+                    loadTalukasList();
+                } catch (err) {
+                    console.error("Error updating taluka pass:", err);
+                    alert("અપડેટ કરવામાં ભૂલ આવી: " + err.message);
+                }
+            }
+        };
 
         // 2. Add New Panchayat Form Handler (Using LGD Code as Document ID)
         const addForm = document.getElementById("add-panchayat-form");
@@ -368,7 +502,6 @@
                     return;
                 }
 
-                // Check if LGD code already exists
                 const docRef = doc(db, "panchayats", lgdCode);
                 const docSnap = await getDoc(docRef);
                 if (docSnap.exists()) {
@@ -376,7 +509,6 @@
                     return;
                 }
 
-                // Save directly using LGD Code as ID
                 await setDoc(docRef, {
                     lgdCode,
                     district,
@@ -390,6 +522,7 @@
 
                 alert(`"${panchayatName}" (LGD Code: ${lgdCode}) ગ્રામ પંચાયત સફળતાપૂર્વક ઉમેરાઈ ગઈ!`);
                 addForm.reset();
+                loadTalukasList(); // Refresh taluka list too
             } catch (err) {
                 console.error("Error adding panchayat:", err);
                 alert("પંચાયત ઉમેરવામાં ભૂલ આવી: " + err.message);
@@ -415,6 +548,7 @@
 
             updateDropdownFilters();
             filterAndRenderTable();
+            loadTalukasList();
         });
 
         function updateDropdownFilters() {
@@ -551,7 +685,6 @@
             }
         };
 
-        // પંચાયત અને તેનો આખો ડેટા (sub-collections) ડિલીટ કરવા માટેનું ફંક્શન
         window.deletePanchayat = async (id, panchayatName) => {
             const confirmed = confirm(`ચેતવણી: શું તમે ખરેખર "${panchayatName}" પંચાયત અને તેનો આખો ડેટા કાયમી ધોરણે ડિલીટ કરવા માગો છો?\n\nઆ પ્રક્રિયા પાછી ખેંચી શકાશે નહીં.`);
             if (confirmed) {
