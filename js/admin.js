@@ -121,6 +121,25 @@ loginForm?.addEventListener("submit", async (e) => {
     }
 });
 
+// Toggle Password Visibility (Eye Icon Click Event)
+document.getElementById("toggle-password")?.addEventListener("click", () => {
+    const passwordInput = document.getElementById("login-password");
+    const eyeIcon = document.getElementById("eye-icon");
+
+    if (passwordInput && eyeIcon) {
+        if (passwordInput.type === "password") {
+            passwordInput.type = "text";
+            eyeIcon.classList.remove("fa-eye");
+            eyeIcon.classList.add("fa-eye-slash"); // આંખ બંધ થયાનું આઇકન
+        } else {
+            passwordInput.type = "password";
+            eyeIcon.classList.remove("fa-eye-slash");
+            eyeIcon.classList.add("fa-eye"); // ખુલ્લી આંખનું આઇકન
+        }
+    }
+});
+
+
 // Logout Button (કન્ફર્મેશન સાથે)
 document.getElementById("logout-btn")?.addEventListener("click", () => {
     if (confirm("શું તમે ખરેખર એડમિન પેનલમાંથી લોગઆઉટ કરવા માંગો છો?")) {
