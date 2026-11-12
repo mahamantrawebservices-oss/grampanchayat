@@ -2092,3 +2092,84 @@ document.getElementById("proactive-admin-form")?.addEventListener("submit", asyn
 });
 
 
+
+// --- ૧૯. ડાઉનલોડ્સ પેજ મેનેજર ---
+async function loadDownloadsAdminData() {
+    if (!lgdCode) return;
+    try {
+        const snap = await getDoc(getPanchayatDoc("downloads_page", "main_content"));
+        if (snap.exists()) {
+            const data = snap.data();
+            if (document.getElementById("adm-downloads-text")) {
+                document.getElementById("adm-downloads-text").value = data.pageText || "";
+            }
+
+            const container = document.getElementById("download-rows");
+            if (container) {
+                container.innerHTML = "";
+                if (data.files && data.files.length > 0) {
+                    data.files.forEach(item => addDownloadRow(item));
+                }
+            }
+        }
+    } catch (err) {
+        console.error("Load Downloads Admin Error:", err);
+    }
+}
+
+// ડાઉનલોડ રો ઉમેરવા માટે
+window.addDownloadRow = (data = {}) => {
+    const container = document.getElementById("download-rows");
+    if (!container) return;
+    const div = document.createElement("div");
+    div.className = "bg-white p-3 rounded-lg border space-y-2 dl-row shadow-sm";
+    div.innerHTML = `
+        <div class="flex justify-between items-center">
+            <span class="font-bold text-emerald-900 text-[11px]">ફાઇલ વિગત</span>
+            <button type="button" onclick="this.closest('.dl-row').remove()" class="bg-red-500 hover:bg-red-600 text-white px-2 py-0.5 rounded text-[10px] font-bold">ડિલીટ કરો</button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <input type="text" placeholder="પીડીએફ ફાઇલનું નામ (દા.ત. Gram Darshan Booklet)" value="${data.title || ''}" class="border p-1.5 rounded w-full dl-title" required>
+            <input type="url" placeholder="ડાઉનલોડ લિંક (Google Drive / PDF URL)" value="${data.link || ''}" class="border p-1.5 rounded w-full dl-link" required>
+        </div>
+        <textarea placeholder="ટૂંકી વિગત (Description)..." rows="1" class="border p-1.5 rounded w-full dl-desc">${data.description || ''}</textarea>
+    `;
+    container.appendChild(div);
+};
+
+// એડમિન ફોર્મ સબમિટ (સેવ/અપડેટ)
+document.getElementById("downloads-admin-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!lgdCode) {
+        alert("⚠️ LGD Code મળ્યો નથી!");
+        return;
+    }
+
+    const pageText = document.getElementById("adm-downloads-text").value.trim();
+    const files = [];
+
+    document.querySelectorAll("#download-rows .dl-row").forEach(row => {
+        files.push({
+            title: row.querySelector(".dl-title").value.trim(),
+            link: row.querySelector(".dl-link").value.trim(),
+            description: row.querySelector(".dl-desc").value.trim()
+        });
+    });
+
+    const payload = {
+        pageText,
+        files,
+        updatedAt: new Date()
+    };
+
+    try {
+        await setDoc(getPanchayatDoc("downloads_page", "main_content"), payload, { merge: true });
+        alert("✅ ડાઉનલોડ્સ માહિતી સફળતાપૂર્વક સેવ થઈ ગઈ!");
+    } catch (err) {
+        console.error("Save Downloads Error:", err);
+        alert("માહિતી સેવ કરવામાં ભૂલ આવી.");
+    }
+});
+
+
+
