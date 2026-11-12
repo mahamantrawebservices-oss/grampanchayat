@@ -45,7 +45,7 @@
 
     </div>
 
-    <!-- Firebase Script -->
+<!-- Firebase Script -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -72,6 +72,7 @@
             panchayatId = localStorage.getItem("currentPanchayatId") || "517045";
         }
 
+        console.log("Current Panchayat ID in download.html:", panchayatId);
         document.getElementById("back-home-btn").href = `index.html?id=${panchayatId}`;
 
         // Load Header Panchayat Name
@@ -86,22 +87,27 @@
         loadPanchayatName();
 
         // Real-time Downloads Data Listener
-        onSnapshot(doc(db, "panchayats", panchayatId, "downloads_page", "main_content"), (docSnap) => {
+        const docRef = doc(db, "panchayats", panchayatId, "downloads_page", "main_content");
+        console.log("Listening to path:", docRef.path);
+
+        onSnapshot(docRef, (docSnap) => {
             const listContainer = document.getElementById("downloads-list");
             const textContainer = document.getElementById("downloads-text-container");
             const customContent = document.getElementById("downloads-custom-content");
 
             if (!docSnap.exists()) {
+                console.log("Document does not exist in Firestore!");
                 listContainer.innerHTML = `<p class="text-xs text-gray-500 py-4 text-center">હાલ કોઈ ડાઉનલોડ ઉપલબ્ધ નથી.</p>`;
                 return;
             }
 
             const data = docSnap.data();
+            console.log("Fetched Downloads Data:", data);
 
             // Render Top Text/HTML
             if (data.pageText && data.pageText.trim() !== "") {
                 textContainer.classList.remove("hidden");
-                customContent.innerHTML = data.pageText; // HTML કે સાદો ટેક્સ્ટ બંને સપોર્ટ કરશે
+                customContent.innerHTML = data.pageText;
             } else {
                 textContainer.classList.add("hidden");
             }
@@ -109,7 +115,7 @@
             // Render Files List
             const files = data.files || [];
             if (files.length === 0) {
-                listContainer.innerHTML = `<p class="text-xs text-gray-500 py-4 text-center">હાલ કોઈ ડાઉનલોડ ઉપલબ્ધ નથી.</p>";
+                listContainer.innerHTML = `<p class="text-xs text-gray-500 py-4 text-center">હાલ કોઈ ડાઉનલોડ ઉપલબ્ધ નથી.</p>`;
                 return;
             }
 
