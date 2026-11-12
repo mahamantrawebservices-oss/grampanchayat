@@ -72,68 +72,77 @@
             panchayatId = localStorage.getItem("currentPanchayatId") || "517045";
         }
 
-        console.log("Current Panchayat ID in download.html:", panchayatId);
-        document.getElementById("back-home-btn").href = `index.html?id=${panchayatId}`;
+        const backBtn = document.getElementById("back-home-btn");
+        if (backBtn) {
+            backBtn.href = "index.html?id=" + panchayatId;
+        }
 
         // Load Header Panchayat Name
         async function loadPanchayatName() {
             try {
                 const snap = await getDoc(doc(db, "panchayats", panchayatId, "settings", "general"));
                 if (snap.exists() && snap.data().name) {
-                    document.getElementById("header-gp-name").textContent = `ગ્રામ પંચાયત: ${snap.data().name}`;
+                    const gpNameEl = document.getElementById("header-gp-name");
+                    if (gpNameEl) {
+                        gpNameEl.textContent = "ગ્રામ પંચાયત: " + snap.data().name;
+                    }
                 }
-            } catch (err) { console.error(err); }
+            } catch (err) { 
+                console.error("Load Name Error:", err); 
+            }
         }
         loadPanchayatName();
 
         // Real-time Downloads Data Listener
         const docRef = doc(db, "panchayats", panchayatId, "downloads_page", "main_content");
-        console.log("Listening to path:", docRef.path);
 
-        onSnapshot(docRef, (docSnap) => {
+        onSnapshot(docRef, function(docSnap) {
             const listContainer = document.getElementById("downloads-list");
             const textContainer = document.getElementById("downloads-text-container");
             const customContent = document.getElementById("downloads-custom-content");
 
+            if (!listContainer) return;
+
             if (!docSnap.exists()) {
-                console.log("Document does not exist in Firestore!");
-                listContainer.innerHTML = `<p class="text-xs text-gray-500 py-4 text-center">હાલ કોઈ ડાઉનલોડ ઉપલબ્ધ નથી.</p>`;
+                listContainer.innerHTML = '<p class="text-xs text-gray-500 py-4 text-center">હાલ કોઈ ડાઉનલોડ ઉપલબ્ધ નથી.</p>';
+                if (textContainer) textContainer.classList.add("hidden");
                 return;
             }
 
             const data = docSnap.data();
-            console.log("Fetched Downloads Data:", data);
 
             // Render Top Text/HTML
-            if (data.pageText && data.pageText.trim() !== "") {
-                textContainer.classList.remove("hidden");
-                customContent.innerHTML = data.pageText;
-            } else {
-                textContainer.classList.add("hidden");
+            if (textContainer && customContent) {
+                if (data.pageText && data.pageText.trim() !== "") {
+                    textContainer.classList.remove("hidden");
+                    customContent.innerHTML = data.pageText;
+                } else {
+                    textContainer.classList.add("hidden");
+                }
             }
 
             // Render Files List
             const files = data.files || [];
             if (files.length === 0) {
-                listContainer.innerHTML = `<p class="text-xs text-gray-500 py-4 text-center">હાલ કોઈ ડાઉનલોડ ઉપલબ્ધ નથી.</p>`;
+                listContainer.innerHTML = '<p class="text-xs text-gray-500 py-4 text-center">હાલ કોઈ ડાઉનલોડ ઉપલબ્ધ નથી.</p>';
                 return;
             }
 
             listContainer.innerHTML = "";
-            files.forEach((file, index) => {
-                listContainer.innerHTML += `
-                    <div class="bg-gray-50 border p-3.5 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 hover:bg-emerald-50/50 transition">
-                        <div class="space-y-1">
-                            <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">ક્રમ નં. ${index + 1}</span>
-                            <h4 class="font-bold text-gray-900 text-sm">${file.title || 'નામ વગરની ફાઇલ'}</h4>
-                            <p class="text-gray-600 text-xs">${file.description || ''}</p>
-                        </div>
-                        <a href="${file.link || '#'}" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3.5 py-2 rounded-lg text-xs shadow transition flex items-center gap-1.5 flex-shrink-0">
-                            <i class="fa-solid fa-download"></i> ડાઉનલોડ કરો
-                        </a>
-                    </div>
-                `;
-            });
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                listContainer.innerHTML += 
+                    '<div class="bg-gray-50 border p-3.5 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 hover:bg-emerald-50/50 transition">' +
+                        '<div class="space-y-1">' +
+                            '<span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">ક્રમ નં. ' + (i + 1) + '</span>' +
+                            '<h4 class="font-bold text-gray-900 text-sm">' + (file.title || 'નામ વગરની ફાઇલ') + '</h4>' +
+                            '<p class="text-gray-600 text-xs">' + (file.description || '') + '</p>' +
+                        '</div>' +
+                        '<a href="' + (file.link || '#') + '" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3.5 py-2 rounded-lg text-xs shadow transition flex items-center gap-1.5 flex-shrink-0">' +
+                            '<i class="fa-solid fa-download"></i> ડાઉનલોડ કરો' +
+                        '</a>' +
+                    '</div>';
+            }
         });
     </script>
 </body>
