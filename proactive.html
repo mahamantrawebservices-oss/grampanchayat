@@ -10,39 +10,30 @@
 </head>
 <body class="bg-slate-50 min-h-screen py-8 px-4 font-sans text-gray-800">
 
-    <!-- ૧. Developer Maintenance Screen (Hidden by default) -->
-    <div id="maintenance-screen" class="hidden fixed inset-0 bg-slate-900 text-white z-50 flex flex-col items-center justify-center p-6 text-center">
-        <div class="bg-slate-800 p-8 rounded-3xl border border-slate-700 max-w-lg shadow-2xl space-y-4">
-            <i class="fa-solid fa-screwdriver-wrench text-6xl text-amber-400 animate-bounce"></i>
-            <h2 class="text-2xl font-bold text-amber-400">સિસ્ટમ મેન્ટેનન્સ ચાલુ છે</h2>
-            <p id="maintenance-msg-text" class="text-gray-300 text-sm">
-                હાલમાં ટેકનિકલ સુધારા અર્થે સિસ્ટમ મેન્ટેનન્સ મોડમાં છે. કૃપા કરીને થોડીવાર પછી પ્રયત્ન કરો.
-            </p>
-        </div>
-    </div>
-
-    <!-- ૨. Subscription Deactive Screen (Hidden by default) -->
-    <div id="deactive-screen" class="hidden fixed inset-0 bg-gray-900/90 text-white z-40 flex flex-col items-center justify-center p-6 text-center">
-        <div class="bg-white text-gray-800 p-8 rounded-3xl max-w-md shadow-2xl space-y-4">
-            <i class="fa-solid fa-circle-exclamation text-6xl text-red-500"></i>
-            <h2 class="text-xl font-bold text-red-600">સબ્સ્ક્રિપ્શન નિષ્ક્રિય છે (Deactive)</h2>
-            <p class="text-gray-600 text-sm">
-                આ ગ્રામ પંચાયતની વેબસાઇટ સેવા હાલ પૂરતી સ્થગિત કરવામાં આવી છે.
-            </p>
-        </div>
-    </div>
-
     <div class="max-w-4xl mx-auto space-y-8">
         
-        <!-- Header Banner -->
+        <!-- Top Navigation / Back Button & PDF Export Button -->
+        <div class="flex justify-between items-center">
+            <a id="back-home-btn" href="index.html" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-2 rounded-xl shadow transition flex items-center gap-1.5">
+                <i class="fa-solid fa-arrow-left"></i> મુખ્ય પૃષ્ઠ
+            </a>
+            <button onclick="exportToPDF()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-4 py-2 rounded-xl shadow transition flex items-center gap-1.5">
+                <i class="fa-solid fa-file-pdf"></i> PDF ડાઉનલોડ કરો
+            </button>
+        </div>
+
+        <!-- Header Banner (Dynamic Panchayat, Taluka, District & RTI Section) -->
         <div class="bg-emerald-800 text-white p-6 rounded-2xl shadow-lg text-center space-y-2">
+            <h2 id="header-gp-location" class="text-xs md:text-sm font-semibold text-amber-300 tracking-wide">
+                ગ્રામ પંચાયત: લોડ થઈ રહ્યું છે...
+            </h2>
             <h1 class="text-xl md:text-2xl font-bold flex items-center justify-center gap-2">
-                <i class="fa-solid fa-book-open"></i> માહિતી અધિકાર અધિનિયમ ૨૦૦૫ - સ્વયં જાહેર કરેલ માહિતી
+                <i class="fa-solid fa-book-open"></i> માહિતી અધિકાર અધિનિયમ ૨૦૦૫ (કલમ ૪(૧)(બ)) - સ્વયં જાહેર કરેલ માહિતી
             </h1>
             <p class="text-xs text-emerald-100">ગ્રામ પંચાયત કચેરી દ્વારા જાહેર કરવામાં આવતી વિગતવાર પુસ્તિકા</p>
         </div>
 
-        <!-- 1. Introduction -->
+        <!-- 1. Introduction (પ્રસ્તાવના) -->
         <div class="bg-white p-6 rounded-2xl shadow-md border space-y-3">
             <h3 class="font-bold text-emerald-800 text-base border-b pb-2 flex items-center gap-2">
                 <i class="fa-solid fa-circle-info text-emerald-600"></i> પ્રસ્તાવના
@@ -55,7 +46,7 @@
             </p>
         </div>
 
-        <!-- 2. Panchayat Formation, Powers & Rules -->
+        <!-- 2. Panchayat Formation, Powers & Rules (ગ્રામ પંચાયતની રચના અને કાર્યો) -->
         <div class="bg-white p-6 rounded-2xl shadow-md border space-y-4">
             <h3 class="font-bold text-emerald-800 text-base border-b pb-2 flex items-center gap-2">
                 <i class="fa-solid fa-landmark text-emerald-600"></i> ગ્રામ પંચાયતની સત્તા, કાર્યો અને ફરજો
@@ -70,8 +61,8 @@
                     <li>ત્રણ હજાર કરતાં વધુ ન હોય તેટલી વસ્તી વાળા ગામની ગ્રામ પંચાયત સાત સભ્યોની બનશે અને ત્રણ હજાર કરતા વધુ દરેક એક હજાર અથવા તેના ભાગ માટે સદરહું સાતની સંખ્યામાં બે નો વધારો કરવો જોઇશે.</li>
                 </ul>
 
-                <h4 class="font-bold text-gray-900 pt-2">કાર્યો ::-</h4>
-                <p>દરેક ગ્રામ પંચાયતના વહિવટી કાર્યો માટે એક સેક્રેટરી રહેશે જેને નિયમોનુંસાર નિમવામાં આવશે.ગ્રામ પંચાયતના સેક્રેટરીએ સરપંચના નિયંત્રણને આધીન રહીને .......</p>
+                <h4 class="font-bold text-gray-900 pt-2">કાર્યો :-</h4>
+                <p>દરેક ગ્રામ પંચાયતના વહિવટી કાર્યો માટે એક સેક્રેટરી રહેશે જેને નિયમોનુંસાર નિમવામાં આવશે. ગ્રામ પંચાયતના સેક્રેટરીએ સરપંચના નિયંત્રણને આધીન રહીને .......</p>
                 <ul class="list-decimal pl-5 space-y-1">
                     <li>ગ્રામ પંચાયતના દફતરો અને રજીસ્ટરો પોતાની કસ્ટડીમાં રાખવા જોઇશે.</li>
                     <li>પંચાયત વતી તેને મળેલ નાણાની રકમો બદલ પોતાની સહિવાળી પહોંચ આપવી જોઇશે.</li>
@@ -80,12 +71,12 @@
                 <ul class="list-disc pl-5 space-y-1 pt-1">
                     <li>પંચાયત તેને સોંપે તેવા કાર્યો અને ફરજો બજાવવા માટે તે ગ્રામ પંચાયત સમિતીઓ રચી શકશે.</li>
                     <li>પંચાયતની સમિતીઓ પોતાના કાર્યો બજાવતી વેળા પંચાયત તેમને સોંપે તેવી ગ્રામ પંચાયતની સત્તા વાપરશે અને તેવી ફરજો બજાવશે.</li>
-                    <li>કોઇ સમિતીને નહિ સોંપવામાં આવેલા પંચાયતના સત્તા,કાર્યો અને ફરજો પંચાયત વાપરશે અને બજાવશે.</li>
+                    <li>કોઇ સમિતીને નહિ સોંપવામાં આવેલા પંચાયતના સત્તા, કાર્યો અને ફરજો પંચાયત વાપરશે અને બજાવશે.</li>
                 </ul>
             </div>
         </div>
 
-        <!-- 3. Standards & Rules -->
+        <!-- 3. Standards & Rules (ધોરણો અને નિયમો) -->
         <div class="bg-white p-6 rounded-2xl shadow-md border space-y-3">
             <h3 class="font-bold text-emerald-800 text-base border-b pb-2 flex items-center gap-2">
                 <i class="fa-solid fa-book text-emerald-600"></i> પોતાના કાર્યો બજાવવા માટેના ધોરણો, નિયમો, અધિનિયમો, સંગ્રહો
@@ -95,28 +86,28 @@
                 <li>ગુજરાત પંચાયત ધારો – ૧૯૯૩</li>
                 <li>ગુજરાત પંચાયત નિયમો</li>
                 <li>ગુજરાત પંચાયત સેવા, શિસ્ત અને અપીલના નિયમો – ૧૯૯૭</li>
-                <li>સરકારશ્રીનાં સંબંધિત વિભાગો તરફથી મળતા સ્થાયી હુકમો અને સુચનાઓ.</li>
-                <li>ગુજરાત નાણાકિય નિયમો.</li>
-                <li>જમીન મહેસુલ અધિનિયમ – ૧૮૭૯.</li>
+                <li>સરકારશ્રીનાં સંબંધિત વિભાગો તરફથી મળતા સ્થાયી હુકમો અને સુચનાઓ</li>
+                <li>ગુજરાત નાણાકિય નિયમો</li>
+                <li>જમીન મહેસુલ અધિનિયમ – ૧૮૭૯</li>
                 <li>જન્મ – મરણ નોંધણી અધિનિયમ – ૧૯૬૯</li>
-                <li>લગ્ન નોંધણી અધિનિયમ – ૨૦૦૬.</li>
-                <li>માહિતી અધિકાર અધિનિયમ – ૨૦૦૫.</li>
+                <li>લગ્ન નોંધણી અધિનિયમ – ૨૦૦૬</li>
+                <li>માહિતી અધિકાર અધિનિયમ – ૨૦૦૫</li>
                 <li>રામજી યોજના</li>
             </ul>
         </div>
 
-        <!-- 4. General Info & Staff Link -->
+        <!-- 4. General Info & Staff Link (Popup) -->
         <div class="bg-white p-6 rounded-2xl shadow-md border space-y-3">
             <h3 class="font-bold text-emerald-800 text-base border-b pb-2 flex items-center gap-2">
                 <i class="fa-solid fa-landmark text-emerald-600"></i> પંચાયત વિશેની સામાન્ય માહિતી
             </h3>
             <p class="text-xs text-gray-700">
                 ગ્રામ પંચાયત કર્મચારી તથા હંગામી ધોરણે રાખેલ કર્મચારી ગણની માહિતી માટે 
-                <a id="link-staff" href="#" class="text-blue-600 font-bold hover:underline">અહીં ક્લિક કરો</a> (પંચાયત કમિટી અને સ્ટાફનું કાર્ડ).
+                <button onclick="openPopup('panchayat-staff.html', 'પંચાયત કમિટી અને સ્ટાફ')" class="text-blue-600 font-bold hover:underline bg-transparent border-0 cursor-pointer p-0">અહીં ક્લિક કરો</button> (પંચાયત કમિટી અને સ્ટાફનું કાર્ડ).
             </p>
         </div>
 
-        <!-- 5. Committees Info Links -->
+        <!-- 5. Committees Info Links (Popup) -->
         <div class="bg-white p-6 rounded-2xl shadow-md border space-y-3">
             <h3 class="font-bold text-emerald-800 text-base border-b pb-2 flex items-center gap-2">
                 <i class="fa-solid fa-users-gear text-emerald-600"></i> પંચાયત સમિતિ – કમીટીની વિગતો
@@ -124,11 +115,11 @@
             <ul class="list-disc pl-5 space-y-2 text-xs text-gray-700">
                 <li>
                     પંચાયત સમિતિની માહિતી માટે 
-                    <a id="link-staff-2" href="#" class="text-blue-600 font-bold hover:underline">અહીં ક્લિક કરો</a> (પંચાયત કમિટી અને સ્ટાફનું કાર્ડ).
+                    <button onclick="openPopup('panchayat-staff.html', 'પંચાયત સ્ટાફ અને કમિટી')" class="text-blue-600 font-bold hover:underline bg-transparent border-0 cursor-pointer p-0">અહીં ક્લિક કરો</button> (પંચાયત કમિટી અને સ્ટાફનું કાર્ડ).
                 </li>
                 <li>
                     ગ્રામ પંચાયત સમિતિઓની માહિતી માટે 
-                    <a id="link-committees" href="#" class="text-blue-600 font-bold hover:underline">અહીં ક્લિક કરો</a> (કાર્યરત સમિતિનું કાર્ડ).
+                    <button onclick="openPopup('active-committees.html', 'કાર્યરત સમિતિઓ')" class="text-blue-600 font-bold hover:underline bg-transparent border-0 cursor-pointer p-0">અહીં ક્લિક કરો</button> (કાર્યરત સમિતિનું કાર્ડ).
                 </li>
             </ul>
         </div>
@@ -166,14 +157,14 @@
             </div>
         </div>
 
-        <!-- 8. Employee Powers & Duties -->
+        <!-- 8. Employee Powers & Duties (કર્મચારીઓની સત્તાઓ અને કાર્યો) -->
         <div class="bg-white p-6 rounded-2xl shadow-md border space-y-4">
             <h3 class="font-bold text-emerald-800 text-base border-b pb-2 flex items-center gap-2">
                 <i class="fa-solid fa-user-tie text-emerald-600"></i> પંચાયતમાં ફરજ બજાવતા કર્મચારીઓની સત્તાઓ અને કાર્યોની વિગત
             </h3>
             <div class="space-y-4 text-xs text-gray-700 leading-relaxed">
                 <div class="border-b pb-2">
-                    <h4 class="font-bold text-gray-900 text-sm">૧. સરપંચ ::-</h4>
+                    <h4 class="font-bold text-gray-900 text-sm">૧. સરપંચ :-</h4>
                     <ul class="list-disc pl-5 space-y-1 mt-1">
                         <li>પંચાયતની બેઠકનું અધ્યક્ષ સ્થાન લેવું અને તેનું નિયમન કરવું જોઇશે.</li>
                         <li>પંચાયતના સઘળા અધિકારીઓ અને નોકરોએ કરેલા કાર્યો અને લીધેલા પગલાં ઉપર દેખરેખ રાખવી અને તેનું નિયંત્રણ કરવું જોઇશે.</li>
@@ -183,40 +174,40 @@
                     </ul>
                 </div>
                 <div class="border-b pb-2">
-                    <h4 class="font-bold text-gray-900 text-sm">૨. તલાટી કમ મંત્રી ::-</h4>
+                    <h4 class="font-bold text-gray-900 text-sm">૨. તલાટી કમ મંત્રી :-</h4>
                     <ul class="list-disc pl-5 space-y-1 mt-1">
                         <li>પંચાયતના દફતરો અને રજીસ્ટરો પોતાની કસ્ટડીમાં રાખવા, પહોંચબુકો, ચેકબુકો વગેરે મંત્રીએ પોતાના કબજામાં તાળાકુંચીમાં સુરક્ષિત રાખવા.</li>
                         <li>પંચાયત વતી તેને મળેલ નાણાની રકમો બદલ પોતાની સહિવાળી પહોંચ આપવી.</li>
                         <li>સઘળા પત્રકો અને રીપોર્ટો તૈયાર કરવા.</li>
                         <li>પંચાયતના વેરા અને બીજા લેણાં તથા સરકારી લેણાંની ઝડપી વસુલાત કરવી.</li>
                         <li>તાલુકા પંચાયત અથવા જિલ્લા પંચાયત અથવા ઓડિત તરફથી જણાવાયેલ નિયમ બાહ્યતાઓ દુર કરવા ઝડપી પગલા લેવા.</li>
-                        <li>તાબાના કર્મચારીઓ અથવા કોંન્ટ્રાકરોના પક્ષે થયેલ ગફલત, ગેરકાયદેસરપણાનું, નિયમોનું ઉલ્લંઘન અને અવજ્ઞાના કિસ્સાઓ પંચાયતના ધ્યાને મુકવા.</li>
+                        <li>તાબાના કર્મચારીઓ અથવા કોંન્ટ્રાકટરોના પક્ષે થયેલ ગફલત, ગેરકાયદેસરપણાનું, નિયમોનું ઉલ્લંધન અને અવજ્ઞાના કિસ્સાઓ પંચાયતના ધ્યાને મુકવા.</li>
                         <li>પંચાયતોની સઘળી મિલ્કતોની દેખરેખ રાખવી.</li>
                         <li>દરેક સભાઓની કાર્યવાહિની નોંધ રાખવી અને તેની નકલ તાલુકા પંચાયતને મોકલી આપવી.</li>
                         <li>ગ્રામસભાની પ્રથમ બેઠકમાં વાર્ષિક હિસાબોનું પત્રક રજુ કરવું. પાછલા વર્ષનો વહિવટી અહેવાલ રજુ કરવો.</li>
                     </ul>
                 </div>
                 <div class="border-b pb-2">
-                    <h4 class="font-bold text-gray-900 text-sm">૩. ઉપસરપંચ ::-</h4>
+                    <h4 class="font-bold text-gray-900 text-sm">૩. ઉપસરપંચ :-</h4>
                     <ul class="list-disc pl-5 space-y-1 mt-1">
                         <li>સરપંચની ગેરહાજરીમાં પંચાયતની બેઠકોનું અધ્યક્ષસ્થાન લેવું અને તેનું નિયમન કરવું જોઇશે. સરપંચ વખતો-વખત તેમને સોંપે તેવી સરપંચની સત્તા વાપરવી અને તેવી તેમની ફરજો બજાવવી જોઇશે.</li>
                         <li>પંદર દિવસથી વધારે મુદત માટે સરપંચ સતત ગેરહાજર હોય અથવા સરપંચ અશક્ત થયો હોય તેવા દાખલામાં સરપંચની સત્તા વાપરવી અને તેની ફરજો બજાવવી જોઇશે.</li>
                     </ul>
                 </div>
                 <div class="border-b pb-2">
-                    <h4 class="font-bold text-gray-900 text-sm">૪. ગ્રામસેવક ::-</h4>
+                    <h4 class="font-bold text-gray-900 text-sm">૪. ગ્રામસેવક :-</h4>
                     <p>ગ્રામીણ વિકાસમાં મહત્વની ભૂમિકા ભજવે છે જે ખેતીવાડી અને પશુપાલન વિવિધ સરકારી યોજનાઓને ગામે ગામ પહોંચાડે છે. ખેડૂતોને નવી ખેત તકનીકો વિશે માર્ગદર્શન આપવું, સુધારેલા બિયારણ અને ખાતર અંગે માહિતી આપવી.</p>
                 </div>
                 <div class="border-b pb-2">
-                    <h4 class="font-bold text-gray-900 text-sm">૫. વોટર વર્કસ ઓપરેટર ::-</h4>
+                    <h4 class="font-bold text-gray-900 text-sm">૫. વોટર વર્કસ ઓપરેટર :-</h4>
                     <p>પાણી પુરવઠા પ્રણાલીને સુચારૂ રીતે ચલાવવા, પંપ અને ફિલ્ટર પ્લાન્ટનું સંચાલન કરવા, પાણીની ગુણવત્તા (ક્લોરીનેશન) જાળવવા, નિયમિત મેન્ટેનન્સ કરવા અને દબાણપૂર્વક પાણીનું વિતરણ કરવાની ફરજો બજાવે છે.</p>
                 </div>
                 <div class="border-b pb-2">
-                    <h4 class="font-bold text-gray-900 text-sm">૬. પટ્ટાવાળા ::-</h4>
+                    <h4 class="font-bold text-gray-900 text-sm">૬. પટ્ટાવાળા :-</h4>
                     <p>પટ્ટાવાળા (Peon) ની મુખ્ય ફરજોમાં કચેરીનાં દૈનિક કાર્ય, ફાઇલોની હેરફેર, સફાઇ અને અધિકારીઓના આદેશોનું પાલન કરવું સામેલ છે.</p>
                 </div>
                 <div>
-                    <h4 class="font-bold text-gray-900 text-sm">૭. કોમ્પ્યુટર ઓપરેટર (VCE) ::-</h4>
+                    <h4 class="font-bold text-gray-900 text-sm">૭. કોમ્પ્યુટર ઓપરેટર (VCE) :-</h4>
                     <p>વીસીઇ (Village Computer Entrepreneur – VCE) ગ્રામ પંચાયતમાં ઇ-ગ્રામ કેન્દ્ર ચલાવે છે. આવકના દાખલા, ૭/૧૨ ના ઉતારા, વિવિધ યોજનાઓના ફોર્મ, રેશનકાર્ડ, પેન્શન યોજનાઓ, વીજળી બિલ ભરવા અને e-KYC જેવી સેવાઓ પૂરી પાડવાનો સમાવેશ થાય છે.</p>
                 </div>
             </div>
@@ -230,7 +221,7 @@
             <ul class="list-disc pl-5 space-y-2 text-xs text-gray-700">
                 <li>
                     ગામની જમીન અંગેની વિગત માટે 
-                    <a id="link-glance" href="#" class="text-blue-600 font-bold hover:underline">મારૂ ગામ - એક નજરમાં પેજ</a> જુઓ.
+                    <a href="glance.html" class="text-blue-600 font-bold hover:underline">મારૂ ગામ - એક નજરમાં પેજ</a> જુઓ.
                 </li>
                 <li>
                     ગામના વિકાસ કામોની વિગતો માટે 
@@ -242,7 +233,7 @@
         <!-- 10. Water Table -->
         <div class="bg-white p-6 rounded-2xl shadow-md border space-y-3">
             <h3 class="font-bold text-emerald-800 text-base border-b pb-2 flex items-center gap-2">
-                <i class="fa-solid fa-water text-emerald-600"></i> ગામના પાણીની વિગત
+                <i class="fa-solid fa-water text-emerald-600"></i> ગામના પાણીની વિગત (જળાશય)
             </h3>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse text-xs">
@@ -261,7 +252,7 @@
             </div>
         </div>
 
-        <!-- 11. Panchayat Taxes Section -->
+        <!-- 11. Panchayat Taxes Section (કરવેરાની વિગતો) -->
         <div class="bg-white p-6 rounded-2xl shadow-md border space-y-3">
             <h3 class="font-bold text-emerald-800 text-base border-b pb-2 flex items-center gap-2">
                 <i class="fa-solid fa-file-invoice-dollar text-emerald-600"></i> ગ્રામ પંચાયતના કરવેરાની વિગતો
@@ -284,7 +275,7 @@
             </ol>
         </div>
 
-        <!-- 12. Panchayat 32 & Revenue 18 Forms (Static) -->
+        <!-- 12. Panchayat 32 & Revenue 18 Forms (પંચાયતના ૩૨ અને રેવન્યુના ૧૮ નમૂના) -->
         <div class="bg-white p-6 rounded-2xl shadow-md border space-y-3">
             <h3 class="font-bold text-emerald-800 text-base border-b pb-2 flex items-center gap-2">
                 <i class="fa-solid fa-folder-tree text-emerald-600"></i> પંચાયતના ૩૨ અને રેવન્યુના ૧૮ નમૂનાઓની યાદી
@@ -373,7 +364,7 @@
             </div>
         </div>
 
-        <!-- 14. Dynamic Extra Info Section (Admin Controlled at Bottom) -->
+        <!-- 14. Dynamic Extra Info Section -->
         <div id="extra-info-section" class="bg-white p-6 rounded-2xl shadow-md border space-y-3 hidden">
             <h3 id="extra-info-title" class="font-bold text-emerald-800 text-base border-b pb-2 flex items-center gap-2">
                 <i class="fa-solid fa-circle-plus text-emerald-600"></i> અન્ય માહિતી
@@ -383,61 +374,61 @@
 
     </div>
 
-<!-- Firebase Real-time Loader with Direct Configuration & Security Guards -->
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, doc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    <!-- Popup Modal Container -->
+    <div id="iframe-modal" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-3xl h-[80vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden relative">
+            <div class="bg-emerald-800 text-white p-3 flex justify-between items-center">
+                <h3 id="modal-title" class="text-sm font-bold">વિગત</h3>
+                <button onclick="closePopup()" class="text-white hover:text-red-300 text-lg font-bold px-2">&times;</button>
+            </div>
+            <iframe id="modal-iframe" src="" class="w-full flex-grow border-0"></iframe>
+        </div>
+    </div>
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyCMhWWI_6oxPIVEQEVlq2SIBf72EI2o8NI",
-        authDomain: "gram-panchayat-33c86.firebaseapp.com",
-        projectId: "gram-panchayat-33c86",
-        storageBucket: "gram-panchayat-33c86.firebasestorage.app",
-        messagingSenderId: "1025176315779",
-        appId: "1:1025176315779:web:a24ca10a06c55edcc8f8b6",
-        measurementId: "G-TQBSXCWNBV"
-    };
+    <!-- Firebase Real-time Loader & PDF Generator Script -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+        const firebaseConfig = {
+            apiKey: "AIzaSyCMhWWI_6oxPIVEQEVlq2SIBf72EI2o8NI",
+            authDomain: "gram-panchayat-33c86.firebaseapp.com",
+            projectId: "gram-panchayat-33c86",
+            storageBucket: "gram-panchayat-33c86.firebasestorage.app",
+            messagingSenderId: "1025176315779",
+            appId: "1:1025176315779:web:a24ca10a06c55edcc8f8b6",
+            measurementId: "G-TQBSXCWNBV"
+        };
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const panchayatId = urlParams.get('id') || "ahmedabad_daskroi_motapipalva";
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
-    // Dynamic link generation keeping panchayat ID
-    document.getElementById("link-staff").href = `panchayat-staff.html?id=${panchayatId}`;
-    document.getElementById("link-staff-2").href = `panchayat-staff.html?id=${panchayatId}`;
-    document.getElementById("link-committees").href = `active-committees.html?id=${panchayatId}`;
-    document.getElementById("link-glance").href = `glance.html?id=${panchayatId}`;
-
-    async function verifyAndLoad() {
-        try {
-            // 1. Global Maintenance Check
-            const maintSnap = await getDoc(doc(db, "system_settings", "global_config"));
-            if (maintSnap.exists() && maintSnap.data().isMaintenance) {
-                document.getElementById("maintenance-screen").classList.remove("hidden");
-                if (maintSnap.data().maintenanceMessage) {
-                    document.getElementById("maintenance-msg-text").textContent = maintSnap.data().maintenanceMessage;
-                }
-                return;
-            }
-
-            // 2. Panchayat Active Status Check
-            const pSnap = await getDoc(doc(db, "panchayats", panchayatId));
-            if (pSnap.exists() && pSnap.data().isActive === false) {
-                document.getElementById("deactive-screen").classList.remove("hidden");
-                return;
-            }
-
-            // 3. Load Proactive Data
-            loadProactiveData();
-        } catch (err) {
-            console.error("Verification error:", err);
+        const urlParams = new URLSearchParams(window.location.search);
+        let panchayatId = urlParams.get('id');
+        if (panchayatId) {
+            localStorage.setItem("currentPanchayatId", panchayatId);
+        } else {
+            panchayatId = localStorage.getItem("currentPanchayatId") || "517045";
         }
-    }
 
-    // Real-time Data Listener with Panchayat Scope
-    function loadProactiveData() {
+        document.getElementById("back-home-btn").href = `index.html?id=${panchayatId}`;
+
+        async function loadHeaderLocation() {
+            try {
+                const genSnap = await getDoc(doc(db, "panchayats", panchayatId, "settings", "general"));
+                if (genSnap.exists()) {
+                    const gData = genSnap.data();
+                    document.getElementById("header-gp-location").innerHTML = `
+                        ગ્રામ પંચાયત: <b>${gData.name || '-'}</b> | તાલુકો: <b>${gData.taluka || '-'}</b> | જિલ્લો: <b>${gData.district || '-'}</b>
+                    `;
+                }
+            } catch (err) {
+                console.error("Header Location Error:", err);
+            }
+        }
+        loadHeaderLocation();
+
         onSnapshot(doc(db, "panchayats", panchayatId, "proactive_disclosure", "main_data"), (docSnap) => {
             if (!docSnap.exists()) return;
             const data = docSnap.data();
@@ -449,7 +440,7 @@
                 <p><b>ફોન નંબર:</b> ${off.phone || '-'}</p>
                 <p><b>મળવાના દિવસો:</b> સોમવારથી શુક્રવાર તથા પ્રથમ અને ત્રીજો શનિવાર</p>
                 <p><b>સમય:</b> ૧૦:૩૦ કલાક થી ૧૮:૧૦ કલાક સુધી</p>
-                <p><b>પ્રથમ અપીલ અધિકારી:</b> ${off.appealOfficer || 'શ્રી તાલુકા વિકાસ અધિકારી સાહેબ, તાલુકા પંચાયત કચેરી'}</p>
+                <p><b>પ્રથમ અપીલ અધિકારી:</b> ${off.appealOfficer || 'શ્રી તાલુકા વિકાસ અધિકારી સાહેબ'}</p>
             `;
 
             if (data.extraTitle && data.extraContent) {
@@ -492,10 +483,50 @@
                 </tr>
             `);
         });
-    }
+    </script>
 
-    verifyAndLoad();
-</script>
+    <script>
+        function openPopup(pageUrl, titleText) {
+            const modal = document.getElementById("iframe-modal");
+            const iframe = document.getElementById("modal-iframe");
+            const title = document.getElementById("modal-title");
+            
+            title.innerText = titleText;
+            iframe.src = `${pageUrl}?id=${localStorage.getItem("currentPanchayatId") || '517045'}`;
+            modal.classList.remove("hidden");
+        }
+
+        function closePopup() {
+            const modal = document.getElementById("iframe-modal");
+            const iframe = document.getElementById("modal-iframe");
+            iframe.src = "";
+            modal.classList.add("hidden");
+        }
+
+        function exportToPDF() {
+            const element = document.querySelector(".max-w-4xl");
+            
+            const links = element.querySelectorAll("button, a");
+            links.forEach(l => {
+                const span = document.createElement("span");
+                span.className = "text-blue-700 italic text-[11px]";
+                span.innerText = " [સદરહું માહિતી સંબંધિત સરકારી પોર્ટલ/કચેરી પર ઉપલબ્ધ છે] ";
+                l.parentNode.replaceChild(span, l);
+            });
+
+            const opt = {
+                margin:       10,
+                filename:     'Proactive_Disclosure_Panchayat.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().from(element).save().then(() => {
+                window.location.reload();
+            });
+        }
+    </script>
 
 </body>
 </html>
