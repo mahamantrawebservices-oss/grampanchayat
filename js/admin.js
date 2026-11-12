@@ -1645,43 +1645,125 @@ document.getElementById('village-map-form')?.addEventListener('submit', async (e
 });
 // --- સેટેલાઇટ & રેવન્યુ મેપ લિંક્સ (પૂર્ણ) ---
 
-// --- ૧૫. મારૂ ગામ - એક નજરમાં ---
+// --- ૧૫. મારૂ ગામ - એક નજરમાં (Glance Manager) ---
+let glanceCache = {};
+
 async function loadAdminGlanceList() {
     const container = document.getElementById("admin-glance-list");
     if (!container || !lgdCode) return;
-    const snap = await getDocs(getPanchayatCol("village_glance"));
-    container.innerHTML = "";
-    snap.forEach(d => {
-        const item = d.data();
-        container.innerHTML += `
-            <div class="flex justify-between items-center bg-gray-50 p-2 border rounded text-xs mb-1">
-                <span><b>${item.title}:</b> ${item.value}</span>
-                <button onclick="deleteGlance('${d.id}')" class="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded">ડિલીટ</button>
-            </div>
-        `;
-    });
+
+    try {
+        const snap = await getDocs(getPanchayatCol("village_glance"));
+        container.innerHTML = "";
+        glanceCache = {};
+
+        if (snap.empty) {
+            container.innerHTML = `<p class="text-xs text-gray-500 p-2">હાલમાં કોઈ માહિતી ઉમેરેલી નથી.</p>`;
+            return;
+        }
+
+        snap.forEach(d => {
+            const item = d.data();
+            const id = d.id;
+            glanceCache[id] = item;
+
+            container.innerHTML += `
+                <div class="flex justify-between items-center bg-gray-50 p-2.5 border rounded text-xs mb-1.5 shadow-sm">
+                    <div>
+                        <span class="font-bold text-emerald-800">[${item.sectionName || 'અન્ય'}]</span> 
+                        <span><b>${item.title}:</b> ${item.value}</span>
+                        ${item.extraInfo ? `<p class="text-[10px] text-gray-500">વધારાની માહિતી: ${item.extraInfo}</p>` : ''}
+                    </div>
+                    <div class="flex gap-1">
+                        <button type="button" onclick="editGlance('${id}')" class="bg-blue-600 hover:bg-blue-700 text-white text-[10px] px-2 py-1 rounded font-semibold">એડિટ</button>
+                        <button type="button" onclick="deleteGlance('${id}')" class="bg-red-600 hover:bg-red-700 text-white text-[10px] px-2 py-1 rounded font-semibold">ડિલીટ</button>
+                    </div>
+                </div>
+            `;
+        });
+    } catch (err) {
+        console.error("Load Glance Error:", err);
+    }
 }
 
+window.editGlance = (id) => {
+    const item = glanceCache[id];
+    if (!item) return;
+
+    document.getElementById("edit-glance-id").value = id;
+    document.getElementById("glance-section").value = item.sectionName || "";
+    document.getElementById("glance-title").value = item.title || "";
+    document.getElementById("glance-value").value = item.value || "";
+    document.getElementById("glance-extra").value = item.extraInfo || "";
+
+    const submitBtn = document.getElementById("submit-glance-btn");
+    if (submitBtn) submitBtn.innerText = "અપડેટ કરો";
+
+    const cancelBtn = document.getElementById("cancel-glance-edit-btn");
+    if (cancelBtn) cancelBtn.classList.remove("hidden");
+
+    document.getElementById("add-glance-form")?.scrollIntoView({ behavior: 'smooth' });
+};
+
+document.getElementById("cancel-glance-edit-btn")?.addEventListener("click", () => {
+    document.getElementById("add-glance-form").reset();
+    document.getElementById("edit-glance-id").value = "";
+    
+    const submitBtn = document.getElementById("submit-glance-btn");
+    if (submitBtn) submitBtn.innerText = "માહિતી સાચવો";
+
+    const cancelBtn = document.getElementById("cancel-glance-edit-btn");
+    if (cancelBtn) cancelBtn.classList.add("hidden");
+});
+
 window.deleteGlance = async (id) => {
-    if (confirm("ડિલીટ કરવું છે?")) {
-        await deleteDoc(getPanchayatDoc("village_glance", id));
-        loadAdminGlanceList();
+    if (!lgdCode) return;
+    if (confirm("શું તમે આ માહિતી ડિલીટ કરવા માંગો છો?")) {
+        try {
+            await deleteDoc(getPanchayatDoc("village_glance", id));
+            alert("માહિતી સફળતાપૂર્વક ડિલીટ થઈ ગઈ!");
+            loadAdminGlanceList();
+        } catch (err) {
+            console.error("Delete Glance Error:", err);
+            alert("ડિલીટ કરવામાં ભૂલ આવી.");
+        }
     }
 };
 
 document.getElementById("add-glance-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
+    if (!lgdCode) {
+        alert("⚠️ LGD Code મળ્યો નથી!");
+        return;
+    }
+
+    const editId = document.getElementById("edit-glance-id").value.trim();
     const payload = {
-        sectionName: document.getElementById("glance-section").value,
-        title: document.getElementById("glance-title").value,
-        value: document.getElementById("glance-value").value,
-        extraInfo: document.getElementById("glance-extra").value
+        sectionName: document.getElementById("glance-section").value.trim(),
+        title: document.getElementById("glance-title").value.trim(),
+        value: document.getElementById("glance-value").value.trim(),
+        extraInfo: document.getElementById("glance-extra").value.trim(),
+        updatedAt: new Date()
     };
-    await addDoc(getPanchayatCol("village_glance"), payload);
-    alert("માહિતી ઉમેરાઈ ગઈ!");
-    e.target.reset();
-    loadAdminGlanceList();
+
+    try {
+        if (editId) {
+            await updateDoc(getPanchayatDoc("village_glance", editId), payload);
+            alert("✅ માહિતી સફળતાપૂર્વક અપડેટ થઈ ગઈ!");
+        } else {
+            payload.createdAt = new Date();
+            await addDoc(getPanchayatCol("village_glance"), payload);
+            alert("✅ નવી માહિતી સફળતાપૂર્વક ઉમેરાઈ ગઈ!");
+        }
+
+        document.getElementById("cancel-glance-edit-btn")?.click();
+        loadAdminGlanceList();
+    } catch (err) {
+        console.error("Save Glance Error:", err);
+        alert("સેવ કરવામાં ટેકનિકલ ભૂલ આવી: " + err.message);
+    }
 });
+// --- ૧૫. મારૂ ગામ - એક નજરમાં (Glance Manager કોડ પૂર્ણ) ---
 
 // --- ૧૬. સંપર્ક પેજ વિગતો ---
 async function loadContactAdminData() {
