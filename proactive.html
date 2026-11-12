@@ -443,9 +443,15 @@
         }
         loadHeaderLocation();
 
+       // Firebase માંથી પ્રોએક્ટિવ ડેટા અને તાલુકો/જિલ્લો લાઈવ લોડ કરવા માટે
         onSnapshot(doc(db, "panchayats", panchayatId, "proactive_disclosure", "main_data"), (docSnap) => {
             if (!docSnap.exists()) return;
             const data = docSnap.data();
+
+            // 🌟 એડમિન પેનલમાંથી ભરેલા તાલુકા અને જિલ્લાને હેડરમાં સેટ કરવું
+            document.getElementById("header-gp-location").innerHTML = `
+                ગ્રામ પંચાયત: <b>${data.panchayatName || 'વાડોલા'}</b> | તાલુકો: <b>${data.taluka || '-'}</b> | જિલ્લો: <b>${data.district || '-'}</b>
+            `;
 
             const off = data.officer || {};
             document.getElementById("public-officer-box").innerHTML = `
@@ -465,6 +471,7 @@
                 document.getElementById("extra-info-section").classList.add("hidden");
             }
 
+            // (ટેબલ રેન્ડરિંગ કોડ યથાવત રહેશે)
             const renderTable = (id, list, mapper) => {
                 const el = document.getElementById(id);
                 if (el) el.innerHTML = list && list.length ? list.map(mapper).join("") : `<tr><td colspan="10" class="p-3 text-center text-gray-500 border">માહિતી ઉપલબ્ધ નથી</td></tr>`;
