@@ -431,6 +431,65 @@ window.closeDisasterPage = closeDisasterPage;
 
 // --- આપત્તિ વ્યવસ્થાપન મોડલ ઓપન અને લોડ કરવા માટે (કોડ પૂર્ણ) ---
 
+// --- Blogger ફોટો ગેલેરી ફ્રન્ટએન્ડ લોડિંગ અને લાઈટબોક્સ ---
+async function loadFrontendGallery() {
+    const container = document.getElementById("gallery-container");
+    if (!container || !panchayatId) return;
+
+    try {
+        const snap = await getDocs(collection(db, "panchayats", panchayatId, "gallery"));
+        container.innerHTML = "";
+
+        if (snap.empty) {
+            container.innerHTML = `<p class="text-xs text-gray-500 p-2">હાલમાં કોઈ ફોટા ઉપલબ્ધ નથી.</p>`;
+            return;
+        }
+
+        snap.forEach(d => {
+            const item = d.data();
+            container.innerHTML += `
+                <div class="flex-shrink-0 w-48 bg-gray-50 border rounded-xl overflow-hidden shadow-sm cursor-pointer group" onclick="openImageModal('${item.imageUrl}', '${item.title || 'ફોટો'}')">
+                    <img src="${item.imageUrl}" class="w-full h-32 object-cover group-hover:scale-105 transition duration-300" onerror="this.src='https://via.placeholder.com/200?text=No+Image'">
+                    <div class="p-2 bg-white">
+                        <p class="text-xs font-bold text-gray-800 truncate text-center">${item.title || 'ફોટો'}</p>
+                    </div>
+                </div>
+            `;
+        });
+    } catch (err) {
+        console.error("Load Frontend Gallery Error:", err);
+        container.innerHTML = `<p class="text-xs text-red-500 p-2">ગેલેરી લોડ કરવામાં ભૂલ આવી.</p>`;
+    }
+}
+
+// લાઈટબોક્સ મોડલ ફંક્શન્સ
+window.openImageModal = (url, title) => {
+    const modal = document.getElementById("image-modal");
+    const modalImg = document.getElementById("modal-img");
+    if (modal && modalImg) {
+        modalImg.src = url;
+        modalImg.alt = title;
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+    }
+};
+
+document.getElementById("close-modal-btn")?.addEventListener("click", () => {
+    const modal = document.getElementById("image-modal");
+    if (modal) {
+        modal.classList.remove("flex");
+        modal.classList.add("hidden");
+    }
+});
+
+// જો મોડલની બહાર બ્લેક એરિયા પર ક્લિક કરો તો પણ બંધ થઈ જાય
+document.getElementById("image-modal")?.addEventListener("click", (e) => {
+    if (e.target.id === "image-modal") {
+        e.target.classList.remove("flex");
+        e.target.classList.add("hidden");
+    }
+});
+// --- Blogger ફોટો ગેલેરી ફ્રન્ટએન્ડ લોડિંગ અને લાઈટબોક્સ (કોડ પૂર્ણ)---
 
 
 // 🚀 મુખ્ય ઇનિશિયલાઈઝેશન
