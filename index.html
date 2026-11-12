@@ -332,14 +332,22 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const urlParams = new URLSearchParams(window.location.search);
+   // URL અથવા LocalStorage માંથી LGD Code મેળવો
+const urlParams = new URLSearchParams(window.location.search);
 let panchayatId = urlParams.get('id');
 
 if (panchayatId) {
+    // જો URL માં id આપેલો હોય તો તેને LocalStorage માં સેવ કરો
     localStorage.setItem("currentPanchayatId", panchayatId);
 } else {
-    // 🌟 ડિફોલ્ટ આઈડી પોપીપુર (Popipur) સેટ કર્યો
-    panchayatId = localStorage.getItem("currentPanchayatId") || "500000";
+    // 🌟 ડિફોલ્ટ આઈડી પોપીપુર (500000) સેટ કર્યો
+    panchayatId = "500000";
+    localStorage.setItem("currentPanchayatId", panchayatId);
+    
+    // જો URL માં id ન જ હોય, તો ઓટોમેટિક id સાથે પેજને રીડાયરેક્ટ કરો
+    if (!window.location.search.includes('id=')) {
+        window.location.replace(`${window.location.pathname}?id=${panchayatId}`);
+    }
 }
 
     // Step 1: Global Developer Maintenance Mode Guard Check
