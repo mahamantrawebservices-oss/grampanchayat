@@ -1910,30 +1910,178 @@ window.deleteFeedback = async (id) => {
         }
     }
 };
-// --- ૧૮. સ્વયં જાહેર કરેલ માહિતી (Proactive Disclosure) ---
+
+
+// --- ૧૮. સ્વયં જાહેર કરેલ માહિતી (Proactive Disclosure Manager) ---
+
+// વસ્તી રો ઉમેરવા માટે
+window.addPopulationRow = (data = {}) => {
+    const container = document.getElementById("population-rows");
+    if (!container) return;
+    const div = document.createElement("div");
+    div.className = "flex gap-2 items-center bg-white p-2 rounded border pop-row";
+    div.innerHTML = `
+        <input type="text" placeholder="વિગત (દા.ત. અનુસૂચિત જાતિ)" value="${data.title || ''}" class="border p-1.5 rounded w-1/3 pop-title">
+        <input type="number" placeholder="સ્ત્રી" value="${data.female || ''}" class="border p-1.5 rounded w-1/5 pop-female" oninput="calcPopTotal(this)">
+        <input type="number" placeholder="પુરુષ" value="${data.male || ''}" class="border p-1.5 rounded w-1/5 pop-male" oninput="calcPopTotal(this)">
+        <input type="number" placeholder="કુલ" value="${data.total || ''}" class="border p-1.5 rounded w-1/5 bg-gray-100 pop-total" readonly>
+        <button type="button" onclick="this.parentElement.remove()" class="bg-red-500 text-white px-2 py-1 rounded text-xs font-bold">×</button>
+    `;
+    container.appendChild(div);
+};
+
+window.calcPopTotal = (element) => {
+    const row = element.closest('.pop-row');
+    const female = parseInt(row.querySelector('.pop-female').value) || 0;
+    const male = parseInt(row.querySelector('.pop-male').value) || 0;
+    row.querySelector('.pop-total').value = female + male;
+};
+
+// પાણી/જળાશય રો ઉમેરવા માટે
+window.addWaterRow = (data = {}) => {
+    const container = document.getElementById("water-rows");
+    if (!container) return;
+    const div = document.createElement("div");
+    div.className = "flex gap-2 items-center bg-white p-2 rounded border water-row";
+    div.innerHTML = `
+        <input type="text" placeholder="જળાશયનું નામ" value="${data.source || ''}" class="border p-1.5 rounded w-1/4 water-source">
+        <input type="text" placeholder="સંખ્યા" value="${data.count || ''}" class="border p-1.5 rounded w-1/4 water-count">
+        <input type="text" placeholder="વિસ્તાર (ચો.મી.)" value="${data.area || ''}" class="border p-1.5 rounded w-1/4 water-area">
+        <input type="text" placeholder="ક્ષમતા (લીટર)" value="${data.capacity || ''}" class="border p-1.5 rounded w-1/4 water-cap">
+        <button type="button" onclick="this.parentElement.remove()" class="bg-red-500 text-white px-2 py-1 rounded text-xs font-bold">×</button>
+    `;
+    container.appendChild(div);
+};
+
+// મિલકત રો ઉમેરવા માટે
+window.addPropRow = (data = {}) => {
+    const container = document.getElementById("prop-rows");
+    if (!container) return;
+    const div = document.createElement("div");
+    div.className = "flex gap-2 items-center bg-white p-2 rounded border prop-row";
+    div.innerHTML = `
+        <input type="text" placeholder="મિલકતનું નામ" value="${data.name || ''}" class="border p-1.5 rounded w-1/3 prop-name">
+        <input type="text" placeholder="સંખ્યા" value="${data.count || ''}" class="border p-1.5 rounded w-1/4 prop-count">
+        <input type="text" placeholder="અન્ય વિગત" value="${data.detail || ''}" class="border p-1.5 rounded w-1/3 prop-detail">
+        <button type="button" onclick="this.parentElement.remove()" class="bg-red-500 text-white px-2 py-1 rounded text-xs font-bold">×</button>
+    `;
+    container.appendChild(div);
+};
+
+// એડમિન ડેટા લોડ કરવા માટે
 async function loadProactiveAdminData() {
     if (!lgdCode) return;
-    const snap = await getDoc(getPanchayatDoc("proactive_disclosure", "main_data"));
-    if (snap.exists()) {
-        const data = snap.data();
-        if (data.officer) {
-            if (document.getElementById("off-name")) document.getElementById("off-name").value = data.officer.name || "";
-            if (document.getElementById("off-phone")) document.getElementById("off-phone").value = data.officer.phone || "";
-            if (document.getElementById("off-appeal")) document.getElementById("off-appeal").value = data.officer.appealOfficer || "";
+    try {
+        const snap = await getDoc(getPanchayatDoc("proactive_disclosure", "main_data"));
+        if (snap.exists()) {
+            const data = snap.data();
+            
+            // ઓફિસર વિગતો
+            if (data.officer) {
+                if (document.getElementById("off-name")) document.getElementById("off-name").value = data.officer.name || "";
+                if (document.getElementById("off-phone")) document.getElementById("off-phone").value = data.officer.phone || "";
+                if (document.getElementById("off-appeal")) document.getElementById("off-appeal").value = data.officer.appealOfficer || "";
+            }
+
+            // અન્ય માહિતી
+            if (document.getElementById("extra-title-input")) document.getElementById("extra-title-input").value = data.extraTitle || "";
+            if (document.getElementById("extra-content-input")) document.getElementById("extra-content-input").value = data.extraContent || "";
+
+            // વસ્તી ટેબલ રીલોડ
+            const popContainer = document.getElementById("population-rows");
+            if (popContainer) {
+                popContainer.innerHTML = "";
+                if (data.population && data.population.length > 0) {
+                    data.population.forEach(item => addPopulationRow(item));
+                }
+            }
+
+            // પાણી ટેબલ રીલોડ
+            const waterContainer = document.getElementById("water-rows");
+            if (waterContainer) {
+                waterContainer.innerHTML = "";
+                if (data.water && data.water.length > 0) {
+                    data.water.forEach(item => addWaterRow(item));
+                }
+            }
+
+            // મિલકત ટેબલ રીલોડ
+            const propContainer = document.getElementById("prop-rows");
+            if (propContainer) {
+                propContainer.innerHTML = "";
+                if (data.property && data.property.length > 0) {
+                    data.property.forEach(item => addPropRow(item));
+                }
+            }
         }
+    } catch (err) {
+        console.error("Load Proactive Admin Error:", err);
     }
 }
 
+// એડમિન ફોર્મ સબમિટ (સેવ/અપડેટ)
 document.getElementById("proactive-admin-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const officer = {
-        name: document.getElementById("off-name").value,
-        phone: document.getElementById("off-phone").value,
-        appealOfficer: document.getElementById("off-appeal").value
-    };
-    await setDoc(getPanchayatDoc("proactive_disclosure", "main_data"), { officer, updatedAt: new Date() }, { merge: true });
-    alert("સ્વયં જાહેર કરેલ માહિતી સેવ થઈ!");
-});
+    if (!lgdCode) {
+        alert("⚠️ LGD Code મળ્યો નથી!");
+        return;
+    }
 
+    const officer = {
+        name: document.getElementById("off-name").value.trim(),
+        phone: document.getElementById("off-phone").value.trim(),
+        appealOfficer: document.getElementById("off-appeal").value.trim()
+    };
+
+    // વસ્તી ડેટા કલેક્ટ કરો
+    const population = [];
+    document.querySelectorAll("#population-rows .pop-row").forEach(row => {
+        population.push({
+            title: row.querySelector(".pop-title").value.trim(),
+            female: row.querySelector(".pop-female").value.trim(),
+            male: row.querySelector(".pop-male").value.trim(),
+            total: row.querySelector(".pop-total").value.trim()
+        });
+    });
+
+    // પાણી ડેટા કલેક્ટ કરો
+    const water = [];
+    document.querySelectorAll("#water-rows .water-row").forEach(row => {
+        water.push({
+            source: row.querySelector(".water-source").value.trim(),
+            count: row.querySelector(".water-count").value.trim(),
+            area: row.querySelector(".water-area").value.trim(),
+            capacity: row.querySelector(".water-cap").value.trim()
+        });
+    });
+
+    // મિલકત ડેટા કલેક્ટ કરો
+    const property = [];
+    document.querySelectorAll("#prop-rows .prop-row").forEach(row => {
+        property.push({
+            name: row.querySelector(".prop-name").value.trim(),
+            count: row.querySelector(".prop-count").value.trim(),
+            detail: row.querySelector(".prop-detail").value.trim()
+        });
+    });
+
+    const payload = {
+        officer,
+        population,
+        water,
+        property,
+        extraTitle: document.getElementById("extra-title-input").value.trim(),
+        extraContent: document.getElementById("extra-content-input").value.trim(),
+        updatedAt: new Date()
+    };
+
+    try {
+        await setDoc(getPanchayatDoc("proactive_disclosure", "main_data"), payload, { merge: true });
+        alert("✅ સ્વયં જાહેર કરેલ માહિતી સફળતાપૂર્વક સેવ થઈ ગઈ!");
+    } catch (err) {
+        console.error("Save Proactive Error:", err);
+        alert("માહિતી સેવ કરવામાં ભૂલ આવી.");
+    }
+});
 
 
