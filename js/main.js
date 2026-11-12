@@ -431,7 +431,7 @@ window.closeDisasterPage = closeDisasterPage;
 
 // --- આપત્તિ વ્યવસ્થાપન મોડલ ઓપન અને લોડ કરવા માટે (કોડ પૂર્ણ) ---
 
-// --- Blogger ફોટો ગેલેરી ફ્રન્ટએન્ડ લોડિંગ અને લાઈટબોક્સ ---
+// --- Blogger ફોટો ગેલેરી ફ્રન્ટએન્ડ લોડિંગ અને ઓટો-સ્લાઇડ લાઈટબોક્સ ---
 async function loadFrontendGallery() {
     const container = document.getElementById("gallery-container");
     if (!container || !panchayatId) return;
@@ -456,10 +456,35 @@ async function loadFrontendGallery() {
                 </div>
             `;
         });
+
+        // 🌟 ઓટોમેટિક સ્લાઇડ / સ્ક્રોલ થવાનું ફીચર (Auto-play Slider)
+        startGalleryAutoScroll(container);
+
     } catch (err) {
         console.error("Load Frontend Gallery Error:", err);
         container.innerHTML = `<p class="text-xs text-red-500 p-2">ગેલેરી લોડ કરવામાં ભૂલ આવી.</p>`;
     }
+}
+
+// ઓટો સ્ક્રોલ ફંક્શન
+function startGalleryAutoScroll(container) {
+    let scrollInterval = setInterval(() => {
+        // જો યુઝર બીજા પેજ પર જાય અથવા કન્ટેનર ન હોય તો રોકી દેવું
+        if (!document.body.contains(container)) {
+            clearInterval(scrollInterval);
+            return;
+        }
+
+        // જો કન્ટેનર છેલ્લે પહોંચી જાય તો પાછું શરૂઆતમાં આવી જાય, નહિતર આગળ સ્ક્રોલ થાય
+        if (container.scrollLeft + container.clientWidth >= container.scrollWidth - 10) {
+            container.scrollTo({ left: 0, behavior: 'smooth' });
+        } else {
+            container.scrollBy({ left: 200, behavior: 'smooth' });
+        }
+    }, 3000); // દર ૩ સેકન્ડે ફોટો સ્લાઇડ થશે (તમે સમય બદલી શકો છો)
+
+    // જો માઉસ ગેલેરી પર લઈ જઈએ તો ઓટો-સ્ક્રોલ થોડીવાર અટકે (Hover pause effect)
+    container.addEventListener('mouseenter', () => clearInterval(scrollInterval));
 }
 
 // લાઈટબોક્સ મોડલ ફંક્શન્સ
