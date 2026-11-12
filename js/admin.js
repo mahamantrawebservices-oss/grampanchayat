@@ -1857,12 +1857,14 @@ function loadAdminFeedbacks() {
                 dateStr = data.createdAt.toDate().toLocaleString('gu-IN', { dateStyle: 'short', timeStyle: 'short' });
             }
 
-            // ઈમેલ મોકલવા માટે mailto ലിങ്ക് (વિષય અને નામ સાથે ઓટોમેટિક સેટ થશે)
-            const mailtoLink = data.email 
-                ? `mailto:${data.email}?subject=Reply from Gram Panchayat&body=Hello ${data.name || ''},\n\nRegarding your feedback: "${data.message || ''}"\n\n`
-                : `#`;
+            // 🌟 સુધારેલ mailto link (encodeURIComponent સાથે જેથી લિંક ક્યારેય બગડે નહીં)
+            let mailtoLink = "#";
+            if (data.email) {
+                const subject = encodeURIComponent("Reply from Gram Panchayat regarding your feedback");
+                const body = encodeURIComponent(`નમસ્કાર ${data.name || ''},\n\nઆપના પ્રતિસાદ સંદર્ભે:\n"${data.message || ''}"\n\n`);
+                mailtoLink = `mailto:${data.email}?subject=${subject}&body=${body}`;
+            }
 
-           // 👈 અહીંથી target="_blank" કાઢી નાખ્યું છે, જેથી સીધી જ ઈમેલ એપ ખૂલે
             container.innerHTML += `
                 <div class="bg-gray-50 border p-3 rounded-xl shadow-sm text-xs space-y-2">
                     <div class="flex justify-between items-start">
@@ -1907,7 +1909,6 @@ window.deleteFeedback = async (id) => {
         }
     }
 };
-
 // --- ૧૮. સ્વયં જાહેર કરેલ માહિતી (Proactive Disclosure) ---
 async function loadProactiveAdminData() {
     if (!lgdCode) return;
