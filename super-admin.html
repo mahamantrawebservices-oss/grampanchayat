@@ -210,7 +210,7 @@
                         <thead>
                             <tr class="bg-slate-100 text-slate-700 border-b">
                                 <th class="p-2.5">જિલ્લો / તાલુકો</th>
-                                <th class="p-2.5">LGD Code, નામ, Email & સબ્સ્ક્રિપ્શન</th>
+                                <th class="p-2.5">LGD Code, નામ, Contact, Email & સબ્સ્ક્રિપ્શન</th>
                                 <th class="p-2.5 text-center">સ્ટેટસ</th>
                                 <th class="p-2.5 text-center">કંટ્રોલ & એક્શન</th>
                             </tr>
@@ -348,7 +348,6 @@
                 alert("ડેવલપર મેન્ટેનન્સ સેટિંગ્સ સફળતાપૂર્વક સેવ થઈ ગયા!");
             } catch (err) {
                 console.error("Error saving maintenance settings:", err);
-                alert("સેટિંગ્સ સેવ કરવામાં ભૂલ આવી.");
             }
         });
 
@@ -386,11 +385,9 @@
                 loadTalukasList();
             } catch (err) {
                 console.error("Error saving taluka settings:", err);
-                alert("તાલુકા સેટિંગ્સ સેવ કરવામાં ભૂલ આવી: " + err.message);
             }
         });
 
-        // Load Talukas List into Table (Scrollable)
         async function loadTalukasList() {
             const tbody = document.getElementById("taluka-list-table-body");
             if (!tbody) return;
@@ -448,7 +445,6 @@
 
             } catch (err) {
                 console.error("Error loading talukas list:", err);
-                tbody.innerHTML = `<tr><td colspan="6" class="p-3 text-center text-red-500">તાલુકા યાદી લોડ કરવામાં એરર આવી.</td></tr>`;
             }
         }
 
@@ -576,7 +572,6 @@
                 loadTalukasList();
             } catch (err) {
                 console.error("Error adding panchayat:", err);
-                alert("પંચાયત ઉમેરવામાં ભૂલ આવી: " + err.message);
             }
         });
 
@@ -644,6 +639,7 @@
                     (p.panchayatName && p.panchayatName.toLowerCase().includes(query)) ||
                     (p.lgdCode && p.lgdCode.toLowerCase().includes(query)) ||
                     (p.email && p.email.toLowerCase().includes(query)) ||
+                    (p.phone && p.phone.toLowerCase().includes(query)) ||
                     (p.id && p.id.toLowerCase().includes(query));
                 return matchDist && matchTaluka && matchSearch;
             });
@@ -666,6 +662,7 @@
                 const panchayatId = item.lgdCode || item.id;
                 const shareUrl = `${baseUrl}?id=${panchayatId}`;
                 const passwordDisplay = item.adminPassword || "નથી રાખેલ";
+                const phoneDisplay = item.phone ? `<div class="text-[10px] text-gray-600">📞 ${item.phone}</div>` : `<div class="text-[10px] text-gray-400">📞 નંબર નથી</div>`;
                 const emailDisplay = item.email ? `<div class="text-[10px] text-blue-600">📧 ${item.email}</div>` : '';
                 const expiryDisplay = item.subscriptionExpiry ? `<div class="text-[10px] text-amber-700 font-semibold">⏳ સબ્સ્ક્રિપ્શન સમાપ્તિ: ${item.subscriptionExpiry}</div>` : `<div class="text-[10px] text-gray-400">⏳ સબ્સ્ક્રિપ્શન ડેટ નથી</div>`;
 
@@ -677,9 +674,7 @@
                             <div class="text-[10px] text-indigo-700 font-mono mt-0.5">
                                 🆔 LGD Code: <span class="select-all font-bold">${panchayatId}</span>
                             </div>
-                            <div class="text-[10px] text-gray-500 font-normal mt-0.5">
-                                ફોન: ${item.phone || '-'}
-                            </div>
+                            ${phoneDisplay}
                             ${emailDisplay}
                             ${expiryDisplay}
                             <div class="text-[11px] text-purple-700 font-mono mt-0.5 flex items-center gap-1">
@@ -689,8 +684,8 @@
                                 </button>
                             </div>
                             <div class="mt-1">
-                                <button onclick="changePanchayatDetails('${panchayatId}', '${item.panchayatName}', '${item.email || ''}', '${item.subscriptionExpiry || ''}')" class="text-[10px] bg-slate-200 hover:bg-slate-300 text-slate-800 px-2 py-0.5 rounded font-bold">
-                                    <i class="fa-solid fa-pen"></i> Email / Expiry બદલો
+                                <button onclick="changePanchayatDetails('${panchayatId}', '${item.panchayatName}', '${item.phone || ''}', '${item.email || ''}', '${item.subscriptionExpiry || ''}')" class="text-[10px] bg-slate-200 hover:bg-slate-300 text-slate-800 px-2 py-0.5 rounded font-bold">
+                                    <i class="fa-solid fa-pen"></i> સંપર્ક / Email / Expiry બદલો
                                 </button>
                             </div>
                         </td>
@@ -744,7 +739,10 @@
             }
         };
 
-        window.changePanchayatDetails = async (id, panchayatName, oldEmail, oldExpiry) => {
+        window.changePanchayatDetails = async (id, panchayatName, oldPhone, oldEmail, oldExpiry) => {
+            const newPhone = prompt(`"${panchayatName}" માટે નવો મોબાઈલ/સંપર્ક નંબર દાખલ કરો:`, oldPhone);
+            if (newPhone === null) return;
+
             const newEmail = prompt(`"${panchayatName}" માટે નવું ઈમેલ આઈડી દાખલ કરો:`, oldEmail);
             if (newEmail === null) return;
             
@@ -753,6 +751,7 @@
 
             try {
                 await updateDoc(doc(db, "panchayats", id), { 
+                    phone: newPhone.trim(),
                     email: newEmail.trim(), 
                     subscriptionExpiry: newExpiry.trim() 
                 });
