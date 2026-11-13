@@ -182,7 +182,6 @@ document.getElementById("passkey-reset-form")?.addEventListener("submit", async 
         if (resetPasskey === validPasskey) {
             await updateDoc(panchayatDocRef, {
                 adminPassword: resetNewPass,
-                passkey: "", // પાસકી વન-ટાઇમ યુઝ માટે ખાલી કરી નાખો
                 updatedAt: new Date()
             });
 
