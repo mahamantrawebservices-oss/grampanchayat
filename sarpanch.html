@@ -16,7 +16,10 @@
 
     <!-- 🌟 ૨ સેકન્ડનું સ્પ્લેશ લોડિંગ સ્ક્રીન -->
     <div id="splash-screen" class="fixed inset-0 bg-emerald-900 flex flex-col items-center justify-center z-50 transition-opacity duration-700">
-        <img src="https://api.iconify.design/fluent-emoji-flat:bank.svg" alt="Logo" class="w-20 h-20 mb-4 animate-bounce">
+        <div id="splash-logo-container" class="w-20 h-20 mb-4 flex items-center justify-center bg-white rounded-full shadow-lg overflow-hidden p-1">
+            <!-- લોગો ડાયનેમિક લોડ થશે -->
+            <i class="fa-solid fa-landmark text-3xl text-emerald-800"></i>
+        </div>
         <h1 class="text-white text-xl font-bold">ગ્રામ પંચાયત સરપંચ પોર્ટલ</h1>
         <p class="text-emerald-200 text-xs mt-1">લોડ થઈ રહ્યું છે...</p>
     </div>
@@ -24,7 +27,9 @@
     <!-- 🌟 સરપંચ લૉગિન મોડલ (ગ્રામ પંચાયત એડમિન મુજબ) -->
     <div id="sarpanch-login-modal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-40 p-4">
         <div class="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-sm text-center">
-            <img src="https://api.iconify.design/fluent-emoji-flat:bank.svg" alt="Logo" class="w-16 h-16 mx-auto mb-2">
+            <div id="login-logo-container" class="w-16 h-16 mx-auto mb-2 flex items-center justify-center bg-emerald-50 rounded-full border border-emerald-200 overflow-hidden">
+                <i class="fa-solid fa-landmark text-2xl text-emerald-800"></i>
+            </div>
             <h2 class="text-xl font-bold text-gray-800 mb-1">સરપંચ લૉગિન</h2>
             <p class="text-xs text-emerald-700 font-bold mb-4">ગ્રામ પંચાયત એડમિન પોર્ટલ</p>
             
@@ -47,13 +52,15 @@
         </div>
     </div>
 
-    <!-- 🌟 સરપંચ ડેશબોર્ડ (Single Page App) -->
+    <!-- 🌟 સરપંચ ડેશબોર્ડ (Single Page App - ગ્રામ પંચાયત એડમિન પેનલ મુજબના બધા જ સેક્શન્સ) -->
     <div id="sarpanch-dashboard" class="hidden flex-1 flex flex-col">
         
         <!-- Header -->
         <header class="bg-emerald-900 text-white shadow-md py-3 px-4 flex justify-between items-center sticky top-0 z-30">
             <div class="flex items-center gap-2.5">
-                <img src="https://api.iconify.design/fluent-emoji-flat:bank.svg" alt="Logo" class="w-8 h-8 bg-white rounded-full p-1 shadow">
+                <div id="header-logo-container" class="w-9 h-9 bg-white rounded-full flex items-center justify-center shadow overflow-hidden p-0.5">
+                    <i class="fa-solid fa-landmark text-emerald-900 text-sm"></i>
+                </div>
                 <div>
                     <h1 class="text-sm font-bold" id="sarpanch-header-title">ગ્રામ પંચાયત - સરપંચ હેન્ડલ</h1>
                     <p class="text-[10px] text-emerald-200">સરપંચ ડેશબોર્ડ મોનિટરિંગ</p>
@@ -67,7 +74,7 @@
         <!-- Main Sections Container -->
         <main class="flex-1 p-4 max-w-4xl mx-auto w-full space-y-6">
             
-            <!-- ૧. તાજી પોસ્ટ્સ અને ન્યૂઝ મેનેજ કરો -->
+            <!-- ૧. તાજી પોસ્ટ્સ અને ન્યૂઝ મેનેજ કરો 📢 -->
             <div class="bg-white border border-emerald-200 p-4 rounded-xl shadow-sm space-y-3">
                 <h3 class="font-bold border-b border-emerald-200 pb-2 text-emerald-950 text-sm flex items-center gap-2">
                     <i class="fa-solid fa-bullhorn text-emerald-600"></i> ૧. તાજી પોસ્ટ્સ અને ન્યૂઝ મેનેજ કરો 📢
@@ -89,14 +96,87 @@
                 </form>
             </div>
 
+            <!-- ૩. મારૂ ગામ - એક નજરમાં મેનેજર -->
+            <div class="bg-white border border-emerald-200 p-4 rounded-xl shadow-sm space-y-3">
+                <h3 class="font-bold border-b border-emerald-200 pb-2 text-emerald-950 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-circle-info text-emerald-600"></i> ૩. મારૂ ગામ - એક નજરમાં મેનેજર
+                </h3>
+                <form id="sarpanch-add-glance-form" class="grid grid-cols-1 sm:grid-cols-4 gap-2 text-xs">
+                    <input type="text" id="glance-section" placeholder="સેક્શન (દા.ત. મૂળભૂત માહિતી)" required class="border p-2 rounded">
+                    <input type="text" id="glance-title" placeholder="વિગત / સુવિધા" required class="border p-2 rounded">
+                    <input type="text" id="glance-value" placeholder="આંકડો / મુખ્ય માહિતી" required class="border p-2 rounded">
+                    <input type="text" id="glance-extra" placeholder="વધારાની વિગત" class="border p-2 rounded">
+                    <button type="submit" class="sm:col-span-4 bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2 rounded shadow transition">માહિતી ઉમેરો</button>
+                </form>
+                <div id="sarpanch-glance-list" class="space-y-2 max-h-48 overflow-y-auto pr-1 pt-2 border-t">
+                    <p class="text-xs text-gray-500">લોડ થઈ રહ્યું છે...</p>
+                </div>
+            </div>
+
+            <!-- ૪. ગ્રામ પંચાયત ગેલેરી (ફોટો અપલોડ) -->
+            <div class="bg-white border border-emerald-200 p-4 rounded-xl shadow-sm space-y-3">
+                <h3 class="font-bold border-b border-emerald-200 pb-2 text-emerald-950 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-images text-emerald-600"></i> ૪. ગ્રામ પંચાયત ગેલેરી (ફોટો અપલોડ)
+                </h3>
+                <form id="sarpanch-gallery-form" class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                    <input type="text" id="gallery-title" placeholder="ફોટાનુંશીર્ષક / નામ" required class="border p-2 rounded">
+                    <input type="url" id="gallery-url" placeholder="ફોટાની લિંક (Image URL)" required class="border p-2 rounded">
+                    <button type="submit" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2 rounded shadow transition">ફોટો ઉમેરો</button>
+                </form>
+                <div id="sarpanch-gallery-list" class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t max-h-48 overflow-y-auto">
+                    <p class="text-xs text-gray-500">ગેલેરી લોડ થઈ રહી છે...</p>
+                </div>
+            </div>
+
             <!-- ૫. આવેલ ફરિયાદો અને સ્ટેટસ મેનેજર -->
             <div class="bg-white border border-emerald-200 p-4 rounded-xl shadow-sm space-y-3">
                 <h3 class="font-bold border-b border-emerald-200 pb-2 text-emerald-950 text-sm flex items-center gap-2">
-                    <i class="fa-solid fa-comments text-emerald-600"></i> ૫. આવેલ ફરિયાદો અને સ્ટેટস મેનેજર
+                    <i class="fa-solid fa-comments text-emerald-600"></i> ૫. આવેલ ફરિયાદો અને સ્ટેટસ મેનેજર
                 </h3>
                 <div id="sarpanch-complaints-list" class="space-y-2 max-h-72 overflow-y-auto pr-1">
                     <p class="text-xs text-gray-500">ફરિયાદો લોડ થઈ રહી છે...</p>
                 </div>
+            </div>
+
+            <!-- ૬. પંચાયત કમિટી અને સ્ટાફ મેનેજર -->
+            <div class="bg-white border border-emerald-200 p-4 rounded-xl shadow-sm space-y-3">
+                <h3 class="font-bold border-b border-emerald-200 pb-2 text-emerald-950 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-users text-emerald-600"></i> ૬. પંચાયત કમિટી અને સ્ટાફ મેનેજર
+                </h3>
+                <form id="sarpanch-staff-form" class="grid grid-cols-1 sm:grid-cols-5 gap-2 text-xs">
+                    <select id="ms-category" class="border p-2 rounded bg-white">
+                        <option value="committee">પંચાયત કમિટી</option>
+                        <option value="staff">કર્મચારી</option>
+                    </select>
+                    <input type="text" id="ms-name" placeholder="નામ" required class="border p-2 rounded">
+                    <input type="text" id="ms-desig" placeholder="હોદ્દો" required class="border p-2 rounded">
+                    <input type="text" id="ms-mobile" placeholder="મોબાઈલ નંબર" required class="border p-2 rounded">
+                    <input type="text" id="ms-ward" placeholder="વોર્ડ નં. (કમિટી માટે)" class="border p-2 rounded">
+                    <button type="submit" class="sm:col-span-5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2 rounded shadow transition">સભ્ય/કર્મચારી ઉમેરો</button>
+                </form>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t text-xs">
+                    <div>
+                        <h4 class="font-bold text-emerald-900 mb-1">👥 કમિટી સભ્યો:</h4>
+                        <div id="sarpanch-committee-list" class="space-y-1 max-h-36 overflow-y-auto"></div>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-emerald-900 mb-1">👔 સ્ટાફ:</h4>
+                        <div id="sarpanch-staff-list" class="space-y-1 max-h-36 overflow-y-auto"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ૭. કાર્યરત સમિતિઓ મેનેજર -->
+            <div class="bg-white border border-emerald-200 p-4 rounded-xl shadow-sm space-y-3">
+                <h3 class="font-bold border-b border-emerald-200 pb-2 text-emerald-950 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-sitemap text-emerald-600"></i> ૭. કાર્યરત સમિતિઓ મેનેજર
+                </h3>
+                <form id="sarpanch-active-comm-form" class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                    <input type="text" id="ac-name" placeholder="સમિતિનું નામ (દા.ત. પાણી સમિતિ)" required class="border p-2 rounded">
+                    <input type="text" id="ac-members" placeholder="સભ્યો (નામ, મૂળ હોદ્દો, સમિતિ હોદ્દો)" required class="border p-2 rounded sm:col-span-2">
+                    <button type="submit" class="sm:col-span-3 bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2 rounded shadow transition">સમિતિ ઉમેરો</button>
+                </form>
+                <div id="sarpanch-active-comm-list" class="space-y-2 max-h-40 overflow-y-auto pt-2 border-t"></div>
             </div>
 
         </main>
@@ -122,7 +202,6 @@
 
         let lgdCode = sessionStorage.getItem("sarpanch_lgd_code") || "";
 
-        // Firestore Helper Functions
         function getPanchayatCol(subColl) {
             return collection(db, "panchayats", lgdCode, subColl);
         }
@@ -130,13 +209,28 @@
             return doc(db, "panchayats", lgdCode, subColl, docId);
         }
 
+        // લોગો સેટ કરવા માટેનું ફંક્શન (પંચાયતના સેટિંગ્સમાંથી લોગો લાવશે)
+        async function applyPanchayatLogo() {
+            if (!lgdCode) return;
+            try {
+                const genSnap = await getDoc(doc(db, "panchayats", lgdCode, "settings", "general"));
+                if (genSnap.exists() && genSnap.data().logoUrl) {
+                    const logoUrl = genSnap.data().logoUrl;
+                    document.getElementById("splash-logo-container").innerHTML = `<img src="${logoUrl}" alt="Logo" class="w-full h-full object-cover rounded-full">`;
+                    document.getElementById("login-logo-container").innerHTML = `<img src="${logoUrl}" alt="Logo" class="w-full h-full object-cover rounded-full">`;
+                    document.getElementById("header-logo-container").innerHTML = `<img src="${logoUrl}" alt="Logo" class="w-full h-full object-cover rounded-full">`;
+                }
+            } catch (e) {}
+        }
+
         // Splash Screen Timer (2 Seconds)
-        setTimeout(() => {
+        setTimeout(async () => {
             const splash = document.getElementById("splash-screen");
             if (splash) {
                 splash.classList.add("opacity-0");
                 setTimeout(() => splash.remove(), 700);
             }
+            if (lgdCode) await applyPanchayatLogo();
             checkAuth();
         }, 2000);
 
@@ -183,12 +277,12 @@
                 }
 
                 const data = docSnap.data();
-                // ગ્રામ પંચાયત એડમિન મુજબ પાસવર્ડ વેરિફિકેશન (ડિફોલ્ટ admin123 અથવા સેટ કરેલ પાસવર્ડ)
                 const correctPass = data.adminPassword || "admin123";
 
                 if (password === correctPass) {
                     lgdCode = inputCode;
                     sessionStorage.setItem("sarpanch_lgd_code", lgdCode);
+                    await applyPanchayatLogo();
                     alert("✅ સફળતાપૂર્વક લૉગિન થઈ ગયું!");
                     checkAuth();
                 } else {
@@ -211,8 +305,6 @@
 
         async function loadSarpanchData() {
             if (!lgdCode) return;
-            
-            // પંચાયતનું નામ હેડરમાં સેટ કરવું
             try {
                 const pSnap = await getDoc(doc(db, "panchayats", lgdCode));
                 if (pSnap.exists()) {
@@ -222,109 +314,152 @@
             } catch (e) {}
 
             loadSarpanchPosts();
+            loadSarpanchGlance();
+            loadSarpanchGallery();
             loadSarpanchComplaints();
+            loadSarpanchStaffAndComm();
+            loadSarpanchActiveComm();
         }
 
-        // ૧. તાજી પોસ્ટ્સ અને ન્યૂઝ લોડ કરવા
+        // ૧. પોસ્ટ્સ લોડ અને ડિલીટ
         async function loadSarpanchPosts() {
             const container = document.getElementById("sarpanch-posts-list");
-            try {
-                const snap = await getDocs(getPanchayatCol("news_posts"));
-                container.innerHTML = "";
-                if (snap.empty) {
-                    container.innerHTML = `<p class="text-xs text-gray-500">કોઈ પોસ્ટ ઉપલબ્ધ નથી.</p>`;
-                    return;
-                }
-                snap.forEach(d => {
-                    const item = d.data();
-                    container.innerHTML += `
-                        <div class="flex justify-between items-center bg-gray-50 p-2.5 border rounded text-xs">
-                            <div>
-                                <b class="text-emerald-900">${item.title || '-'}</b>
-                                <p class="text-[11px] text-gray-600 line-clamp-1">${item.description || ''}</p>
-                            </div>
-                            <button onclick="deletePost('${d.id}')" class="bg-red-600 hover:bg-red-700 text-white text-[10px] px-2 py-1 rounded font-bold shadow">ડિલીટ</button>
-                        </div>
-                    `;
-                });
-            } catch (err) {
-                container.innerHTML = `<p class="text-xs text-red-500">પોસ્ટ લોડ કરવામાં એરર.</p>`;
-            }
+            const snap = await getDocs(getPanchayatCol("news_posts"));
+            container.innerHTML = snap.empty ? `<p class="text-xs text-gray-500">કોઈ પોસ્ટ ઉપલબ્ધ નથી.</p>` : "";
+            snap.forEach(d => {
+                const item = d.data();
+                container.innerHTML += `
+                    <div class="flex justify-between items-center bg-gray-50 p-2 border rounded text-xs">
+                        <div><b>${item.title || '-'}</b><p class="text-[11px] text-gray-600 truncate max-w-xs">${item.description || ''}</p></div>
+                        <button onclick="deleteDocItem('news_posts', '${d.id}', loadSarpanchPosts)" class="bg-red-600 text-white text-[10px] px-2 py-1 rounded font-bold">ડિલીટ</button>
+                    </div>`;
+            });
         }
-
-        // ૨. નવી પોસ્ટ / નોટિસ પબ્લિશ કરવી
         document.getElementById("sarpanch-add-post-form")?.addEventListener("submit", async (e) => {
             e.preventDefault();
-            const title = document.getElementById("post-title").value.trim();
-            const description = document.getElementById("post-desc").value.trim();
-
-            try {
-                await addDoc(getPanchayatCol("news_posts"), {
-                    title,
-                    description,
-                    createdAt: new Date()
-                });
-                alert("✅ પોસ્ટ સફળતાપૂર્વક પબ્લિશ થઈ ગઈ!");
-                e.target.reset();
-                loadSarpanchPosts();
-            } catch (err) {
-                alert("એરર: " + err.message);
-            }
+            await addDoc(getPanchayatCol("news_posts"), { title: document.getElementById("post-title").value, description: document.getElementById("post-desc").value, createdAt: new Date() });
+            alert("✅ પોસ્ટ પબ્લિશ થઈ ગઈ!");
+            e.target.reset();
+            loadSarpanchPosts();
         });
 
-        window.deletePost = async function(id) {
-            if (confirm("શું તમે આ પોસ્ટ ડિલીટ કરવા માંગો છો?")) {
-                await deleteDoc(getPanchayatDoc("news_posts", id));
-                loadSarpanchPosts();
-            }
-        };
+        // ૩. મારૂ ગામ - એક નજરમાં
+        async function loadSarpanchGlance() {
+            const container = document.getElementById("sarpanch-glance-list");
+            const snap = await getDocs(getPanchayatCol("village_glance"));
+            container.innerHTML = snap.empty ? `<p class="text-xs text-gray-500">કોઈ માહિતી નથી.</p>` : "";
+            snap.forEach(d => {
+                const item = d.data();
+                container.innerHTML += `
+                    <div class="flex justify-between items-center bg-gray-50 p-2 border rounded text-xs">
+                        <span><b>[${item.sectionName}]</b> ${item.title}: <strong class="text-emerald-800">${item.value}</strong></span>
+                        <button onclick="deleteDocItem('village_glance', '${d.id}', loadSarpanchGlance)" class="bg-red-600 text-white text-[10px] px-2 py-0.5 rounded">ડિલીટ</button>
+                    </div>`;
+            });
+        }
+        document.getElementById("sarpanch-add-glance-form")?.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            await addDoc(getPanchayatCol("village_glance"), { sectionName: document.getElementById("glance-section").value, title: document.getElementById("glance-title").value, value: document.getElementById("glance-value").value, extraInfo: document.getElementById("glance-extra").value });
+            alert("✅ માહિતી ઉમેરાઈ ગઈ!");
+            e.target.reset();
+            loadSarpanchGlance();
+        });
 
-        // ૫. આવેલ ફરિયાદો અને સ્ટેટસ મેનેજર
+        // ૪. ગેલેરી
+        async function loadSarpanchGallery() {
+            const container = document.getElementById("sarpanch-gallery-list");
+            const snap = await getDocs(getPanchayatCol("gallery"));
+            container.innerHTML = snap.empty ? `<p class="text-xs text-gray-500 col-span-2">કોઈ ફોટો નથી.</p>` : "";
+            snap.forEach(d => {
+                const item = d.data();
+                container.innerHTML += `
+                    <div class="relative bg-white border p-1 rounded text-center">
+                        <img src="${item.imageUrl}" class="w-full h-20 object-cover rounded mb-1">
+                        <p class="text-[10px] truncate">${item.title}</p>
+                        <button onclick="deleteDocItem('gallery', '${d.id}', loadSarpanchGallery)" class="absolute top-1 right-1 bg-red-600 text-white text-[9px] px-1.5 py-0.5 rounded">✕</button>
+                    </div>`;
+            });
+        }
+        document.getElementById("sarpanch-gallery-form")?.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            await addDoc(getPanchayatCol("gallery"), { title: document.getElementById("gallery-title").value, imageUrl: document.getElementById("gallery-url").value, createdAt: new Date() });
+            alert("✅ ફોટો ઉમેરાયો!");
+            e.target.reset();
+            loadSarpanchGallery();
+        });
+
+        // ૫. ફરિયાદો
         async function loadSarpanchComplaints() {
             const container = document.getElementById("sarpanch-complaints-list");
-            try {
-                const snap = await getDocs(getPanchayatCol("complaints"));
-                container.innerHTML = "";
-                if (snap.empty) {
-                    container.innerHTML = `<p class="text-xs text-gray-500">કોઈ ફરિયાદ આવેલ નથી.</p>`;
-                    return;
-                }
-                snap.forEach(d => {
-                    const item = d.data();
-                    const status = item.status || "Pending";
-                    const statusColor = status === "Resolved" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800";
-                    
-                    container.innerHTML += `
-                        <div class="bg-gray-50 p-3 border rounded text-xs space-y-1.5">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <span class="font-bold text-gray-900">${item.citizenName || 'નાગરિક'} (${item.mobile || '-'})</span>
-                                    <p class="text-gray-700 font-medium mt-0.5">${item.complaintText || '-'}</p>
-                                </div>
-                                <span class="px-2 py-0.5 rounded text-[10px] font-bold ${statusColor}">${status}</span>
-                            </div>
-                            <div class="flex justify-end gap-1.5 pt-1 border-t">
-                                <button onclick="updateComplaintStatus('${d.id}', 'Pending')" class="bg-yellow-500 hover:bg-yellow-600 text-white text-[10px] px-2 py-1 rounded font-bold">પেন্ডિંગ</button>
-                                <button onclick="updateComplaintStatus('${d.id}', 'Resolved')" class="bg-green-600 hover:bg-green-700 text-white text-[10px] px-2 py-1 rounded font-bold">સોલ્વ (ઉકેલાયેલ)</button>
-                                <button onclick="deleteComplaint('${d.id}')" class="bg-red-600 hover:bg-red-700 text-white text-[10px] px-2 py-1 rounded font-bold">ડિલીટ</button>
-                            </div>
+            const snap = await getDocs(getPanchayatCol("complaints"));
+            container.innerHTML = snap.empty ? `<p class="text-xs text-gray-500">કોઈ ફરિયાદ નથી.</p>` : "";
+            snap.forEach(d => {
+                const item = d.data();
+                container.innerHTML += `
+                    <div class="bg-gray-50 p-2.5 border rounded text-xs space-y-1">
+                        <div class="flex justify-between"><b>${item.citizenName || 'નાગરિક'} (${item.mobile || '-'})</b><span class="px-1.5 py-0.5 rounded text-[10px] bg-yellow-100 text-yellow-800">${item.status || 'Pending'}</span></div>
+                        <p>${item.complaintText || '-'}</p>
+                        <div class="flex justify-end gap-1 pt-1">
+                            <button onclick="updateComplaint('${d.id}', 'Resolved')" class="bg-green-600 text-white text-[10px] px-2 py-0.5 rounded font-bold">સોલ્વ કરો</button>
+                            <button onclick="deleteDocItem('complaints', '${d.id}', loadSarpanchComplaints)" class="bg-red-600 text-white text-[10px] px-2 py-0.5 rounded font-bold">ડિલીટ</button>
                         </div>
-                    `;
-                });
-            } catch (err) {
-                container.innerHTML = `<p class="text-xs text-red-500">ફરિયાદો લોડ કરવામાં એરર.</p>`;
-            }
+                    </div>`;
+            });
         }
+        window.updateComplaint = async (id, status) => { await updateDoc(getPanchayatDoc("complaints", id), { status }); loadSarpanchComplaints(); };
 
-        window.updateComplaintStatus = async function(id, newStatus) {
-            await updateDoc(getPanchayatDoc("complaints", id), { status: newStatus });
-            loadSarpanchComplaints();
-        };
+        // ૬. કમિટી અને સ્ટાફ
+        async function loadSarpanchStaffAndComm() {
+            const commCont = document.getElementById("sarpanch-committee-list");
+            const staffCont = document.getElementById("sarpanch-staff-list");
+            
+            const commSnap = await getDocs(getPanchayatCol("panchayat_committee"));
+            commCont.innerHTML = "";
+            commSnap.forEach(d => {
+                const item = d.data();
+                commCont.innerHTML += `<div class="flex justify-between bg-gray-50 p-1 border rounded text-[11px]"><span><b>${item.name}</b> (${item.designation})</span><button onclick="deleteDocItem('panchayat_committee', '${d.id}', loadSarpanchStaffAndComm)" class="text-red-600 font-bold px-1">✕</button></div>`;
+            });
 
-        window.deleteComplaint = async function(id) {
-            if (confirm("શું આ ફરિયાદ ડિલીટ કરવી છે?")) {
-                await deleteDoc(getPanchayatDoc("complaints", id));
-                loadSarpanchComplaints();
+            const staffSnap = await getDocs(getPanchayatCol("panchayat_staff"));
+            staffCont.innerHTML = "";
+            staffSnap.forEach(d => {
+                const item = d.data();
+                staffCont.innerHTML += `<div class="flex justify-between bg-gray-50 p-1 border rounded text-[11px]"><span><b>${item.name}</b> (${item.designation})</span><button onclick="deleteDocItem('panchayat_staff', '${d.id}', loadSarpanchStaffAndComm)" class="text-red-600 font-bold px-1">✕</button></div>`;
+            });
+        }
+        document.getElementById("sarpanch-staff-form")?.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const type = document.getElementById("ms-category").value;
+            const col = type === 'committee' ? 'panchayat_committee' : 'panchayat_staff';
+            await addDoc(getPanchayatCol(col), { name: document.getElementById("ms-name").value, designation: document.getElementById("ms-desig").value, mobile: document.getElementById("ms-mobile").value, ward: document.getElementById("ms-ward").value || '' });
+            alert("✅ ઉમેરાઈ ગયું!");
+            e.target.reset();
+            loadSarpanchStaffAndComm();
+        });
+
+        // ૭. કાર્યરત સમિતિઓ
+        async function loadSarpanchActiveComm() {
+            const container = document.getElementById("sarpanch-active-comm-list");
+            const snap = await getDocs(getPanchayatCol("active_committees"));
+            container.innerHTML = snap.empty ? `<p class="text-xs text-gray-500">કોઈ સમિતિ નથી.</p>` : "";
+            snap.forEach(d => {
+                const item = d.data();
+                container.innerHTML += `<div class="flex justify-between bg-gray-50 p-1 border rounded text-xs"><span><b>${item.committeeName}</b></span><button onclick="deleteDocItem('active_committees', '${d.id}', loadSarpanchActiveComm)" class="bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded">ડિલીટ</button></div>`;
+            });
+        }
+        document.getElementById("sarpanch-active-comm-form")?.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            await addDoc(getPanchayatCol("active_committees"), { committeeName: document.getElementById("ac-name").value, membersText: document.getElementById("ac-members").value });
+            alert("✅ સમિતિ ઉમેરાઈ!");
+            e.target.reset();
+            loadSarpanchActiveComm();
+        });
+
+        // Global Delete Helper
+        window.deleteDocItem = async (colName, id, callback) => {
+            if (confirm("શું તમે આ ડિલીટ કરવા માંગો છો?")) {
+                await deleteDoc(getPanchayatDoc(colName, id));
+                callback();
             }
         };
 
