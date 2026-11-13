@@ -29,17 +29,72 @@
             
             <div>
                 <label class="block text-xs font-bold text-gray-700 mb-1">એડમિન પાસવર્ડ</label>
-                <!-- પાસવર્ડ ઇનપુટ અને આઇકન માટે રિલેટિવ ડિવ -->
                 <div class="relative">
                     <input type="password" id="login-password" placeholder="પાસવર્ડ દાખલ કરો" required class="w-full border p-2.5 pr-10 rounded text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500">
                     <button type="button" id="toggle-password" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700 focus:outline-none">
-                        <!-- FontAwesome Eye Icon -->
                         <i id="eye-icon" class="fa-solid fa-eye text-sm"></i>
                     </button>
                 </div>
             </div>
 
             <button type="submit" class="w-full bg-emerald-600 text-white font-bold py-2.5 rounded hover:bg-emerald-700 transition mt-2">લૉગિન કરો</button>
+            
+            <!-- પાસવર્ડ રીસેટ કરવા માટે પાસકી લિંક -->
+            <div class="text-center mt-2">
+                <button type="button" onclick="openPasskeyModal()" class="text-xs text-blue-600 hover:underline font-semibold">
+                    🔑 પાસકી (Passkey) વડે પાસવર્ડ બદલો?
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 🌟 સબ્સ્ક્રિપ્શન સમાપ્ત થવા પર એલર્ટ પૉપ-અપ મોડલ -->
+<div id="subscription-alert-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+    <div class="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-md text-center space-y-4 border-t-4 border-red-600 animate-pulse">
+        <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto text-2xl font-bold">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <h3 class="text-xl font-bold text-gray-900">સબ્સ્ક્રિપ્શન સમાપ્ત થઈ ગયું છે!</h3>
+        <p id="subscription-alert-text" class="text-xs text-gray-600 leading-relaxed">
+            તમારી ગ્રામ પંચાયતની વેબસાઇટનું સબ્સ્ક્રિપ્શન પૂરું થઈ ગયું છે. કૃપા કરીને સુપર એડમિનનો સંપર્ક કરી સબ્સ્ક્રિપ્શન રિન્યુ કરાવો.
+        </p>
+        <div class="pt-2">
+            <button onclick="closeSubscriptionAlert()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-xl text-xs transition">
+                સમજાઈ ગયું / બંધ કરો
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- 🔑 પાસકી (Passkey) દ્વારા પાસવર્ડ રીસેટ મોડલ -->
+<div id="passkey-reset-modal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+    <div class="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-sm space-y-4">
+        <div class="flex justify-between items-center border-b pb-2">
+            <h3 class="font-bold text-gray-800 text-sm flex items-center gap-2">
+                <i class="fa-solid fa-key text-amber-500"></i> પાસકી વડે પાસવર્ડ રીસેટ કરો
+            </h3>
+            <button onclick="closePasskeyModal()" class="text-gray-500 hover:text-red-600 font-bold">
+                <i class="fa-solid fa-xmark text-base"></i>
+            </button>
+        </div>
+        
+        <form id="passkey-reset-form" class="space-y-3 text-xs">
+            <div>
+                <label class="block font-medium text-gray-700 mb-1">LGD Code (પંચાયત આઈડી):</label>
+                <input type="text" id="reset-lgd" placeholder="દા.ત. 516909" required class="w-full border p-2 rounded bg-gray-50 font-mono">
+            </div>
+            <div>
+                <label class="block font-medium text-gray-700 mb-1">સુપર એડમિન પાસેથી મળેલી પાસકી (Passkey):</label>
+                <input type="text" id="reset-passkey" placeholder="દા.ત. KEY-123456" required class="w-full border p-2 rounded bg-gray-50 font-mono">
+            </div>
+            <div>
+                <label class="block font-medium text-gray-700 mb-1">નવો એડમિન પાસવર્ડ:</label>
+                <input type="password" id="reset-new-pass" placeholder="નવો પાસવર્ડ દાખલ કરો" required class="w-full border p-2 rounded bg-gray-50">
+            </div>
+            <button type="submit" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold p-2.5 rounded shadow transition">
+                પાસવર્ડ બદલો
+            </button>
         </form>
     </div>
 </div>
@@ -51,13 +106,10 @@
         <header class="bg-emerald-900 text-white px-6 py-4 flex justify-between items-center shadow-md">
             <h1 class="text-xl font-bold" id="dashboard-header-title">ગ્રામ પંચાયત એડમિન પેનલ</h1>
 
-<!-- તાલુકા માહિતી ફોર્મ ખોલવાનું બટન (લાલ રંગ અને એનિમેટેડ ઘંટી સાથે) -->
 <button type="button" onclick="openTalukaSheetModal()" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-3.5 py-2 rounded-lg shadow transition flex items-center gap-2 relative">
-    <!-- લાલ રંગની અને ધ્રૂજતી ઘંટી -->
     <i id="taluka-bell-icon" class="fa-solid fa-bell text-sm text-red-600 animate-bounce"></i>
     <span>તાલુકા માહિતી ફોર્મ</span>
 </button>
-
             
             <button id="logout-btn" class="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1.5 rounded transition font-bold">લોગઆઉટ</button>
         </header>
@@ -165,7 +217,6 @@
                       <h4 class="text-xs font-bold text-orange-950">📸 ઉમેરેલા ફોટા (મહત્તમ ૨૦):</h4>
                      <span id="gallery-count" class="text-[10px] font-bold text-orange-800 bg-orange-100 px-2 py-0.5 rounded">કુલ: ૦ / 20</span>
                     </div>
-                <!-- ૨૦ ફોટા સ્ક્રોલ લિસ્ટ (એકસાથે ૫ ફોટા દેખાશે) -->
                    <div id="admin-gallery-list" class="space-y-2 max-h-48 overflow-y-auto pr-1">
                     <p class="text-xs text-gray-500">ફોટા લોડ થઈ રહ્યા છે...</p>
              </div>
@@ -203,7 +254,6 @@
 <div class="bg-emerald-50/80 border border-emerald-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[500px] overflow-y-auto">
     <h3 class="font-bold border-b border-emerald-300 pb-2 text-emerald-950">૫. આવેલ ફરિયાદો અને સ્ટેટસ મેનેજર</h3>
     
-    <!-- ફરિયાદ વિભાગ ઓન/ઓફ અને દૈનિક મર્યાદા સેટિંગ્સ -->
     <div class="bg-emerald-100/70 p-3 rounded-lg border border-emerald-300 space-y-3">
         <label class="block text-xs font-bold text-emerald-950">🌐 વેબસાઇટ પર ફરિયાદ વિભાગ સેટિંગ્સ:</label>
         <div class="flex flex-col sm:flex-row gap-2">
@@ -219,7 +269,6 @@
     </div>
 
     <div class="flex flex-wrap items-center justify-between gap-2">
-        <!-- સુધારેલું ફિલ્ટર ડ્રોપડાઉન -->
         <select id="admin-complaint-filter" class="border border-emerald-300 p-1.5 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500 font-bold">
             <option value="ALL">તમામ ફરિયાદો</option>
             <option value="PENDING">ફક્ત પેન્ડિંગ</option>
@@ -238,7 +287,6 @@
         <p class="text-xs text-gray-500">ફરિયાદો લોડ થઈ રહી છે...</p>
     </div>
 </div>
-
 
    <!-- સેક્શન ૬: પંચાયત કમિટી અને સ્ટાફ મેનેજર -->
             <div class="bg-blue-50/80 border border-blue-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[500px] overflow-y-auto">
@@ -467,7 +515,6 @@
             </select>
         </div>
 
-        <!-- સામાન્ય પેજ (Contacts, Mock Drills, VDRMP) માટેનું ફોર્મ -->
         <div id="standard-disaster-box" class="space-y-3">
             <form id="disaster-management-form" class="space-y-3">
                 <div>
@@ -481,7 +528,6 @@
             </form>
         </div>
 
-        <!-- ફક્ત ગેલેરી (disaster_gallery) માટે જ દેખાશે તેવી વ્યવસ્થા -->
         <div id="gallery-disaster-box" class="hidden space-y-3 border-t pt-3">
             <h4 class="text-xs font-bold text-gray-700">📸 ગેલેરી ફોટો મેનેજર (મેક્સિમમ ૨૦ ફોટા)</h4>
             <form id="disaster-gallery-form" class="space-y-2 bg-white p-3 border rounded-lg">
@@ -515,7 +561,6 @@
         </div>
     </div>
 </div>
- <!-- સેક્શન ૧૨: આપત્તિ વ્યવસ્થાપન (Disaster Management) મેનેજર (કોડ પૂર્ણ)-->
             
             <!-- ગામના નક્શાની લિંક્સ માટેનું સેક્શન -->
             <div class="bg-white p-5 rounded-2xl shadow-md border space-y-4">
@@ -594,8 +639,6 @@
                 </div>
             </div>
 
-
-
             <!-- ડાઉનલોડ્સ અને ફોર્મ્સ મેનેજર -->
 <div class="bg-white p-5 rounded-2xl shadow-md border space-y-6 md:col-span-2 lg:col-span-3">
     <h3 class="font-bold text-sm text-emerald-800 flex items-center gap-2 border-b pb-2">
@@ -603,14 +646,11 @@
     </h3>
 
     <form id="downloads-admin-form" class="space-y-6 text-xs">
-        
-        <!-- ૧. પેજ પર ઉપર દેખાવા માટેનું લખાણ (Text અથવા HTML) -->
         <div class="bg-gray-50 p-4 rounded-xl border space-y-2">
             <label class="block font-bold text-gray-800">૧. પેજ પર ઉપર દર્શાવવા માટેનું લખાણ / સૂચના (Text અથવા HTML):</label>
             <textarea id="adm-downloads-text" rows="4" class="w-full border p-2 rounded bg-white" placeholder="અહીં માહિતી અથવા HTML ટેગ લખી શકો છો..."></textarea>
         </div>
 
-        <!-- ૨. PDF ફાઇલોની યાદી -->
         <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
             <h4 class="font-bold text-gray-800 border-b pb-1">૨. ડાઉનલોડ ફાઇલો ઉમેરો / એડિટ કરો</h4>
             <div id="download-rows" class="space-y-3"></div>
@@ -622,8 +662,6 @@
         </button>
     </form>
 </div>
-
-
             
             <!-- સંપર્ક માહિતી મેનેજર -->
             <div class="bg-white p-5 rounded-2xl shadow-md border space-y-4">
@@ -684,7 +722,6 @@
 
     <form id="proactive-admin-form" class="space-y-6 text-xs">
         
-        <!-- ૦. પંચાયતનું સ્થાન (તાલુકો અને જિલ્લો) -->
         <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
             <h4 class="font-bold text-gray-800 border-b pb-1">૦. પંચાયતનું સ્થાન (હેડર માટે)</h4>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -698,7 +735,7 @@
                 </div>
             </div>
         </div>     
-        <!-- ૧. જાહેર માહિતી અધિકારીની વિગતો -->
+
         <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
             <h4 class="font-bold text-gray-800 border-b pb-1">૧. જાહેર માહિતી અધિકારીની વિગતો</h4>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -717,28 +754,24 @@
             </div>
         </div>
 
-        <!-- ૨. ગામની વસ્તી વિશેની માહિતી -->
         <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
             <h4 class="font-bold text-gray-800 border-b pb-1">૨. ગામની વસ્તી વિશેની માહિતી</h4>
             <div id="population-rows" class="space-y-2"></div>
             <button type="button" onclick="addPopulationRow()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-[11px] font-bold transition">+ નવી વસ્તી વિગત ઉમેરો</button>
         </div>
 
-        <!-- ૩. ગામના પાણીની વિગત -->
         <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
             <h4 class="font-bold text-gray-800 border-b pb-1">૩. ગામના પાણીની વિગત (જળાશય)</h4>
             <div id="water-rows" class="space-y-2"></div>
             <button type="button" onclick="addWaterRow()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-[11px] font-bold transition">+ જળાશય ઉમેરો</button>
         </div>
 
-        <!-- ૪. પંચાયતની મિલકત -->
         <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
             <h4 class="font-bold text-gray-800 border-b pb-1">૪. પંચાયતની મિલકત</h4>
             <div id="prop-rows" class="space-y-2"></div>
             <button type="button" onclick="addPropRow()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-[11px] font-bold transition">+ મિલકત ઉમેરો</button>
         </div>
 
-        <!-- ૫. પેજના સૌથી નીચે ઉમેરવાની અન્ય માહિતી -->
         <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
             <h4 class="font-bold text-gray-800 border-b pb-1">૫. પેજના સૌથી નીચે ઉમેરવાની અન્ય માહિતી (વૈકલ્પિક)</h4>
             <div>
@@ -763,15 +796,25 @@
     <!-- html2pdf.js Bundle -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
+    <!-- Global functions for modals -->
+    <script>
+        function openPasskeyModal() {
+            document.getElementById('passkey-reset-modal').classList.remove('hidden');
+        }
+        function closePasskeyModal() {
+            document.getElementById('passkey-reset-modal').classList.add('hidden');
+        }
+        function closeSubscriptionAlert() {
+            document.getElementById('subscription-alert-modal').classList.add('hidden');
+        }
+    </script>
+
     <!-- JavaScript Reference -->
     <script type="module" src="./js/admin.js"></script>
-
-
 
 <!-- Taluka Data Exchange Popup Modal -->
 <div id="taluka-sheet-modal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
     <div class="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-2xl relative max-h-[85vh] flex flex-col">
-        <!-- Modal Header -->
         <div class="flex justify-between items-center border-b pb-3 mb-3">
             <div>
                 <h3 class="font-bold text-indigo-950 text-base flex items-center gap-2">
@@ -786,7 +829,6 @@
             </button>
         </div>
 
-        <!-- Dynamic Form Body -->
         <div id="panchayat-sheet-form-container" class="flex-1 overflow-y-auto space-y-3 text-xs pr-1">
             <p class="text-gray-500 text-center py-6">માહિતી ચકાસાઈ રહી છે...</p>
         </div>
