@@ -95,69 +95,73 @@
         }
 
         async function loadCommittees() {
-            try {
-                const snap = await getDocs(collection(db, "panchayats", panchayatId, "active_committees"));
-                const container = document.getElementById("committees-list");
-                container.innerHTML = "";
+        try {
+            const snap = await getDocs(collection(db, "panchayats", panchayatId, "active_committees"));
+            const container = document.getElementById("committees-list");
+            container.innerHTML = "";
 
-                if (snap.empty) {
-                    container.innerHTML = `
-                        <div class="bg-white p-6 rounded-2xl shadow-md border border-purple-100 text-center text-gray-500">
-                            <p class="text-sm">હાલમાં કોઈ કાર્યરત સમિતિ ઉપલબ્ધ નથી.</p>
-                        </div>`;
-                    return;
+            if (snap.empty) {
+                container.innerHTML = `
+                    <div class="bg-white p-6 rounded-2xl shadow-md border border-purple-100 text-center text-gray-500">
+                        <p class="text-sm">હાલમાં કોઈ કાર્યરત સમિતિ ઉપલબ્ધ નથી.</p>
+                    </div>`;
+                return;
+            }
+
+            snap.forEach(d => {
+                const item = d.data();
+                let membersRows = "";
+                
+                if (item.members && item.members.length > 0) {
+                    item.members.forEach((m, idx) => {
+                        // 🌟 સુધારો: mainRole અને commRole બરાબર ફેચ થાય તે સુનિશ્ચિત કર્યું
+                        const mainDesig = m.mainRole || m.main_role || m.originalDesignation || '-';
+                        const commRole = m.commRole || m.comm_role || '-';
+
+                        membersRows += `
+                            <tr class="hover:bg-gray-50 border-b border-purple-50">
+                                <td class="p-2.5">${idx + 1}</td>
+                                <td class="p-2.5 font-semibold text-gray-800">${m.name || '-'}</td>
+                                <td class="p-2.5">${mainDesig}</td>
+                                <td class="p-2.5"><span class="bg-purple-100 text-purple-900 px-2 py-0.5 rounded font-bold text-xs">${commRole}</span></td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    membersRows = `<tr><td colspan="4" class="p-3 text-center text-gray-400">કોઈ સભ્ય ઉમેરેલ નથી.</td></tr>`;
                 }
 
-                snap.forEach(d => {
-                    const item = d.data();
-                    let membersRows = "";
-                    
-                    if (item.members && item.members.length > 0) {
-                        item.members.forEach((m, idx) => {
-                            membersRows += `
-                                <tr class="hover:bg-gray-50 border-b border-purple-50">
-                                    <td class="p-2.5">${idx + 1}</td>
-                                    <td class="p-2.5 font-semibold text-gray-800">${m.name || '-'}</td>
-                                    <td class="p-2.5">${m.originalDesignation || '-'}</td>
-                                    <td class="p-2.5"><span class="bg-purple-100 text-purple-900 px-2 py-0.5 rounded font-bold text-xs">${m.committeeRole || '-'}</span></td>
-                                </tr>
-                            `;
-                        });
-                    } else {
-                        membersRows = `<tr><td colspan="4" class="p-3 text-center text-gray-400">કોઈ સભ્ય ઉમેરેલ નથી.</td></tr>`;
-                    }
-
-                    container.innerHTML += `
-                        <div class="bg-white p-5 rounded-2xl shadow-md border border-purple-100 space-y-3">
-                            <h2 class="text-base font-bold text-purple-950 border-b border-purple-100 pb-2 flex items-center gap-2">
-                                <i class="fa-solid fa-users text-purple-700"></i> ${item.committeeName || 'સમિતિ'}
-                            </h2>
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-left text-xs md:text-sm border-collapse">
-                                    <thead>
-                                        <tr class="bg-purple-50 text-purple-950">
-                                            <th class="p-2.5">ક્રમ</th>
-                                            <th class="p-2.5">સભ્યનું નામ</th>
-                                            <th class="p-2.5">મૂળ હોદ્દો</th>
-                                            <th class="p-2.5">સમિતિમાં હોદ્દો</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>${membersRows}</tbody>
-                                </table>
-                            </div>
+                container.innerHTML += `
+                    <div class="bg-white p-5 rounded-2xl shadow-md border border-purple-100 space-y-3">
+                        <h2 class="text-base font-bold text-purple-950 border-b border-purple-100 pb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-users text-purple-700"></i> ${item.committeeName || item.cgTitle || 'સમિતિ'}
+                        </h2>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs md:text-sm border-collapse">
+                                <thead>
+                                    <tr class="bg-purple-50 text-purple-950">
+                                        <th class="p-2.5">ક્રમ</th>
+                                        <th class="p-2.5">સભ્યનું નામ</th>
+                                        <th class="p-2.5">મૂળ હોદ્દો</th>
+                                        <th class="p-2.5">સમિતિમાં હોદ્દો</th>
+                                    </tr>
+                                </thead>
+                                <tbody>${membersRows}</tbody>
+                            </table>
                         </div>
-                    `;
-                });
-            } catch (err) {
-                console.error("Load Committees Error:", err);
-                const container = document.getElementById("committees-list");
-                if (container) {
-                    container.innerHTML = `<p class="text-red-500 text-center text-xs">સમિતિઓ લોડ કરવામાં ભૂલ આવી.</p>`;
-                }
+                    </div>
+                `;
+            });
+        } catch (err) {
+            console.error("Load Committees Error:", err);
+            const container = document.getElementById("committees-list");
+            if (container) {
+                container.innerHTML = `<p class="text-red-500 text-center text-xs">સમિતિઓ લોડ કરવામાં ભૂલ આવી.</p>`;
             }
         }
+    }
 
-        verifyAndLoad();
+    verifyAndLoad();
     </script>
 </body>
 </html>
