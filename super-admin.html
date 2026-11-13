@@ -117,7 +117,7 @@
                                 <th class="p-2 text-center">એક્શન</th>
                             </tr>
                         </thead>
-                        <tbody id="taluka-list-table-body" class="divide-y divide-gray-200">
+                        <tbody id="taluka-list-table-body">
                             <tr><td colspan="6" class="p-3 text-center text-gray-500">તાલુકાઓ લોડ થઈ રહ્યા છે...</td></tr>
                         </tbody>
                     </table>
@@ -155,6 +155,14 @@
                         <input type="text" id="p-phone" class="w-full border p-2 rounded bg-gray-50" placeholder="મોબાઈલ નંબર">
                     </div>
                     <div>
+                        <label class="block font-medium text-gray-700 mb-1">ઈમેલ આઈડી (Email ID):</label>
+                        <input type="email" id="p-email" class="w-full border p-2 rounded bg-gray-50" placeholder="દા.ત. grampanchayat@gmail.com">
+                    </div>
+                    <div>
+                        <label class="block font-medium text-gray-700 mb-1">સબ્સ્ક્રિપ્શન સમાપ્તિ તારીખ (Expiry Date):</label>
+                        <input type="date" id="p-expiry" class="w-full border p-2 rounded bg-gray-50">
+                    </div>
+                    <div>
                         <label class="block font-medium text-gray-700 mb-1">એડમિન પાસવર્ડ (Admin Password):</label>
                         <input type="text" id="p-password" class="w-full border p-2 rounded bg-gray-50 font-mono" placeholder="દા.ત. Admin@123" required>
                     </div>
@@ -179,7 +187,7 @@
                         <h3 class="font-bold text-sm text-slate-800 flex items-center gap-2">
                             <i class="fa-solid fa-list-check text-blue-600"></i> નોંધાયેલ ગ્રામ પંચાયતોની યાદી
                         </h3>
-                        <input type="text" id="search-input" placeholder="નામ કે LGD Code થી શોધો..." class="border p-1.5 rounded-lg text-xs w-48">
+                        <input type="text" id="search-input" placeholder="નામ, LGD Code કે Email થી શોધો..." class="border p-1.5 rounded-lg text-xs w-48">
                     </div>
                     
                     <!-- Filters Row -->
@@ -202,7 +210,7 @@
                         <thead>
                             <tr class="bg-slate-100 text-slate-700 border-b">
                                 <th class="p-2.5">જિલ્લો / તાલુકો</th>
-                                <th class="p-2.5">LGD Code & પંચાયત નામ & પાસવર્ડ</th>
+                                <th class="p-2.5">LGD Code, નામ, Email & સબ્સ્ક્રિપ્શન</th>
                                 <th class="p-2.5 text-center">સ્ટેટસ</th>
                                 <th class="p-2.5 text-center">કંટ્રોલ & એક્શન</th>
                             </tr>
@@ -383,13 +391,11 @@
         });
 
         // Load Talukas List into Table (Scrollable)
-       // ૧. તાલુકાઓની યાદી લોડ કરવાનું ફંક્શન (જે પાસકી કાયમ માટે બતાવશે)
         async function loadTalukasList() {
             const tbody = document.getElementById("taluka-list-table-body");
             if (!tbody) return;
 
             try {
-                // ૧. પંચાયતોમાંથી તમામ યુનિક તાલુકાઓના નામ મેળવો
                 const panchayatsSnap = await getDocs(collection(db, "panchayats"));
                 const talukaSet = new Set();
                 panchayatsSnap.forEach(docSnap => {
@@ -397,13 +403,10 @@
                     if (data.taluka) talukaSet.add(data.taluka.trim());
                 });
 
-                // ૨. સિસ્ટમ સેટિંગ્સમાંથી સેવ થયેલા ક્રેડેન્શિયલ્સ અને પાસકી મેળવો
                 const credsSnap = await getDoc(doc(db, "system_settings", "taluka_credentials"));
                 const talukaCreds = credsSnap.exists() ? credsSnap.data() : {};
 
-                // બંને જગ્યાના તાલુકાઓ ભેગા કરો
                 Object.keys(talukaCreds).forEach(t => talukaSet.add(t));
-
                 const talukasList = Array.from(talukaSet).sort();
 
                 if (!talukasList.length) {
@@ -416,10 +419,7 @@
                     count++;
                     const info = talukaCreds[taluka] || { password: "taluka123", passkey: "", isActive: true };
                     const passDisplay = info.password || "taluka123";
-                    
-                    // જો પાસકી સેવ કરેલી હશે તો તે કાયમ માટે અહીં બતાવશે
                     const passkeyDisplay = info.passkey ? `<span class="bg-amber-100 text-amber-900 px-2 py-0.5 rounded font-mono font-bold select-all">${info.passkey}</span>` : `<span class='text-gray-400 italic'>સેટ નથી</span>`;
-                    
                     const isActive = info.isActive !== false;
 
                     return `
@@ -438,7 +438,7 @@
                                 <button onclick="quickEditTaluka('${taluka}', '${passDisplay}', ${isActive})" class="bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded font-bold hover:bg-blue-100 text-[11px]">
                                     <i class="fa-solid fa-pen-to-square"></i> ફેરફાર
                                 </button>
-                                <button onclick="generateTalukaPasskey('${taluka}', '${info.passkey || ''}')" class="bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded font-bold hover:bg-amber-100 text-[11px]" title="પાસકી જનરેટ કે બદલો">
+                                <button onclick="generateTalukaPasskey('${taluka}')" class="bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded font-bold hover:bg-amber-100 text-[11px]" title="પાસકી જનરેટ કે બદલો">
                                     <i class="fa-solid fa-key"></i> પાસકી
                                 </button>
                             </td>
@@ -451,7 +451,7 @@
                 tbody.innerHTML = `<tr><td colspan="6" class="p-3 text-center text-red-500">તાલુકા યાદી લોડ કરવામાં એરર આવી.</td></tr>`;
             }
         }
-        // Global functions for Taluka Table Actions
+
         window.toggleTalukaStatus = async (talukaName, currentStatus) => {
             try {
                 const credsSnap = await getDoc(doc(db, "system_settings", "taluka_credentials"));
@@ -468,7 +468,6 @@
                 loadTalukasList();
             } catch (err) {
                 console.error("Error toggling taluka status:", err);
-                alert("સ્ટેટસ બદલવામાં ભૂલ આવી.");
             }
         };
 
@@ -483,7 +482,6 @@
                 try {
                     const credsSnap = await getDoc(doc(db, "system_settings", "taluka_credentials"));
                     const currentData = credsSnap.exists() ? credsSnap.data() : {};
-                    
                     const existingPasskey = currentData[talukaName]?.passkey || "";
 
                     currentData[talukaName] = {
@@ -498,16 +496,12 @@
                     loadTalukasList();
                 } catch (err) {
                     console.error("Error updating taluka pass:", err);
-                    alert("અપડેટ કરવામાં ભૂલ આવી: " + err.message);
                 }
             }
         };
 
-        // 🌟 નવી ઉમેરેલી ફંક્શનલિટી: તાલુકા માટે Passkey જનરેટ કરવી
-       // ૨. પાસકી જનરેટ કે અપડેટ કરવા માટેનું ફંક્શન (જે જૂની પાસકી યાદ રાખશે અને બદલવા પર જ બદલશે)
         window.generateTalukaPasskey = async function(talukaName) {
             try {
-                // પહેલાથી કોઈ પાસકી હોય તો તે ફેચ કરો
                 const credsSnap = await getDoc(doc(db, "system_settings", "taluka_credentials"));
                 const currentData = credsSnap.exists() ? credsSnap.data() : {};
                 const existingPasskey = currentData[talukaName]?.passkey || ("KEY-" + Math.floor(100000 + Math.random() * 900000));
@@ -525,7 +519,6 @@
                         currentData[talukaName] = { password: "taluka123", isActive: true };
                     }
 
-                    // નવી કે અપડેટ થયેલી પાસકી ફાયરબેઝમાં કાયમી ધોરણે સેવ થશે
                     currentData[talukaName].passkey = trimmedPasskey;
                     currentData[talukaName].updatedAt = new Date();
 
@@ -535,11 +528,10 @@
                 }
             } catch (err) {
                 console.error("Error generating passkey:", err);
-                alert("પાસકી સેવ કરવામાં ભૂલ આવી: " + err.message);
             }
         };
         
-        // 2. Add New Panchayat Form Handler (Using LGD Code as Document ID)
+        // 2. Add New Panchayat Form Handler
         const addForm = document.getElementById("add-panchayat-form");
         addForm?.addEventListener("submit", async (e) => {
             e.preventDefault();
@@ -549,6 +541,8 @@
                 const taluka = document.getElementById("p-taluka").value.trim();
                 const panchayatName = document.getElementById("p-name").value.trim();
                 const phone = document.getElementById("p-phone").value.trim();
+                const email = document.getElementById("p-email").value.trim();
+                const subscriptionExpiry = document.getElementById("p-expiry").value.trim();
                 const adminPassword = document.getElementById("p-password").value.trim();
                 const isActive = document.getElementById("p-status").value === "true";
 
@@ -570,6 +564,8 @@
                     taluka,
                     panchayatName,
                     phone,
+                    email,
+                    subscriptionExpiry,
                     adminPassword,
                     isActive,
                     createdAt: new Date()
@@ -577,7 +573,7 @@
 
                 alert(`"${panchayatName}" (LGD Code: ${lgdCode}) ગ્રામ પંચાયત સફળતાપૂર્વક ઉમેરાઈ ગઈ!`);
                 addForm.reset();
-                loadTalukasList(); // Refresh taluka list too
+                loadTalukasList();
             } catch (err) {
                 console.error("Error adding panchayat:", err);
                 alert("પંચાયત ઉમેરવામાં ભૂલ આવી: " + err.message);
@@ -647,6 +643,7 @@
                 const matchSearch = !query || 
                     (p.panchayatName && p.panchayatName.toLowerCase().includes(query)) ||
                     (p.lgdCode && p.lgdCode.toLowerCase().includes(query)) ||
+                    (p.email && p.email.toLowerCase().includes(query)) ||
                     (p.id && p.id.toLowerCase().includes(query));
                 return matchDist && matchTaluka && matchSearch;
             });
@@ -669,22 +666,31 @@
                 const panchayatId = item.lgdCode || item.id;
                 const shareUrl = `${baseUrl}?id=${panchayatId}`;
                 const passwordDisplay = item.adminPassword || "નથી રાખેલ";
+                const emailDisplay = item.email ? `<div class="text-[10px] text-blue-600">📧 ${item.email}</div>` : '';
+                const expiryDisplay = item.subscriptionExpiry ? `<div class="text-[10px] text-amber-700 font-semibold">⏳ સબ્સ્ક્રિપ્શન સમાપ્તિ: ${item.subscriptionExpiry}</div>` : `<div class="text-[10px] text-gray-400">⏳ સબ્સ્ક્રિપ્શન ડેટ નથી</div>`;
 
                 return `
                     <tr class="border-b hover:bg-slate-50">
                         <td class="p-2.5 font-semibold text-gray-800">${item.district || '-'} / ${item.taluka || '-'}</td>
                         <td class="p-2.5 font-bold text-emerald-800">
                             ${item.panchayatName || '-'}
-                            <div class="text-[10px] text-indigo-700 font-mono mt-0.5" title="LGD Code (ID)">
+                            <div class="text-[10px] text-indigo-700 font-mono mt-0.5">
                                 🆔 LGD Code: <span class="select-all font-bold">${panchayatId}</span>
                             </div>
                             <div class="text-[10px] text-gray-500 font-normal mt-0.5">
                                 ફોન: ${item.phone || '-'}
                             </div>
+                            ${emailDisplay}
+                            ${expiryDisplay}
                             <div class="text-[11px] text-purple-700 font-mono mt-0.5 flex items-center gap-1">
                                 🔑 પાસવર્ડ: <strong>${passwordDisplay}</strong>
                                 <button onclick="changePanchayatPassword('${panchayatId}', '${item.panchayatName}', '${item.adminPassword || ''}')" class="text-xs text-blue-600 hover:underline ml-1 font-sans" title="પાસવર્ડ બદલો">
                                     (બદલો)
+                                </button>
+                            </div>
+                            <div class="mt-1">
+                                <button onclick="changePanchayatDetails('${panchayatId}', '${item.panchayatName}', '${item.email || ''}', '${item.subscriptionExpiry || ''}')" class="text-[10px] bg-slate-200 hover:bg-slate-300 text-slate-800 px-2 py-0.5 rounded font-bold">
+                                    <i class="fa-solid fa-pen"></i> Email / Expiry બદલો
                                 </button>
                             </div>
                         </td>
@@ -713,7 +719,6 @@
             }).join("");
         }
 
-        // Global functions
         window.togglePanchayatStatus = async (id, currentStatus) => {
             try {
                 await updateDoc(doc(db, "panchayats", id), { isActive: !currentStatus });
@@ -735,8 +740,26 @@
                     alert(`"${panchayatName}" નો પાસવર્ડ સફળતાપૂર્વક અપડેટ થઈ ગયો!`);
                 } catch (err) {
                     console.error("Error updating password:", err);
-                    alert("પાસવર્ડ અપડેટ કરવામાં ભૂલ આવી: " + err.message);
                 }
+            }
+        };
+
+        window.changePanchayatDetails = async (id, panchayatName, oldEmail, oldExpiry) => {
+            const newEmail = prompt(`"${panchayatName}" માટે નવું ઈમેલ આઈડી દાખલ કરો:`, oldEmail);
+            if (newEmail === null) return;
+            
+            const newExpiry = prompt(`"${panchayatName}" માટે સબ્સ્ક્રિપ્શન સમાપ્તિ તારીખ દાખલ કરો (YYYY-MM-DD format):`, oldExpiry);
+            if (newExpiry === null) return;
+
+            try {
+                await updateDoc(doc(db, "panchayats", id), { 
+                    email: newEmail.trim(), 
+                    subscriptionExpiry: newExpiry.trim() 
+                });
+                alert(`"${panchayatName}" ની વિગતો સફળતાપૂર્વક અપડેટ થઈ ગઈ!`);
+            } catch (err) {
+                console.error("Error updating details:", err);
+                alert("અપડેટ કરવામાં ભૂલ આવી: " + err.message);
             }
         };
 
@@ -762,20 +785,17 @@
                             for (const subCol of subCollectionsList) {
                                 const subColRef = collection(db, "panchayats", id, subCol);
                                 const subSnap = await getDocs(subColRef);
-                                
                                 const deletePromises = subSnap.docs.map(subDoc => deleteDoc(subDoc.ref));
                                 await Promise.all(deletePromises);
                             }
 
                             await deleteDoc(doc(db, "panchayats", id));
-
                             alert(`"${panchayatName}" પંચાયત અને તેનો બધો ડેટા સફળતાપૂર્વક ડિલીટ થઈ ગયો છે!`);
                         } else {
                             alert("ખોટો સુપર એડમિન પાસવર્ડ! પંચાયત ડિલીટ કરવામાં આવી નથી.");
                         }
                     } catch (err) {
-                        console.error("Error deleting panchayat and sub-data:", err);
-                        alert("પંચાયત ડિલીટ કરવામાં ભૂલ આવી: " + err.message);
+                        console.error("Error deleting panchayat:", err);
                     }
                 }
             }
