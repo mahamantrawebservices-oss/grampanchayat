@@ -11,7 +11,7 @@
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans">
 
-    <!-- Taluka Login Modal -->
+   <!-- Taluka Login Modal -->
     <div id="taluka-login-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
         <div class="bg-white p-8 rounded-xl shadow-2xl w-96">
             <h2 class="text-2xl font-bold text-gray-800 mb-1 text-center">તાલુકા એડમિન લૉગિન</h2>
@@ -32,6 +32,43 @@
                     </div>
                 </div>
                 <button type="submit" class="w-full bg-emerald-600 text-white font-bold py-2.5 rounded hover:bg-emerald-700 transition mt-2">લૉગિન કરો</button>
+            </form>
+
+            <!-- 🌟 Passkey આધારિત પાસવર્ડ બદલવા માટેનું બટન -->
+            <div class="mt-4 border-t pt-3 text-center">
+                <button type="button" onclick="openPasskeyModal()" class="text-xs text-emerald-700 hover:text-emerald-900 font-bold underline">
+                    <i class="fa-solid fa-key mr-1"></i> સુપર એડમિન પાસકી દ્વારા પાસવર્ડ બદલો
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🌟 Passkey Password Change Modal -->
+    <div id="passkey-modal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+        <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-sm relative">
+            <div class="flex justify-between items-center mb-3 border-b pb-2">
+                <h3 class="font-bold text-emerald-900 text-sm"><i class="fa-solid fa-shield-halved mr-1"></i> પાસવર્ડ રીસેટ (પાસકી દ્વારા)</h3>
+                <button onclick="closePasskeyModal()" class="text-gray-500 hover:text-red-600 font-bold text-lg"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <form id="passkey-reset-form" class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1">તાલુકાનું નામ (ID):</label>
+                    <input type="text" id="reset-taluka-name" placeholder="દા.ત. Daskroi" required class="w-full border p-2 rounded bg-gray-50">
+                </div>
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1">સુપર એડમિન દ્વારા મળેલ પાસકી (Passkey):</label>
+                    <input type="text" id="reset-passkey" placeholder="પાસકી દાખલ કરો" required class="w-full border p-2 rounded bg-gray-50 font-mono">
+                </div>
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1">નવો પાસવર્ડ:</label>
+                    <input type="password" id="reset-new-password" placeholder="નવો પાસવર્ડ બનાવો" required class="w-full border p-2 rounded bg-gray-50">
+                </div>
+                <div class="pt-2 text-right">
+                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded shadow transition">
+                        પાસવર્ડ અપડેટ કરો
+                    </button>
+                </div>
             </form>
         </div>
     </div>
