@@ -2253,6 +2253,7 @@ window.closeTalukaSheetModal = function() {
 };
 
 // બેકગ્રાઉન્ડમાં નોટિફિકેશન ચેક કરીને ઘંટીને એક્ટિવ કરવા માટે
+// સુધારેલું નોટિફિકેશન ચેક ફંક્શન (જેથી ઘંટીનો રંગ અચાનક બદલાય નહીં)
 async function checkTalukaNotification() {
     try {
         if (!lgdCode) return;
@@ -2281,10 +2282,11 @@ async function checkTalukaNotification() {
         const bellIcon = document.getElementById("taluka-bell-icon");
         if (bellIcon) {
             if (hasActiveRequest) {
-                // ઘંટીને લાલ રંગની કરીને સતત હલાવવાનું એનિમેશન આપવું
-                bellIcon.classList.add("text-red-200", "animate-bounce");
+                // જ્યારે તાલુકામાંથી માહિતી માંગવામાં આવી હોય ત્યારે ઘંટી પાક્કી લાલ થઈને સતત ધ્રૂજશે (Bounce)
+                bellIcon.className = "fa-solid fa-bell text-sm text-red-600 animate-bounce";
             } else {
-                bellIcon.classList.remove("text-red-200", "animate-bounce");
+                // જ્યારે કોઈ નવી માહિતી ન હોય ત્યારે ઘંટી સાદી સફેદ/ઝાંખી રહેશે પણ એકદમ સ્પષ્ટ દેખાશે
+                bellIcon.className = "fa-solid fa-bell text-sm text-white";
             }
         }
     } catch (e) {
