@@ -883,8 +883,11 @@ async function loadAdminStaffAndCommittee() {
             const item = d.data();
             commContainer.innerHTML += `
                 <div class="flex justify-between items-center bg-white p-1.5 border rounded text-xs mb-1">
-                    <span><b>${item.name}</b> (${item.designation})</span>
-                    <button onclick="deleteStaffComm('panchayat_committee', '${d.id}')" class="bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded">ડિલીટ</button>
+                    <span><b>${item.name}</b> (${item.designation}) - ${item.mobile || ''}</span>
+                    <div class="flex gap-1">
+                        <button type="button" onclick="editStaffComm('committee', '${d.id}', '${encodeURIComponent(item.name || '')}', '${encodeURIComponent(item.designation || '')}', '${encodeURIComponent(item.mobile || '')}', '${encodeURIComponent(item.ward || '')}')" class="bg-amber-500 hover:bg-amber-600 text-white text-[10px] px-2 py-0.5 rounded font-semibold">એડિટ</button>
+                        <button type="button" onclick="deleteStaffComm('panchayat_committee', '${d.id}')" class="bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded">ડિલીટ</button>
+                    </div>
                 </div>
             `;
         });
@@ -897,8 +900,11 @@ async function loadAdminStaffAndCommittee() {
             const item = d.data();
             staffContainer.innerHTML += `
                 <div class="flex justify-between items-center bg-white p-1.5 border rounded text-xs mb-1">
-                    <span><b>${item.name}</b> (${item.designation})</span>
-                    <button onclick="deleteStaffComm('panchayat_staff', '${d.id}')" class="bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded">ડિલીટ</button>
+                    <span><b>${item.name}</b> (${item.designation}) - ${item.mobile || ''}</span>
+                    <div class="flex gap-1">
+                        <button type="button" onclick="editStaffComm('staff', '${d.id}', '${encodeURIComponent(item.name || '')}', '${encodeURIComponent(item.designation || '')}', '${encodeURIComponent(item.mobile || '')}', '')" class="bg-amber-500 hover:bg-amber-600 text-white text-[10px] px-2 py-0.5 rounded font-semibold">એડિટ</button>
+                        <button type="button" onclick="deleteStaffComm('panchayat_staff', '${d.id}')" class="bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded">ડિલીટ</button>
+                    </div>
                 </div>
             `;
         });
@@ -912,21 +918,78 @@ window.deleteStaffComm = async (col, id) => {
     }
 };
 
+// 🌟 સભ્ય કે સ્ટાફ એડિટ કરવા માટે ડેટા ફોર્મમાં લોડ કરવા માટેનું ફંક્શન
+window.editStaffComm = (category, id, nameEnc, desigEnc, mobileEnc, wardEnc) => {
+    document.getElementById("edit-ms-id").value = id;
+    document.getElementById("ms-category").value = category;
+    document.getElementById("ms-name").value = decodeURIComponent(nameEnc);
+    document.getElementById("ms-desig").value = decodeURIComponent(desigEnc);
+    document.getElementById("ms-mobile").value = decodeURIComponent(mobileEnc);
+    
+    const wardInput = document.getElementById("ms-ward");
+    if (wardInput) wardInput.value = decodeURIComponent(wardEnc);
+
+    const submitBtn = document.getElementById("ms-submit-btn");
+    if (submitBtn) {
+        submitBtn.innerText = "અપડેટ કરો";
+        submitBtn.classList.remove("bg-indigo-700", "hover:bg-indigo-800");
+        submitBtn.classList.add("bg-amber-600", "hover:bg-amber-700");
+    }
+
+    document.getElementById("ms-cancel-btn")?.classList.remove("hidden");
+    document.getElementById("add-member-staff-form")?.scrollIntoView({ behavior: 'smooth' });
+};
+
+// 🌟 એડિટ રદ (Cancel) કરવા માટેનું બટન ઇવેન્ટ
+document.getElementById("ms-cancel-btn")?.addEventListener("click", () => {
+    document.getElementById("add-member-staff-form").reset();
+    document.getElementById("edit-ms-id").value = "";
+    
+    const submitBtn = document.getElementById("ms-submit-btn");
+    if (submitBtn) {
+        submitBtn.innerText = "સભ્ય/કર્મચારી ઉમેરો";
+        submitBtn.classList.remove("bg-amber-600", "hover:bg-amber-700");
+        submitBtn.classList.add("bg-indigo-700", "hover:bg-indigo-800");
+    }
+
+    document.getElementById("ms-cancel-btn")?.classList.add("hidden");
+});
+
 document.getElementById("add-member-staff-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
+    if (!lgdCode) return;
+
+    const editId = document.getElementById("edit-ms-id")?.value.trim();
     const type = document.getElementById("ms-category").value;
     const colName = type === 'committee' ? 'panchayat_committee' : 'panchayat_staff';
+    
     const payload = {
-        name: document.getElementById("ms-name").value,
-        designation: document.getElementById("ms-desig").value,
-        mobile: document.getElementById("ms-mobile").value,
-        ward: document.getElementById("ms-ward").value || '',
-        order: Date.now()
+        name: document.getElementById("ms-name").value.trim(),
+        designation: document.getElementById("ms-desig").value.trim(),
+        mobile: document.getElementById("ms-mobile").value.trim(),
+        ward: document.getElementById("ms-ward")?.value.trim() || '',
+        updatedAt: new Date()
     };
-    await addDoc(getPanchayatCol(colName), payload);
-    alert("સભ્ય/કર્મચારી ઉમેરાઈ ગયા!");
-    e.target.reset();
-    loadAdminStaffAndCommittee();
+
+    try {
+        if (editId) {
+            // જો એડિટ થતું હોય તો હાલના રેકોર્ડને અપડેટ કરો
+            await updateDoc(getPanchayatDoc(colName, editId), payload);
+            alert("✅ સફળતાપૂર્વક અપડેટ થઈ ગયું!");
+        } else {
+            // નવું ઉમેરતી વખતે order ઉમેરો
+            payload.order = Date.now();
+            payload.createdAt = new Date();
+            await addDoc(getPanchayatCol(colName), payload);
+            alert("✅ સભ્ય/કર્મચારી ઉમેરાઈ ગયા!");
+        }
+
+        document.getElementById("ms-cancel-btn")?.click();
+        loadAdminStaffAndCommittee();
+    } catch (err) {
+        console.error("Save/Update Error:", err);
+        alert("સેવ કરવામાં ભૂલ આવી: " + err.message);
+    }
 });
 
 // --- ૮. અધિકારી/કર્મચારી સમય પત્રક ---
