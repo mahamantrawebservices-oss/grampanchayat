@@ -104,7 +104,7 @@ if (data.subscriptionExpiry) {
             alertText.innerHTML = `તમારી ગ્રામ પંચાયતની વેબસાઇટનું સબ્સ્ક્રિપ્શન <b>${data.subscriptionExpiry}</b> ના રોજ પૂર્ણ થઈ ગયું છે. કૃપા કરીને સુપર એડમિનનો સંપર્ક કરી સબ્સ્ક્રિપ્શન રિન્યુ કરાવો.`;
         }
         if (alertModal) alertModal.classList.remove("hidden");
-        return; // લૉગિન અટકાવી દેશે
+        // ---return; // લૉગિન અટકાવી દેશે(જો login અટકાવવું હોય તો જ)---
     }
 }
             const correctPass = data.adminPassword || "admin123"; // ડિફોલ્ટ પાસવર્ડ સેફ્ટી
@@ -2461,10 +2461,12 @@ async function loadPanchayatDataExchangeForms() {
 // --- ૨૦. તાલુકા ડેટા કલેક્શન અને એક્સચેન્જ મેનેજર (પંચાયત એડમિન સાઈડકોડ પૂર્ણ) ---
 
 
-// 🌟 સબ્સ્ક્રિપ્શન એલર્ટ પૉપ-અપ બંધ કરવા માટેનું ફંક્શન
+// 🌟 સબ્સ્ક્રિપ્શન એલર્ટ પૉપ-અપ બંધ કરવા માટેનું ચોક્કસ ફંક્શન
 window.closeSubscriptionAlert = function() {
     const alertModal = document.getElementById("subscription-alert-modal");
     if (alertModal) {
-        alertModal.classList.add("hidden");
+        alertModal.classList.add("hidden"); // આ પૉપ-અપને છુપાવી દેશે
+    } else {
+        console.error("subscription-alert-modal ID મળી નથી!");
     }
 };
