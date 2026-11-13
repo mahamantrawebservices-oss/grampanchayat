@@ -196,43 +196,51 @@
             }
         }
 
-        function renderCommittee(snap, container) {
-            if (snap.empty) {
-                container.innerHTML = `<tr><td colspan="5" class="p-3 text-center text-gray-400">કોઈ કમિટી સભ્ય ઉપલબ્ધ નથી.</td></tr>`;
-                return;
-            }
-            let idx = 1;
-            snap.forEach(d => {
-                const item = d.data();
-                container.innerHTML += `
-                    <tr class="hover:bg-gray-50">
-                        <td class="p-2.5">${idx++}</td>
-                        <td class="p-2.5 font-semibold text-gray-800">${item.name || '-'}</td>
-                        <td class="p-2.5"><span class="bg-blue-100 text-blue-900 px-2 py-0.5 rounded font-bold text-xs">${item.designation || '-'}</span></td>
-                        <td class="p-2.5">${item.ward || '-'}</td>
-                        <td class="p-2.5">${item.mobile || '-'}</td>
-                    </tr>`;
-            });
-        }
+      // 🌟 મોબાઈલ નંબર માસ્ક કરવા માટેનું હેલ્પર ફંક્શન (દા.ત. 9876543210 -> 98765XXXXX)
+    function maskMobileNumber(mobile) {
+        if (!mobile || mobile.length < 6) return "XXXXXX";
+        const visiblePart = mobile.slice(0, 5); // શરૂઆતના 5 અંક દેખાશે
+        return visiblePart + "XXXXX"; // પાછળના અંકો માસ્ક થઈ જશે
+    }
 
-        function renderStaff(snap, container) {
-            if (snap.empty) {
-                container.innerHTML = `<tr><td colspan="4" class="p-3 text-center text-gray-400">કોઈ કર્મચારી ઉપલબ્ધ નથી.</td></tr>`;
-                return;
-            }
-            let idx = 1;
-            snap.forEach(d => {
-                const item = d.data();
-                container.innerHTML += `
-                    <tr class="hover:bg-gray-50">
-                        <td class="p-2.5">${idx++}</td>
-                        <td class="p-2.5 font-semibold text-gray-800">${item.name || '-'}</td>
-                        <td class="p-2.5"><span class="bg-indigo-100 text-indigo-900 px-2 py-0.5 rounded font-bold text-xs">${item.designation || '-'}</span></td>
-                        <td class="p-2.5">${item.mobile || '-'}</td>
-                    </tr>`;
-            });
+    function renderCommittee(snap, container) {
+        if (snap.empty) {
+            container.innerHTML = `<tr><td colspan="5" class="p-3 text-center text-gray-400">કોઈ કમિટી સભ્ય ઉપલબ્ધ નથી.</td></tr>`;
+            return;
         }
+        let idx = 1;
+        snap.forEach(d => {
+            const item = d.data();
+            const maskedPhone = maskMobileNumber(item.mobile); // 👈 માસ્કીંગ એપ્લાય કર્યું
+            container.innerHTML += `
+                <tr class="hover:bg-gray-50">
+                    <td class="p-2.5">${idx++}</td>
+                    <td class="p-2.5 font-semibold text-gray-800">${item.name || '-'}</td>
+                    <td class="p-2.5"><span class="bg-blue-100 text-blue-900 px-2 py-0.5 rounded font-bold text-xs">${item.designation || '-'}</span></td>
+                    <td class="p-2.5">${item.ward || '-'}</td>
+                    <td class="p-2.5 font-mono">${maskedPhone}</td>
+                </tr>`;
+        });
+    }
 
+    function renderStaff(snap, container) {
+        if (snap.empty) {
+            container.innerHTML = `<tr><td colspan="4" class="p-3 text-center text-gray-400">કોઈ કર્મચારી ઉપલબ્ધ નથી.</td></tr>`;
+            return;
+        }
+        let idx = 1;
+        snap.forEach(d => {
+            const item = d.data();
+            const maskedPhone = maskMobileNumber(item.mobile); // 👈 માસ્કીંગ એપ્લાય કર્યું
+            container.innerHTML += `
+                <tr class="hover:bg-gray-50">
+                    <td class="p-2.5">${idx++}</td>
+                    <td class="p-2.5 font-semibold text-gray-800">${item.name || '-'}</td>
+                    <td class="p-2.5"><span class="bg-indigo-100 text-indigo-900 px-2 py-0.5 rounded font-bold text-xs">${item.designation || '-'}</span></td>
+                    <td class="p-2.5 font-mono">${maskedPhone}</td>
+                </tr>`;
+        });
+    }
         verifyAndLoad();
     </script>
 </body>
