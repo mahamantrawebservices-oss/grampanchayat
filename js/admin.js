@@ -2461,4 +2461,10 @@ async function loadPanchayatDataExchangeForms() {
 // --- ૨૦. તાલુકા ડેટા કલેક્શન અને એક્સચેન્જ મેનેજર (પંચાયત એડમિન સાઈડકોડ પૂર્ણ) ---
 
 
-
+// 🌟 સબ્સ્ક્રિપ્શન એલર્ટ પૉપ-અપ બંધ કરવા માટેનું ફંક્શન
+window.closeSubscriptionAlert = function() {
+    const alertModal = document.getElementById("subscription-alert-modal");
+    if (alertModal) {
+        alertModal.classList.add("hidden");
+    }
+};
