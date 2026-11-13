@@ -194,6 +194,7 @@ function initAdminPanel() {
     loadAdminFeedbacks();
     loadDownloadsAdminData();
     loadProactiveAdminData();
+    loadPanchayatDataExchangeForm();
 }
 
 // --- ૧. વેબસાઇટ સેટિંગ્સ લાઈવ પ્રીવ્યુ ---
@@ -2235,5 +2236,145 @@ document.getElementById("downloads-admin-form")?.addEventListener("submit", asyn
         alert("❌ સેવ કરતી વખતે એરર આવી: " + err.message);
     }
 });
+
+
+
+
+// --- ૨૦. તાલુકા ડેટા કલેક્શન અને એક્સચેન્જ મેનેજર (પંચાયત એડમિન સાઈડ) ---
+
+// પોપઅપ ખોલવા અને બંધ કરવાના ફંક્શન્સ
+window.openTalukaSheetModal = function() {
+    document.getElementById("taluka-sheet-modal")?.classList.remove("hidden");
+    loadPanchayatDataExchangeForm();
+};
+
+window.closeTalukaSheetModal = function() {
+    document.getElementById("taluka-sheet-modal")?.classList.add("hidden");
+};
+
+// બેકગ્રાઉન્ડમાં ચેક કરવું કે તાલુકાએ કોઈ માહિતી માંગી છે કે નહીં (લાલ નોટિફિકેશન ડોટ બતાવવા માટે)
+async function checkTalukaNotification() {
+    try {
+        if (!lgdCode) return;
+        const pSnap = await getDoc(doc(db, "panchayats", lgdCode));
+        if (!pSnap.exists()) return;
+        const talukaName = pSnap.data().taluka;
+        if (!talukaName) return;
+
+        const sheetSnap = await getDoc(doc(db, "taluka_sheets", talukaName));
+        if (sheetSnap.exists() && sheetSnap.data().headers?.length > 0) {
+            document.getElementById("taluka-req-badge")?.classList.remove("hidden");
+        } else {
+            document.getElementById("taluka-req-badge")?.classList.add("hidden");
+        }
+    } catch (e) {
+        console.error("Notification check error:", e);
+    }
+}
+
+// પોપઅપ ખુલે ત્યારે તાલુકાની શીટનું ફોર્મ લોડ કરવું
+async function loadPanchayatDataExchangeForm() {
+    const container = document.getElementById("panchayat-sheet-form-container");
+    const deadlineEl = document.getElementById("modal-sheet-deadline");
+    const deadlineText = document.getElementById("modal-deadline-text");
+    if (!container) return;
+
+    container.innerHTML = `<div class="text-center py-8 text-gray-500"><i class="fa-solid fa-spinner fa-spin mr-2"></i> ફોર્મ લોડ થઈ રહ્યું છે...</div>`;
+
+    try {
+        if (!lgdCode) {
+            container.innerHTML = `<p class="text-center text-gray-500 py-6">LGD Code મળ્યો નથી.</p>`;
+            return;
+        }
+
+        // ૧. પંચાયતનો તાલુકો શોધો
+        const pSnap = await getDoc(doc(db, "panchayats", lgdCode));
+        if (!pSnap.exists()) return;
+        const talukaName = pSnap.data().taluka;
+
+        if (!talukaName) {
+            container.innerHTML = `<p class="text-center text-gray-500 py-6">પંચાયતનો તાલુકો રજીસ્ટર થયેલ નથી.</p>`;
+            return;
+        }
+
+        // ૨. તાલુકાની શીટ કન્ફિગ મેળવો
+        const sheetSnap = await getDoc(doc(db, "taluka_sheets", talukaName));
+        if (!sheetSnap.exists() || !sheetSnap.data().headers?.length) {
+            container.innerHTML = `<div class="bg-gray-50 border p-6 rounded-xl text-center text-gray-500">હાલમાં તાલુકા તરફથી કોઈ નવી માહિતી માંગવામાં આવી નથી.</div>`;
+            if (deadlineEl) deadlineEl.classList.add("hidden");
+            return;
+        }
+
+        const sheetConfig = sheetSnap.data();
+        const headers = sheetConfig.headers || [];
+        const deadline = sheetConfig.deadline || "";
+
+        if (deadline && deadlineEl && deadlineText) {
+            deadlineText.textContent = deadline;
+            deadlineEl.classList.remove("hidden");
+        } else if (deadlineEl) {
+            deadlineEl.classList.add("hidden");
+        }
+
+        // ૩. અગાઉ ભરેલો ડેટા મેળવો (જો પંચાયતે પહેલા ભર્યો હોય)
+        const subSnap = await getDoc(doc(db, "panchayats", lgdCode, "submitted_reports", "current_sheet"));
+        const existingData = subSnap.exists() ? subSnap.data().values || {} : {};
+
+        // ૪. ઇનપુટ ફોર્મ બનાવો
+        let formHtml = `<form id="taluka-response-form" class="space-y-4"><div class="grid grid-cols-1 md:grid-cols-2 gap-3">`;
+        
+        headers.forEach(h => {
+            const val = existingData[h] || "";
+            formHtml += `
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1">${h}:</label>
+                    <input type="text" name="${h}" value="${val}" placeholder="${h} અહીં લખો..." required class="w-full border p-2.5 rounded-lg bg-gray-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none text-xs">
+                </div>
+            `;
+        });
+
+        formHtml += `</div>
+            <div class="pt-3 border-t flex justify-end gap-2">
+                <button type="button" onclick="closeTalukaSheetModal()" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold px-4 py-2.5 rounded-lg transition text-xs">
+                    રદ કરો
+                </button>
+                <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-2.5 rounded-lg shadow transition flex items-center gap-1.5 text-xs">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> માહિતી સબમિટ કરો
+                </button>
+            </div>
+        </form>`;
+
+        container.innerHTML = formHtml;
+
+        // ૫. સબમિટ ઇવેન્ટ હેન્ડલર
+        document.getElementById("taluka-response-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            let values = {};
+            formData.forEach((value, key) => {
+                values[key] = value.trim();
+            });
+
+            try {
+                await setDoc(doc(db, "panchayats", lgdCode, "submitted_reports", "current_sheet"), {
+                    values,
+                    updatedAt: new Date()
+                }, { merge: true });
+
+                alert("✅ તમારી માહિતી સફળતાપૂર્વક તાલુકા એડમિનને મોકલી દેવામાં આવી છે!");
+                closeTalukaSheetModal();
+            } catch (err) {
+                console.error("Error submitting report:", err);
+                alert("સબમિટ કરવામાં ભૂલ આવી: " + err.message);
+            }
+        });
+
+    } catch (err) {
+        console.error("Error loading panchayat exchange form:", err);
+        container.innerHTML = `<p class="text-red-500 text-center py-4 text-xs">ફોર્મ લોડ કરવામાં એરર આવી.</p>`;
+    }
+}
+// --- ૨૦. તાલુકા ડેટા કલેક્શન અને એક્સચેન્જ મેનેજર (પંચાયત એડમિન સાઈડકોડ પૂર્ણ) ---
+
 
 
