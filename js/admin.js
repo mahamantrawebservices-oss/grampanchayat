@@ -92,6 +92,21 @@ loginForm?.addEventListener("submit", async (e) => {
 
         if (snap.exists()) {
             const data = snap.data();
+            // 🌟 સબ્સ્ક્રિપ્શન સમાપ્ત થઈ ગયું છે કે નહીં તેની ચકાસણી
+if (data.subscriptionExpiry) {
+    const expiryDate = new Date(data.subscriptionExpiry);
+    const today = new Date();
+    
+    if (today > expiryDate) {
+        const alertModal = document.getElementById("subscription-alert-modal");
+        const alertText = document.getElementById("subscription-alert-text");
+        if (alertText) {
+            alertText.innerHTML = `તમારી ગ્રામ પંચાયતની વેબસાઇટનું સબ્સ્ક્રિપ્શન <b>${data.subscriptionExpiry}</b> ના રોજ પૂર્ણ થઈ ગયું છે. કૃપા કરીને સુપર એડમિનનો સંપર્ક કરી સબ્સ્ક્રિપ્શન રિન્યુ કરાવો.`;
+        }
+        if (alertModal) alertModal.classList.remove("hidden");
+        return; // લૉગિન અટકાવી દેશે
+    }
+}
             const correctPass = data.adminPassword || "admin123"; // ડિફોલ્ટ પાસવર્ડ સેફ્ટી
 
             if (enteredPass === correctPass) {
@@ -137,6 +152,49 @@ document.getElementById("toggle-password")?.addEventListener("click", () => {
             eyeIcon.classList.remove("fa-eye-slash");
             eyeIcon.classList.add("fa-eye"); // ખુલ્લી આંખનું આઇકન
         }
+    }
+});
+
+// 🔑 પાસકી (Passkey) દ્વારા પાસવર્ડ રીસેટ કરવા માટેનું ફોર્મ સબમિટ ઇવેન્ટ
+document.getElementById("passkey-reset-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const resetLgd = document.getElementById("reset-lgd")?.value.trim();
+    const resetPasskey = document.getElementById("reset-passkey")?.value.trim();
+    const resetNewPass = document.getElementById("reset-new-pass")?.value.trim();
+
+    if (!resetLgd || !resetPasskey || !resetNewPass) {
+        alert("⚠️ કૃપા કરીને તમામ માહિતી ભરો.");
+        return;
+    }
+
+    try {
+        const panchayatDocRef = doc(db, "panchayats", resetLgd);
+        const snap = await getDoc(panchayatDocRef);
+
+        if (!snap.exists()) {
+            alert("❌ આ LGD Code સિસ્ટમમાં મળ્યો નથી.");
+            return;
+        }
+
+        const data = snap.data();
+        const validPasskey = data.passkey || ""; // સુપર એડમિન દ્વારા સેટ કરેલી પાસકી
+
+        if (resetPasskey === validPasskey) {
+            await updateDoc(panchayatDocRef, {
+                adminPassword: resetNewPass,
+                passkey: "", // પાસકી વન-ટાઇમ યુઝ માટે ખાલી કરી નાખો
+                updatedAt: new Date()
+            });
+
+            alert("✅ પાસવર્ડ સફળતાપૂર્વક બદલાઈ ગયો છે! હવે તમે નવા પાસવર્ડથી લૉગિન કરી શકો છો.");
+            document.getElementById("passkey-reset-form").reset();
+            if (typeof closePasskeyModal === 'function') closePasskeyModal();
+        } else {
+            alert("❌ ખોટી પાસકી (Passkey)! કૃપા કરીને સુપર એડમિનનો સંપર્ક કરો.");
+        }
+    } catch (err) {
+        console.error("Passkey reset error:", err);
+        alert("પાસવર્ડ બદલવામાં ભૂલ આવી: " + err.message);
     }
 });
 
