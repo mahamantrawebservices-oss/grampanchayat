@@ -65,6 +65,7 @@ async function checkAdminAuth() {
             updateAdminHeaderTitle(activeLgd);
         }
         initAdminPanel();
+        checkTalukaNotification();
     } else {
         if (loginModal) loginModal.classList.remove("hidden");
         if (adminDashboard) adminDashboard.classList.add("hidden");
