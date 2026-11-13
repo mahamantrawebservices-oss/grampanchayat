@@ -383,12 +383,13 @@
         });
 
         // Load Talukas List into Table (Scrollable)
+       // ૧. તાલુકાઓની યાદી લોડ કરવાનું ફંક્શન (જે પાસકી કાયમ માટે બતાવશે)
         async function loadTalukasList() {
             const tbody = document.getElementById("taluka-list-table-body");
             if (!tbody) return;
 
             try {
-                // 1. Get unique talukas from registered panchayats
+                // ૧. પંચાયતોમાંથી તમામ યુનિક તાલુકાઓના નામ મેળવો
                 const panchayatsSnap = await getDocs(collection(db, "panchayats"));
                 const talukaSet = new Set();
                 panchayatsSnap.forEach(docSnap => {
@@ -396,11 +397,11 @@
                     if (data.taluka) talukaSet.add(data.taluka.trim());
                 });
 
-                // 2. Get saved taluka credentials from system_settings
+                // ૨. સિસ્ટમ સેટિંગ્સમાંથી સેવ થયેલા ક્રેડેન્શિયલ્સ અને પાસકી મેળવો
                 const credsSnap = await getDoc(doc(db, "system_settings", "taluka_credentials"));
                 const talukaCreds = credsSnap.exists() ? credsSnap.data() : {};
 
-                // Combine all talukas (from panchayats and explicitly saved ones)
+                // બંને જગ્યાના તાલુકાઓ ભેગા કરો
                 Object.keys(talukaCreds).forEach(t => talukaSet.add(t));
 
                 const talukasList = Array.from(talukaSet).sort();
@@ -415,7 +416,10 @@
                     count++;
                     const info = talukaCreds[taluka] || { password: "taluka123", passkey: "", isActive: true };
                     const passDisplay = info.password || "taluka123";
-                    const passkeyDisplay = info.passkey || "<span class='text-gray-400 italic'>સેટ નથી</span>";
+                    
+                    // જો પાસકી સેવ કરેલી હશે તો તે કાયમ માટે અહીં બતાવશે
+                    const passkeyDisplay = info.passkey ? `<span class="bg-amber-100 text-amber-900 px-2 py-0.5 rounded font-mono font-bold select-all">${info.passkey}</span>` : `<span class='text-gray-400 italic'>સેટ નથી</span>`;
+                    
                     const isActive = info.isActive !== false;
 
                     return `
@@ -423,7 +427,7 @@
                             <td class="p-2 font-bold">${count}</td>
                             <td class="p-2 font-bold text-emerald-900">${taluka}</td>
                             <td class="p-2 font-mono text-xs text-purple-700">${passDisplay}</td>
-                            <td class="p-2 font-mono text-xs text-amber-700 font-bold">${passkeyDisplay}</td>
+                            <td class="p-2 text-xs">${passkeyDisplay}</td>
                             <td class="p-2 text-center">
                                 <button onclick="toggleTalukaStatus('${taluka}', ${isActive})" 
                                     class="px-2.5 py-0.5 rounded-full text-[10px] font-bold shadow transition ${isActive ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-red-100 text-red-800 border border-red-300'}">
@@ -434,7 +438,7 @@
                                 <button onclick="quickEditTaluka('${taluka}', '${passDisplay}', ${isActive})" class="bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded font-bold hover:bg-blue-100 text-[11px]">
                                     <i class="fa-solid fa-pen-to-square"></i> ફેરફાર
                                 </button>
-                                <button onclick="generateTalukaPasskey('${taluka}')" class="bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded font-bold hover:bg-amber-100 text-[11px]" title="પાસકી જનરેટ કરો">
+                                <button onclick="generateTalukaPasskey('${taluka}', '${info.passkey || ''}')" class="bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded font-bold hover:bg-amber-100 text-[11px]" title="પાસકી જનરેટ કે બદલો">
                                     <i class="fa-solid fa-key"></i> પાસકી
                                 </button>
                             </td>
@@ -447,7 +451,6 @@
                 tbody.innerHTML = `<tr><td colspan="6" class="p-3 text-center text-red-500">તાલુકા યાદી લોડ કરવામાં એરર આવી.</td></tr>`;
             }
         }
-
         // Global functions for Taluka Table Actions
         window.toggleTalukaStatus = async (talukaName, currentStatus) => {
             try {
@@ -501,39 +504,41 @@
         };
 
         // 🌟 નવી ઉમેરેલી ફંક્શનલિટી: તાલુકા માટે Passkey જનરેટ કરવી
-        window.generateTalukaPasskey = async (talukaName) => {
-            // રેન્ડમ ૬ અંકની પાસકી જનરેટ કરવી (દા.ત. T-748291 અથવા કોઈ યુનિક કોડ)
-            const randomPasskey = "KEY-" + Math.floor(100000 + Math.random() * 900000);
-            const customPasskey = prompt(`"${talukaName}" તાલુકા માટે પાસકી દાખલ કરો (ઓટો જનરેટેડ પાસકી બદલી શકાય છે):`, randomPasskey);
+       // ૨. પાસકી જનરેટ કે અપડેટ કરવા માટેનું ફંક્શન (જે જૂની પાસકી યાદ રાખશે અને બદલવા પર જ બદલશે)
+        window.generateTalukaPasskey = async function(talukaName) {
+            try {
+                // પહેલાથી કોઈ પાસકી હોય તો તે ફેચ કરો
+                const credsSnap = await getDoc(doc(db, "system_settings", "taluka_credentials"));
+                const currentData = credsSnap.exists() ? credsSnap.data() : {};
+                const existingPasskey = currentData[talukaName]?.passkey || ("KEY-" + Math.floor(100000 + Math.random() * 900000));
 
-            if (customPasskey !== null) {
-                const trimmedPasskey = customPasskey.trim();
-                if (!trimmedPasskey) {
-                    alert("પાસકી ખાલી રાખી શકાતી નથી!");
-                    return;
-                }
+                const customPasskey = prompt(`"${talukaName}" તાલુકા માટે પાસકી:\n(જો તમે નવી પાસકી બનાવવા માંગતા હોવ તો નીચે બદલી શકો છો)`, existingPasskey);
 
-                try {
-                    const credsSnap = await getDoc(doc(db, "system_settings", "taluka_credentials"));
-                    const currentData = credsSnap.exists() ? credsSnap.data() : {};
+                if (customPasskey !== null) {
+                    const trimmedPasskey = customPasskey.trim();
+                    if (!trimmedPasskey) {
+                        alert("પાસકી ખાલી રાખી શકાતી નથી!");
+                        return;
+                    }
 
                     if (!currentData[talukaName]) {
                         currentData[talukaName] = { password: "taluka123", isActive: true };
                     }
 
+                    // નવી કે અપડેટ થયેલી પાસકી ફાયરબેઝમાં કાયમી ધોરણે સેવ થશે
                     currentData[talukaName].passkey = trimmedPasskey;
                     currentData[talukaName].updatedAt = new Date();
 
                     await setDoc(doc(db, "system_settings", "taluka_credentials"), currentData);
-                    alert(`✅ "${talukaName}" તાલુકા માટે સફળતાપૂર્વક પાસકી સેટ થઈ ગઈ છે:\n\nપાસકી: ${trimmedPasskey}\n\nઆ પાસકી તાલુકા એડમિનને આપો જેથી તેઓ પોતાનો પાસવર્ડ બદલી શકે.`);
+                    alert(`✅ "${talukaName}" તાલુકા માટે પાસકી સફળતાપૂર્વક સેવ થઈ ગઈ છે:\n\nપાસકી: ${trimmedPasskey}`);
                     loadTalukasList();
-                } catch (err) {
-                    console.error("Error generating passkey:", err);
-                    alert("પાસકી સેવ કરવામાં ભૂલ આવી: " + err.message);
                 }
+            } catch (err) {
+                console.error("Error generating passkey:", err);
+                alert("પાસકી સેવ કરવામાં ભૂલ આવી: " + err.message);
             }
         };
-
+        
         // 2. Add New Panchayat Form Handler (Using LGD Code as Document ID)
         const addForm = document.getElementById("add-panchayat-form");
         addForm?.addEventListener("submit", async (e) => {
