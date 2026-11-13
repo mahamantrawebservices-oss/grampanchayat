@@ -486,9 +486,223 @@
             }
         }
 
-        window.closeDataModal = function() { document.getElementById("data-modal").classList.add("hidden"); };
+        // Global function to fetch and render exact website layout in popup
+        window.showPanchayatData = async function(lgdCode, dataType, title) {
+            const modal = document.getElementById("data-modal");
+            const modalTitle = document.getElementById("modal-title");
+            const modalContent = document.getElementById("modal-content");
+
+            if (!modal || !modalContent) return;
+
+            modalTitle.textContent = `${title} (LGD Code: ${lgdCode})`;
+            modalContent.innerHTML = `<div class="text-center py-8 text-gray-500"><i class="fa-solid fa-spinner fa-spin mr-2"></i> માહિતી લોડ થઈ રહી છે...</div>`;
+            modal.classList.remove("hidden");
+
+            try {
+                let htmlOutput = "";
+
+                if (dataType === 'about') {
+                    const snap = await getDocs(collection(db, "panchayats", lgdCode, "village_glance"));
+                    if (snap.empty) {
+                        modalContent.innerHTML = `<div class="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-lg text-center text-xs">⚠️ આ પંચાયત માટે હજુ સુધી "મારૂ ગામ - એક નજરમાં" ની માહિતી ભરવામાં આવી નથી.</div>`;
+                        return;
+                    }
+
+                    let sections = {};
+                    snap.forEach(docSnap => {
+                        const data = docSnap.data();
+                        const secName = data.sectionName || "અન્ય માહિતી";
+                        if (!sections[secName]) sections[secName] = [];
+                        sections[secName].push(data);
+                    });
+
+                    for (let sectionName in sections) {
+                        let rowsHtml = sections[sectionName].map(item => `
+                            <tr class="border-b hover:bg-gray-50 text-xs">
+                                <td class="p-2.5 font-semibold text-gray-800 w-1/3">${item.title || '-'}</td>
+                                <td class="p-2.5 text-emerald-700 font-bold w-1/3">${item.value || '-'}</td>
+                                <td class="p-2.5 text-gray-600 text-[11px] w-1/3">${item.extraInfo || '-'}</td>
+                            </tr>
+                        `).join("");
+
+                        htmlOutput += `
+                            <div class="bg-white rounded-xl shadow-md border overflow-hidden mb-4">
+                                <div class="bg-emerald-800 text-white px-4 py-2 font-bold text-xs flex items-center gap-2">
+                                    <i class="fa-solid fa-folder-open text-amber-300"></i> ${sectionName}
+                                </div>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left border-collapse">
+                                        <thead class="bg-emerald-50 text-emerald-900 text-xs border-b">
+                                            <tr>
+                                                <th class="p-2.5">વિગત / સુવિધા</th>
+                                                <th class="p-2.5">આંકડો / મુખ્ય માહિતી</th>
+                                                <th class="p-2.5">વધારાની વિગત</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y">${rowsHtml}</tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        `;
+                    }
+                } 
+                else if (dataType === 'staff') {
+                    let termText = "-";
+                    try {
+                        const metaDoc = await getDoc(doc(db, "panchayats", lgdCode, "panchayat_meta", "staff_page"));
+                        if (metaDoc.exists()) termText = metaDoc.data().term || "-";
+                    } catch (e) {}
+
+                    const commSnap = await getDocs(collection(db, "panchayats", lgdCode, "panchayat_committee"));
+                    let commRows = "";
+                    if (!commSnap.empty) {
+                        let idx = 1;
+                        commSnap.forEach(d => {
+                            const item = d.data();
+                            commRows += `
+                                <tr class="border-b hover:bg-gray-50 text-xs">
+                                    <td class="p-2.5 font-bold">${idx++}</td>
+                                    <td class="p-2.5 font-semibold text-gray-900">${item.name || '-'}</td>
+                                    <td class="p-2.5"><span class="bg-blue-100 text-blue-900 px-2 py-0.5 rounded font-bold">${item.designation || '-'}</span></td>
+                                    <td class="p-2.5">${item.ward || '-'}</td>
+                                    <td class="p-2.5 font-mono">${item.mobile || '-'}</td>
+                                </tr>
+                            `;
+                        });
+                    } else {
+                        commRows = `<tr><td colspan="5" class="p-3 text-center text-gray-400 text-xs">કોઈ કમિટી સભ્ય ઉપલબ્ધ નથી.</td></tr>`;
+                    }
+
+                    const staffSnap = await getDocs(collection(db, "panchayats", lgdCode, "panchayat_staff"));
+                    let staffRows = "";
+                    if (!staffSnap.empty) {
+                        let idx = 1;
+                        staffSnap.forEach(d => {
+                            const item = d.data();
+                            staffRows += `
+                                <tr class="border-b hover:bg-gray-50 text-xs">
+                                    <td class="p-2.5 font-bold">${idx++}</td>
+                                    <td class="p-2.5 font-semibold text-gray-900">${item.name || '-'}</td>
+                                    <td class="p-2.5"><span class="bg-indigo-100 text-indigo-900 px-2 py-0.5 rounded font-bold">${item.designation || '-'}</span></td>
+                                    <td class="p-2.5 font-mono">${item.mobile || '-'}</td>
+                                </tr>
+                            `;
+                        });
+                    } else {
+                        staffRows = `<tr><td colspan="4" class="p-3 text-center text-gray-400 text-xs">કોઈ કર્મચારી ઉપલબ્ધ નથી.</td></tr>`;
+                    }
+
+                    htmlOutput = `
+                        <div class="mb-5 bg-white rounded-xl shadow-md border overflow-hidden">
+                            <div class="bg-blue-900 text-white px-4 py-2.5 font-bold text-xs flex justify-between items-center">
+                                <span><i class="fa-solid fa-user-tie mr-1.5"></i> ૧. ચૂંટાયેલ પંચાયત કમિટી</span>
+                                <span class="bg-amber-400 text-amber-950 px-2 py-0.5 rounded text-[10px]">મુદત: ${termText}</span>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse">
+                                    <thead class="bg-blue-50 text-blue-950 text-xs border-b">
+                                        <tr>
+                                            <th class="p-2.5">ક્રમ</th>
+                                            <th class="p-2.5">નામ</th>
+                                            <th class="p-2.5">હોદ્દો</th>
+                                            <th class="p-2.5">વોર્ડ નં.</th>
+                                            <th class="p-2.5">મોબાઈલ નંબર</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y">${commRows}</tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-xl shadow-md border overflow-hidden">
+                            <div class="bg-indigo-900 text-white px-4 py-2.5 font-bold text-xs">
+                                <i class="fa-solid fa-address-book mr-1.5"></i> ૨. ગ્રામ પંચાયત કર્મચારીઓ
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse">
+                                    <thead class="bg-indigo-50 text-indigo-950 text-xs border-b">
+                                        <tr>
+                                            <th class="p-2.5">ક્રમ</th>
+                                            <th class="p-2.5">કર્મચારીનું નામ</th>
+                                            <th class="p-2.5">હોદ્દો</th>
+                                            <th class="p-2.5">મોબાઈલ નંબર</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y">${staffRows}</tbody>
+                                </table>
+                            </div>
+                        </div>
+                    `;
+                }
+                else if (dataType === 'committees') {
+                    const snap = await getDocs(collection(db, "panchayats", lgdCode, "active_committees"));
+                    if (snap.empty) {
+                        modalContent.innerHTML = `<div class="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-lg text-center text-xs">⚠️ આ પંચાયત માટે હજુ સુધી "કાર્યરત સમિતિઓ" ની માહિતી ભરવામાં આવી નથી.</div>`;
+                        return;
+                    }
+
+                    let commHtml = "";
+                    snap.forEach(d => {
+                        const item = d.data();
+                        let membersRows = "";
+
+                        if (item.members && item.members.length > 0) {
+                            item.members.forEach((m, idx) => {
+                                membersRows += `
+                                    <tr class="hover:bg-gray-50 border-b text-xs">
+                                        <td class="p-2.5 font-bold">${idx + 1}</td>
+                                        <td class="p-2.5 font-semibold text-gray-800">${m.name || '-'}</td>
+                                        <td class="p-2.5">${m.originalDesignation || '-'}</td>
+                                        <td class="p-2.5"><span class="bg-purple-100 text-purple-900 px-2 py-0.5 rounded font-bold text-[11px]">${m.committeeRole || '-'}</span></td>
+                                    </tr>
+                                `;
+                            });
+                        } else {
+                            membersRows = `<tr><td colspan="4" class="p-3 text-center text-gray-400 text-xs">કોઈ સભ્ય ઉમેરેલ નથી.</td></tr>`;
+                        }
+
+                        commHtml += `
+                            <div class="bg-white rounded-xl shadow-md border overflow-hidden mb-4">
+                                <div class="bg-purple-900 text-white px-4 py-2.5 font-bold text-xs flex items-center gap-2">
+                                    <i class="fa-solid fa-users text-amber-300"></i> ${item.committeeName || 'સમિતિ'}
+                                </div>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left border-collapse">
+                                        <thead class="bg-purple-50 text-purple-950 text-xs border-b">
+                                            <tr>
+                                                <th class="p-2.5">ક્રમ</th>
+                                                <th class="p-2.5">સભ્યનું નામ</th>
+                                                <th class="p-2.5">મૂળ હોદ્દો</th>
+                                                <th class="p-2.5">સમિતિમાં હોદ્દો</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y">${membersRows}</tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    htmlOutput = commHtml;
+                }
+
+                modalContent.innerHTML = htmlOutput || `<div class="text-center text-gray-500 py-6 text-xs">માહિતી ઉપલબ્ધ નથી.</div>`;
+
+            } catch (err) {
+                console.error("Error rendering panchayat layout:", err);
+                modalContent.innerHTML = `<div class="text-red-600 p-4 text-xs">ડેટા લોડ કરવામાં એરર આવી: ${err.message}</div>`;
+            }
+        };
+
+        window.closeDataModal = function() { 
+            const modal = document.getElementById("data-modal");
+            if (modal) modal.classList.add("hidden"); 
+        };
+
         window.copyModalContent = function() {
-            navigator.clipboard.writeText(document.getElementById("modal-content").innerText).then(() => alert("📋 કોપી થઈ ગયું!"));
+            const contentEl = document.getElementById("modal-content");
+            if (!contentEl) return;
+            navigator.clipboard.writeText(contentEl.innerText).then(() => alert("📋 માહિતી ટેબલ ફોર્મેટમાં સફળતાપૂર્વક કોપી થઈ ગઈ છે!"));
         };
 
         checkTalukaAuth();
