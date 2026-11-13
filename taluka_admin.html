@@ -439,17 +439,29 @@
                 }
 
                 const panchayatsSnap = await getDocs(collection(db, "panchayats"));
-let talukaPanchayats = [];
-panchayatsSnap.forEach(d => {
-    const p = d.data();
-    if (p.taluka && p.taluka.toLowerCase() === talukaNameScope.toLowerCase()) {
-        talukaPanchayats.push({ 
-            id: d.id, 
-            ...p,
-            villages: p.villages || "" // 🌟 અહીં villages explicitly પકડવું
-        });
-    }
-});
+                let talukaPanchayats = [];
+                
+                for (let d of panchayatsSnap.docs) {
+                    const p = d.data();
+                    if (p.taluka && p.taluka.toLowerCase() === talukaNameScope.toLowerCase()) {
+                        let villagesStr = p.villages || "";
+                        // જો મેઈન ડોક્યુમેન્ટમાં ગામો ન મળે, તો settings/general સબ-ડૉક્યુમેન્ટમાંથી ચેક કરો
+                        if (!villagesStr) {
+                            try {
+                                const genSnap = await getDoc(doc(db, "panchayats", d.id, "settings", "general"));
+                                if (genSnap.exists()) {
+                                    villagesStr = genSnap.data().villages || "";
+                                }
+                            } catch (e) {}
+                        }
+
+                        talukaPanchayats.push({ 
+                            id: d.id, 
+                            ...p,
+                            villages: villagesStr
+                        });
+                    }
+                }
 
                 if (!talukaPanchayats.length) {
                     tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-500">આ તાલુકામાં કોઈ પંચાયત નોંધાયેલ નથી.</td></tr>`;
@@ -554,18 +566,28 @@ panchayatsSnap.forEach(d => {
                 tableBody.innerHTML = "";
                 let count = 0;
 
-                snapshot.forEach(docSnap => {
+                for (let docSnap of snapshot.docs) {
                     const pData = docSnap.data();
                     const pTaluka = pData.taluka || "";
                     const pName = pData.panchayatName || pData.settings?.general?.name || "નામ વગરની પંચાયત";
                     const lgdCode = docSnap.id;
 
-                    // 🌟 પંચાયત લિસ્ટ ટેબલ માટે ગામો દર્શાવવા લૉજિક
-                    const pVillages = pData.villages || "";
-                    const villagesDisplay = pVillages ? `<div class="text-[11px] text-gray-500 font-normal italic mt-0.5">સમાવિષ્ટ ગામો: (${pVillages})</div>` : `<div class="text-[11px] text-gray-400 font-normal italic mt-0.5">સમાવિષ્ટ ગામો: (કોઈ નહીં)</div>`;
-
                     if (pTaluka.toLowerCase() === talukaName.toLowerCase() || lgdCode.toLowerCase().includes(talukaName.toLowerCase())) {
                         count++;
+                        
+                        // 🌟 મેઈન ડૉક અને સબ-કલેક્શન બંનેમાંથી ગામો ફેચ કરવા માટેનું સેફ લૉજિક
+                        let pVillages = pData.villages || "";
+                        if (!pVillages) {
+                            try {
+                                const genSnap = await getDoc(doc(db, "panchayats", lgdCode, "settings", "general"));
+                                if (genSnap.exists()) {
+                                    pVillages = genSnap.data().villages || "";
+                                }
+                            } catch (e) {}
+                        }
+
+                        const villagesDisplay = pVillages ? `<div class="text-[11px] text-gray-500 font-normal italic mt-0.5">સમાવિષ્ટ ગામો: (${pVillages})</div>` : `<div class="text-[11px] text-gray-400 font-normal italic mt-0.5">સમાવિષ્ટ ગામો: (કોઈ નહીં)</div>`;
+
                         const row = `
                             <tr class="hover:bg-gray-50 border-b">
                                 <td class="p-3 font-bold">${count}</td>
@@ -588,7 +610,7 @@ panchayatsSnap.forEach(d => {
                         `;
                         tableBody.insertAdjacentHTML('beforeend', row);
                     }
-                });
+                }
 
                 if (count === 0) {
                     tableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-500">આ તાલુકા હેઠળ કોઈ પંચાયત મળી નથી.</td></tr>`;
