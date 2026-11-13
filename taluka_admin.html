@@ -312,6 +312,66 @@
             }
         });
 
+
+
+// Passkey Modal Control Functions
+        window.openPasskeyModal = function() {
+            document.getElementById("passkey-modal")?.classList.remove("hidden");
+        };
+
+        window.closePasskeyModal = function() {
+            document.getElementById("passkey-modal")?.classList.add("hidden");
+        };
+
+        // Passkey Verification & Password Update Process
+        document.getElementById("passkey-reset-form")?.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const talukaName = document.getElementById("reset-taluka-name").value.trim();
+            const enteredPasskey = document.getElementById("reset-passkey").value.trim();
+            const newPassword = document.getElementById("reset-new-password").value.trim();
+
+            if (!talukaName || !enteredPasskey || !newPassword) {
+                alert("⚠️ કૃપા કરીને તમામ માહિતી ભરો!");
+                return;
+            }
+
+            try {
+                const settingsRef = doc(db, "system_settings", "taluka_credentials");
+                const snap = await getDoc(settingsRef);
+
+                if (!snap.exists() || !snap.data()[talukaName]) {
+                    alert("❌ આ નામનો તાલુકો સિસ્ટમમાં નોંધાયેલ નથી.");
+                    return;
+                }
+
+                let talukaData = snap.data()[talukaName];
+                const validPasskey = talukaData.passkey || "";
+
+                if (!validPasskey || enteredPasskey !== validPasskey) {
+                    alert("❌ અમાન્ય (Invalid) પાસકી! કૃપા કરીને સુપર એડમિનનો સંપર્ક કરો.");
+                    return;
+                }
+
+                // પાસકી મેચ થતાં નવો પાસવર્ડ સેવ કરવો અને વપરાયેલી પાસકી ક્લિયર કરી દેવી
+                talukaData.password = newPassword;
+                talukaData.passkey = ""; 
+
+                await setDoc(settingsRef, {
+                    [talukaName]: talukaData
+                }, { merge: true });
+
+                alert("✅ પાસવર્ડ સફળતાપૂર્વક બદલાઈ ગયો છે! હવે તમે નવા પાસવર્ડથી લૉગિન કરી શકો છો.");
+                document.getElementById("passkey-reset-form").reset();
+                closePasskeyModal();
+
+            } catch (err) {
+                console.error("Passkey reset error:", err);
+                alert("પાસવર્ડ બદલવામાં ટેકનિકલ ભૂલ આવી: " + err.message);
+            }
+        });
+// Passkey Modal Control Functions(પૂર્ણ)
+
+        
         document.getElementById("logout-btn")?.addEventListener("click", () => {
             if (confirm("શું તમે ખરેખર તાલુકા એડમિન પેનલમાંથી લોગઆઉટ કરવા માંગો છો?")) {
                 sessionStorage.removeItem("taluka_logged_name");
