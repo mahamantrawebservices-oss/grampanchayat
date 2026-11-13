@@ -51,14 +51,11 @@
         <header class="bg-emerald-900 text-white px-6 py-4 flex justify-between items-center shadow-md">
             <h1 class="text-xl font-bold" id="dashboard-header-title">ગ્રામ પંચાયત એડમિન પેનલ</h1>
 
-           <!-- તાલુકા માહિતી ફોર્મ ખોલવાનું બટન (લોગઆઉટ બટનની પહેલાં) -->
-<button type="button" onclick="openTalukaSheetModal()" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-3 py-2 rounded-lg shadow transition flex items-center gap-1.5 relative">
-    <i class="fa-solid fa-file-signature"></i> તાલુકા માહિતી ફોર્મ
-    <!-- જો તાલુકાએ નવી માહિતી માંગી હશે તો અહીં લાલ ટપકું (Notification Dot) દેખાશે -->
-    <span id="taluka-req-badge" class="hidden absolute -top-1 -right-1 flex h-3 w-3">
-        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-        <span class="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
-    </span>
+<!-- તાલુકા માહિતી ફોર્મ ખોલવાનું બટન (ઘંટીના નિશાન અને એનિમેશન સાથે) -->
+<button type="button" onclick="openTalukaSheetModal()" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-3.5 py-2 rounded-lg shadow transition flex items-center gap-2 relative">
+    <!-- ઘંટીનું નિશાન (જો નોટિફિકેશન હશે તો ઘંટી ધ્રૂજશે) -->
+    <i id="taluka-bell-icon" class="fa-solid fa-bell text-sm"></i>
+    <span>તાલુકા માહિતી ફોર્મ</span>
 </button>
 
             
