@@ -210,7 +210,7 @@
                         <thead>
                             <tr class="bg-slate-100 text-slate-700 border-b">
                                 <th class="p-2.5">જિલ્લો / તાલુકો</th>
-                                <th class="p-2.5">LGD Code, નામ, Contact, Email & સબ્સ્ક્રિપ્શન</th>
+                                <th class="p-2.5">LGD Code, નામ, Contact, Email, Passkey & સબ્સ્ક્રિપ્શન</th>
                                 <th class="p-2.5 text-center">સ્ટેટસ</th>
                                 <th class="p-2.5 text-center">કંટ્રોલ & એક્શન</th>
                             </tr>
@@ -563,6 +563,7 @@
                     email,
                     subscriptionExpiry,
                     adminPassword,
+                    passkey: "",
                     isActive,
                     createdAt: new Date()
                 });
@@ -662,6 +663,7 @@
                 const panchayatId = item.lgdCode || item.id;
                 const shareUrl = `${baseUrl}?id=${panchayatId}`;
                 const passwordDisplay = item.adminPassword || "નથી રાખેલ";
+                const passkeyDisplay = item.passkey ? `<span class="bg-amber-100 text-amber-900 px-1.5 py-0.5 rounded font-mono font-bold select-all">${item.passkey}</span>` : `<span class='text-gray-400 italic'>સેટ નથી</span>`;
                 const phoneDisplay = item.phone ? `<div class="text-[10px] text-gray-600">📞 ${item.phone}</div>` : `<div class="text-[10px] text-gray-400">📞 નંબર નથી</div>`;
                 const emailDisplay = item.email ? `<div class="text-[10px] text-blue-600">📧 ${item.email}</div>` : '';
                 const expiryDisplay = item.subscriptionExpiry ? `<div class="text-[10px] text-amber-700 font-semibold">⏳ સબ્સ્ક્રિપ્શન સમાપ્તિ: ${item.subscriptionExpiry}</div>` : `<div class="text-[10px] text-gray-400">⏳ સબ્સ્ક્રિપ્શન ડેટ નથી</div>`;
@@ -683,7 +685,13 @@
                                     (બદલો)
                                 </button>
                             </div>
-                            <div class="mt-1">
+                            <div class="text-[11px] text-amber-800 font-mono mt-0.5 flex items-center gap-1">
+                                🛡️ પાસકી (Passkey): ${passkeyDisplay}
+                                <button onclick="generatePanchayatPasskey('${panchayatId}', '${item.panchayatName}', '${item.passkey || ''}')" class="text-[10px] bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 px-1.5 py-0.5 rounded ml-1 font-sans font-bold" title="પાસકી જનરેટ કે બદલો">
+                                    <i class="fa-solid fa-key"></i> પાસકી બનાવો/બદલો
+                                </button>
+                            </div>
+                            <div class="mt-1.5">
                                 <button onclick="changePanchayatDetails('${panchayatId}', '${item.panchayatName}', '${item.phone || ''}', '${item.email || ''}', '${item.subscriptionExpiry || ''}')" class="text-[10px] bg-slate-200 hover:bg-slate-300 text-slate-800 px-2 py-0.5 rounded font-bold">
                                     <i class="fa-solid fa-pen"></i> સંપર્ક / Email / Expiry બદલો
                                 </button>
@@ -736,6 +744,32 @@
                 } catch (err) {
                     console.error("Error updating password:", err);
                 }
+            }
+        };
+
+        // 🌟 ગ્રામ પંચાયત માટે પાસકી (Passkey) જનરેટ કે બદલવા માટેનું નવું ફંક્શન
+        window.generatePanchayatPasskey = async function(id, panchayatName, currentPasskey) {
+            try {
+                const defaultKey = currentPasskey || ("GP-" + Math.floor(100000 + Math.random() * 900000));
+                const customPasskey = prompt(`"${panchayatName}" (LGD: ${id}) ગ્રામ પંચાયત માટે પાસકી:\n(નવી પાસકી જનરેટ થઈ છે, તમે ઈચ્છો તો નીચે બદલી પણ શકો છો)`, defaultKey);
+
+                if (customPasskey !== null) {
+                    const trimmedPasskey = customPasskey.trim();
+                    if (!trimmedPasskey) {
+                        alert("⚠️ પાસકી ખાલી રાખી શકાતી નથી!");
+                        return;
+                    }
+
+                    await updateDoc(doc(db, "panchayats", id), { 
+                        passkey: trimmedPasskey,
+                        updatedAt: new Date()
+                    });
+
+                    alert(`✅ "${panchayatName}" ગ્રામ પંચાયત માટે પાસકી સફળતાપૂર્વક સેવ થઈ ગઈ છે:\n\nપાસકી: ${trimmedPasskey}`);
+                }
+            } catch (err) {
+                console.error("Error generating panchayat passkey:", err);
+                alert("પાસકી સેવ કરવામાં ભૂલ આવી: " + err.message);
             }
         };
 
