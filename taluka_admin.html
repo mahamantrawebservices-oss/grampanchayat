@@ -472,15 +472,20 @@
                     const subSnap = await getDoc(doc(db, "panchayats", pId, "submitted_reports", `${activeSheetKey}_data`));
                     const subData = subSnap.exists() ? subSnap.data().values || {} : {};
 
-                    bodyHtml += `<tr class="hover:bg-gray-50">
-                        <td class="p-3 sticky left-0 bg-white z-10 border-r text-center">
-                            <input type="checkbox" value="${pId}" class="panchayat-select-chk w-4 h-4 text-emerald-600 rounded cursor-pointer" ${isChecked ? 'checked' : ''}>
-                        </td>
-                        <th class="p-3 sticky left-14 bg-white z-10 border-r text-gray-600 font-bold">${i + 1}</th>
-                        <th class="p-3 sticky left-26 bg-white z-10 border-r font-mono text-indigo-700">${pId}</th>
-                        <th class="p-3 sticky left-50 bg-white z-10 border-r font-bold text-emerald-900">${p.panchayatName || '-'}</th>
-                    `;
+ // 🌟 ગામો દર્શાવવા માટેનું વેરીએબલ
+const villagesDisplay = p.villages ? `<div class="text-[10px] text-gray-500 font-normal italic mt-0.5">સમાવિષ્ટ ગામો: (${p.villages})</div>` : `<div class="text-[10px] text-gray-400 font-normal italic mt-0.5">સમાવિષ્ટ ગામો: (કોઈ નહીં)</div>`;
 
+bodyHtml += `<tr class="hover:bg-gray-50">
+    <td class="p-3 sticky left-0 bg-white z-10 border-r text-center">
+        <input type="checkbox" value="${pId}" class="panchayat-select-chk w-4 h-4 text-emerald-600 rounded cursor-pointer" ${isChecked ? 'checked' : ''}>
+    </td>
+    <th class="p-3 sticky left-14 bg-white z-10 border-r text-gray-600 font-bold">${i + 1}</th>
+    <th class="p-3 sticky left-26 bg-white z-10 border-r font-mono text-indigo-700">${pId}</th>
+    <th class="p-3 sticky left-50 bg-white z-10 border-r font-bold text-emerald-900">
+        ${p.panchayatName || '-'}
+        ${villagesDisplay}
+    </th>
+`;
                     headers.forEach(h => {
                         const val = subData[h] || "";
                         bodyHtml += `<td class="p-3 border-r text-gray-700">${val ? `<span class="bg-emerald-50 text-emerald-900 px-2 py-1 rounded font-medium">${val}</span>` : '<span class="text-gray-400 italic">ભરેલ નથી</span>'}</td>`;
@@ -551,6 +556,8 @@
 
                     if (pTaluka.toLowerCase() === talukaName.toLowerCase() || lgdCode.toLowerCase().includes(talukaName.toLowerCase())) {
                         count++;
+                        // 🌟 ગામો દર્શાવવા માટેનું વેરીએબલ
+                        const villagesDisplay = pData.villages ? `<div class="text-[11px] text-gray-500 font-normal italic mt-0.5">સમાવિષ્ટ ગામો: (${pData.villages})</div>` : `<div class="text-[11px] text-gray-400 font-normal italic mt-0.5">સમાવિષ્ટ ગામો: (કોઈ નહીં)</div>`;
                         const row = `
                             <tr class="hover:bg-gray-50 border-b">
                                 <td class="p-3 font-bold">${count}</td>
