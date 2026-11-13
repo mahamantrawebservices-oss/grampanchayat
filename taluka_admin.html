@@ -439,13 +439,17 @@
                 }
 
                 const panchayatsSnap = await getDocs(collection(db, "panchayats"));
-                let talukaPanchayats = [];
-                panchayatsSnap.forEach(d => {
-                    const p = d.data();
-                    if (p.taluka && p.taluka.toLowerCase() === talukaNameScope.toLowerCase()) {
-                        talukaPanchayats.push({ id: d.id, ...p });
-                    }
-                });
+let talukaPanchayats = [];
+panchayatsSnap.forEach(d => {
+    const p = d.data();
+    if (p.taluka && p.taluka.toLowerCase() === talukaNameScope.toLowerCase()) {
+        talukaPanchayats.push({ 
+            id: d.id, 
+            ...p,
+            villages: p.villages || "" // 🌟 અહીં villages explicitly પકડવું
+        });
+    }
+});
 
                 if (!talukaPanchayats.length) {
                     tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-500">આ તાલુકામાં કોઈ પંચાયત નોંધાયેલ નથી.</td></tr>`;
