@@ -50,6 +50,18 @@
         <!-- Top Navigation Header -->
         <header class="bg-emerald-900 text-white px-6 py-4 flex justify-between items-center shadow-md">
             <h1 class="text-xl font-bold" id="dashboard-header-title">ગ્રામ પંચાયત એડમિન પેનલ</h1>
+
+           <!-- તાલુકા માહિતી ફોર્મ ખોલવાનું બટન (લોગઆઉટ બટનની પહેલાં) -->
+<button type="button" onclick="openTalukaSheetModal()" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-3 py-2 rounded-lg shadow transition flex items-center gap-1.5 relative">
+    <i class="fa-solid fa-file-signature"></i> તાલુકા માહિતી ફોર્મ
+    <!-- જો તાલુકાએ નવી માહિતી માંગી હશે તો અહીં લાલ ટપકું (Notification Dot) દેખાશે -->
+    <span id="taluka-req-badge" class="hidden absolute -top-1 -right-1 flex h-3 w-3">
+        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+        <span class="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
+    </span>
+</button>
+
+            
             <button id="logout-btn" class="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1.5 rounded transition font-bold">લોગઆઉટ</button>
         </header>
 
@@ -756,5 +768,33 @@
 
     <!-- JavaScript Reference -->
     <script type="module" src="./js/admin.js"></script>
+
+
+
+<!-- Taluka Data Exchange Popup Modal -->
+<div id="taluka-sheet-modal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+    <div class="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-2xl relative max-h-[85vh] flex flex-col">
+        <!-- Modal Header -->
+        <div class="flex justify-between items-center border-b pb-3 mb-3">
+            <div>
+                <h3 class="font-bold text-indigo-950 text-base flex items-center gap-2">
+                    <i class="fa-solid fa-clipboard-list text-indigo-600"></i> તાલુકા કક્ષાએથી માંગેલ માહિતી ફોર્મ
+                </h3>
+                <p id="modal-sheet-deadline" class="text-xs text-amber-700 font-bold mt-1 hidden">
+                    ⏰ સમયમર્યાદા: <span id="modal-deadline-text"></span>
+                </p>
+            </div>
+            <button type="button" onclick="closeTalukaSheetModal()" class="text-gray-500 hover:text-red-600 font-bold text-xl px-2">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <!-- Dynamic Form Body -->
+        <div id="panchayat-sheet-form-container" class="flex-1 overflow-y-auto space-y-3 text-xs pr-1">
+            <p class="text-gray-500 text-center py-6">માહિતી ચકાસાઈ રહી છે...</p>
+        </div>
+    </div>
+</div>
+    
 </body>
 </html>
