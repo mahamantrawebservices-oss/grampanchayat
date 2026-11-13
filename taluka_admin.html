@@ -36,7 +36,7 @@
         </div>
     </div>
 
-    <!-- Taluka Admin Dashboard (Initially Hidden) -->
+    <!-- Taluka Admin Dashboard -->
     <div id="taluka-dashboard" class="hidden min-h-screen flex flex-col">
         
         <!-- Header -->
@@ -53,35 +53,46 @@
         <!-- Main Content Area -->
         <main class="flex-1 p-6 max-w-7xl mx-auto w-full space-y-6">
             
-            <!-- 🌟 નવું સેક્શન: તાલુકા ડેટા કલેક્શન શીટ (Excel-like Sheet & Live Exchange) -->
+            <!-- 🌟 ડ્યુઅલ શીટ મેનેજમેન્ટ સેક્શન (શીટ ૧ અને શીટ ૨) -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4">
                 <div class="flex justify-between items-center border-b pb-3 flex-wrap gap-2">
                     <div>
                         <h3 class="font-bold text-emerald-900 text-sm flex items-center gap-2">
-                            <i class="fa-solid fa-table-cells text-emerald-600"></i> તાલુકા ડેટા કલેક્શન શીટ (Live Data Exchange)
+                            <i class="fa-solid fa-table-cells text-emerald-600"></i> તાલુકા ડેટા કલેક્શન શીટ્સ (Dual Live Sheets)
                         </h3>
-                        <p class="text-xs text-gray-600">પંચાયતો પાસેથી માહિતી મંગાવવા માટે હેડિંગ સેટ કરો અને લાઈવ સબમિશન જુઓ.</p>
+                        <p class="text-xs text-gray-600">એકસાથે બે અલગ-અલગ શીટ મેનેજ કરો અને પંચાયતોના સબમિશન જુઓ.</p>
                     </div>
-                    <div class="flex gap-2">
-                        <button onclick="clearCollectionSheet()" class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-3 py-2 rounded-lg shadow transition" title="શીટ ખાલી કરો અને ફાયરબેઝ ડેટા ડીલીટ કરો">
-                            <i class="fa-solid fa-trash-can mr-1"></i> શીટ ખાલી કરો (Reset)
+                    <!-- Sheet Switcher Tabs -->
+                    <div class="flex bg-gray-100 p-1 rounded-xl">
+                        <button onclick="switchActiveSheet('sheet_1')" id="tab-sheet-1" class="px-4 py-1.5 rounded-lg text-xs font-bold bg-emerald-700 text-white transition shadow">
+                            <i class="fa-solid fa-file-excel mr-1"></i> શીટ ૧ (Sheet 1)
                         </button>
-                        <button onclick="copyExchangeTable()" class="bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold px-3 py-2 rounded-lg shadow transition">
-                            <i class="fa-solid fa-copy mr-1"></i> ડેટા કોપી કરો
+                        <button onclick="switchActiveSheet('sheet_2')" id="tab-sheet-2" class="px-4 py-1.5 rounded-lg text-xs font-bold text-gray-700 hover:text-emerald-900 transition">
+                            <i class="fa-solid fa-file-excel mr-1"></i> શીટ ૨ (Sheet 2)
                         </button>
                     </div>
                 </div>
 
-                <!-- Sheet Setup Form: Headers & Deadline -->
+                <!-- Sheet Action Buttons -->
+                <div class="flex justify-end gap-2">
+                    <button onclick="clearActiveSheet()" class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-3 py-2 rounded-lg shadow transition">
+                        <i class="fa-solid fa-trash-can mr-1"></i> ચાલુ શીટ ખાલી કરો (Reset)
+                    </button>
+                    <button onclick="copyExchangeTable()" class="bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold px-3 py-2 rounded-lg shadow transition">
+                        <i class="fa-solid fa-copy mr-1"></i> ડેટા કોપી કરો
+                    </button>
+                </div>
+
+                <!-- Sheet Setup Form -->
                 <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-200 grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
                     <div>
                         <label class="block font-bold text-emerald-900 mb-1">સમયમર્યાદા (Deadline):</label>
-                        <input type="text" id="sheet-deadline" placeholder="દા.ત. ૨૫ જૂન ૨૦૨૬, સાંજે ૫ વાગ્યા સુધી" class="w-full border p-2 rounded bg-white">
+                        <input type="text" id="sheet-deadline" placeholder="દા.ત. ૨૫ જૂન ૨૦૨૬" class="w-full border p-2 rounded bg-white">
                     </div>
                     <div class="md:col-span-2">
                         <label class="block font-bold text-emerald-900 mb-1">કૉલમ હેડિંગ્સ (અલ્પવિરામથી અલગ કરો):</label>
                         <div class="flex gap-2">
-                            <input type="text" id="sheet-headers-input" placeholder="દા.ત. કુટુંબ સંખ્યા, અનાજ જથ્થો, વિશેષ નોંધ" class="w-full border p-2 rounded bg-white">
+                            <input type="text" id="sheet-headers-input" placeholder="દા.ત. કુટુંબ સંખ્યા, અનાજ જથ્થો" class="w-full border p-2 rounded bg-white">
                             <button onclick="saveSheetHeadersAndDeadline()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded shadow whitespace-nowrap">
                                 <i class="fa-solid fa-floppy-disk mr-1"></i> સેવ અને પબ્લિશ
                             </button>
@@ -89,27 +100,28 @@
                     </div>
                 </div>
 
-                <!-- Scrollable Excel-like Sheet Table -->
+                <!-- Scrollable Sheet Table -->
                 <div class="border rounded-xl overflow-hidden shadow-inner bg-white">
                     <div class="max-h-[450px] overflow-auto relative">
                         <table class="w-full text-left border-collapse text-xs" id="exchange-sheet-table">
                             <thead class="bg-emerald-800 text-white sticky top-0 z-20" id="exchange-thead">
                                 <tr>
-                                    <th class="p-3 sticky left-0 bg-emerald-800 z-30 border-r w-12">ક્રમ</th>
-                                    <th class="p-3 sticky left-12 bg-emerald-800 z-30 border-r w-24">LGD કોડ</th>
-                                    <th class="p-3 sticky left-36 bg-emerald-800 z-30 border-r w-36">ગ્રામ પંચાયતનું નામ</th>
+                                    <th class="p-3 sticky left-0 bg-emerald-800 z-30 border-r w-14 text-center">સિલેક્ટ</th>
+                                    <th class="p-3 sticky left-14 bg-emerald-800 z-30 border-r w-12">ક્રમ</th>
+                                    <th class="p-3 sticky left-26 bg-emerald-800 z-30 border-r w-24">LGD કોડ</th>
+                                    <th class="p-3 sticky left-50 bg-emerald-800 z-30 border-r w-36">ગ્રામ પંચાયતનું નામ</th>
                                     <th class="p-3 text-center text-gray-200">હેડિંગ્સ સેટ કરો...</th>
                                 </tr>
                             </thead>
                             <tbody id="exchange-tbody" class="divide-y divide-gray-200">
-                                <tr><td colspan="4" class="p-6 text-center text-gray-500">માહિતી લોડ થઈ રહી છે...</td></tr>
+                                <tr><td colspan="5" class="p-6 text-center text-gray-500">માહિતી લોડ થઈ રહી છે...</td></tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <!-- Existing Panchayat List Section -->
+            <!-- Panchayat List Section -->
             <div class="bg-white p-4 rounded-xl shadow-sm border flex justify-between items-center">
                 <h2 class="text-lg font-bold text-emerald-900">આ તાલુકા હેઠળ આવતી તમામ ગ્રામ પંચાયતો</h2>
                 <span id="total-panchayats-count" class="text-xs bg-emerald-100 text-emerald-800 font-bold px-3 py-1 rounded-full">કુલ પંચાયતો: 0</span>
@@ -178,6 +190,19 @@
         const db = getFirestore(app);
 
         let talukaNameScope = "";
+        let activeSheetKey = "sheet_1"; // ડિફોલ્ટ શીટ ૧
+
+        window.switchActiveSheet = function(sheetKey) {
+            activeSheetKey = sheetKey;
+            if (sheetKey === 'sheet_1') {
+                document.getElementById("tab-sheet-1").className = "px-4 py-1.5 rounded-lg text-xs font-bold bg-emerald-700 text-white transition shadow";
+                document.getElementById("tab-sheet-2").className = "px-4 py-1.5 rounded-lg text-xs font-bold text-gray-700 hover:text-emerald-900 transition";
+            } else {
+                document.getElementById("tab-sheet-2").className = "px-4 py-1.5 rounded-lg text-xs font-bold bg-emerald-700 text-white transition shadow";
+                document.getElementById("tab-sheet-1").className = "px-4 py-1.5 rounded-lg text-xs font-bold text-gray-700 hover:text-emerald-900 transition";
+            }
+            loadTalukaExchangeSheet();
+        };
 
         // Password Eye Toggle
         document.getElementById("toggle-taluka-pass")?.addEventListener("click", () => {
@@ -203,7 +228,7 @@
                 talukaDashboard.classList.remove("hidden");
                 document.getElementById("taluka-header-title").textContent = `તાલુકા પંચાયત એડમિન પેનલ - ${activeTaluka}`;
                 loadTalukaPanchayats(activeTaluka);
-                loadTalukaExchangeSheet(); // 🌟 ડેટા કલેક્શન શીટ લોડ કરો
+                loadTalukaExchangeSheet();
             } else {
                 talukaModal.classList.remove("hidden");
                 talukaDashboard.classList.add("hidden");
@@ -250,7 +275,6 @@
             }
         });
 
-        // Logout with confirmation
         document.getElementById("logout-btn")?.addEventListener("click", () => {
             if (confirm("શું તમે ખરેખર તાલુકા એડમિન પેનલમાંથી લોગઆઉટ કરવા માંગો છો?")) {
                 sessionStorage.removeItem("taluka_logged_name");
@@ -258,7 +282,7 @@
             }
         });
 
-        // 🌟 ૧. હેડિંગ્સ અને ડેડલાઇન સેવ કરવા માટે (તાલુકા પેનલ)
+        // Save active sheet setup
         window.saveSheetHeadersAndDeadline = async function() {
             const deadline = document.getElementById("sheet-deadline").value.trim();
             const headersRaw = document.getElementById("sheet-headers-input").value.trim();
@@ -269,15 +293,25 @@
             }
 
             const headers = headersRaw.split(",").map(h => h.trim()).filter(Boolean);
+            const checkboxes = document.querySelectorAll(".panchayat-select-chk:checked");
+            const selectedPanchayats = [];
+            checkboxes.forEach(chk => selectedPanchayats.push(chk.value));
+
+            if (selectedPanchayats.length === 0) {
+                alert("⚠️ કૃપા કરીને ઓછામાં ઓછી એક ગ્રામ પંચાયત સિલેક્ટ (ટીક) કરો!");
+                return;
+            }
 
             try {
-                await setDoc(doc(db, "taluka_sheets", talukaNameScope), {
+                // taluka_sheets/{talukaName}_{sheetKey} પાથ પર સેવ થશે
+                await setDoc(doc(db, "taluka_sheets", `${talukaNameScope}_${activeSheetKey}`), {
                     deadline,
                     headers,
+                    selectedPanchayats,
                     updatedAt: new Date()
                 }, { merge: true });
 
-                alert("✅ શીટના હેડિંગ્સ અને સમયમર્યાદા સફળતાપૂર્વક પબ્લિશ થઈ ગયા!");
+                alert(`✅ ${activeSheetKey === 'sheet_1' ? 'શીટ ૧' : 'શીટ ૨'} સફળતાપૂર્વક પબ્લિશ થઈ ગઈ!`);
                 loadTalukaExchangeSheet();
             } catch (err) {
                 console.error("Error saving sheet setup:", err);
@@ -285,22 +319,26 @@
             }
         };
 
-        // 🌟 ૨. લાઈવ શીટ ડેટા લોડ કરવો (તાલુકા પેનલ - સ્ટીકી કોલમ્સ સાથે)
         async function loadTalukaExchangeSheet() {
             const theadTr = document.getElementById("exchange-thead").querySelector("tr");
             const tbody = document.getElementById("exchange-tbody");
 
             try {
-                const configSnap = await getDoc(doc(db, "taluka_sheets", talukaNameScope));
+                const configSnap = await getDoc(doc(db, "taluka_sheets", `${talukaNameScope}_${activeSheetKey}`));
                 let headers = [];
                 let deadline = "-";
+                let selectedPanchayats = [];
 
                 if (configSnap.exists()) {
                     const data = configSnap.data();
                     headers = data.headers || [];
                     deadline = data.deadline || "-";
+                    selectedPanchayats = data.selectedPanchayats || [];
                     document.getElementById("sheet-deadline").value = data.deadline || "";
                     document.getElementById("sheet-headers-input").value = headers.join(", ");
+                } else {
+                    document.getElementById("sheet-deadline").value = "";
+                    document.getElementById("sheet-headers-input").value = "";
                 }
 
                 const panchayatsSnap = await getDocs(collection(db, "panchayats"));
@@ -313,15 +351,15 @@
                 });
 
                 if (!talukaPanchayats.length) {
-                    tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-gray-500">આ તાલુકામાં કોઈ પંચાયત નોંધાયેલ નથી.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-500">આ તાલુકામાં કોઈ પંચાયત નોંધાયેલ નથી.</td></tr>`;
                     return;
                 }
 
-                // ટેબલ હેડર (સ્ટીકી ફર્સ્ટ કૉલમ્સ)
                 let headerHtml = `
-                    <th class="p-3 sticky left-0 bg-emerald-800 z-30 border-r w-12">ક્રમ</th>
-                    <th class="p-3 sticky left-12 bg-emerald-800 z-30 border-r w-24">LGD કોડ</th>
-                    <th class="p-3 sticky left-36 bg-emerald-800 z-30 border-r w-36">ગ્રામ પંચાયતનું નામ</th>
+                    <th class="p-3 sticky left-0 bg-emerald-800 z-30 border-r w-14 text-center">સિલેક્ટ</th>
+                    <th class="p-3 sticky left-14 bg-emerald-800 z-30 border-r w-12">ક્રમ</th>
+                    <th class="p-3 sticky left-26 bg-emerald-800 z-30 border-r w-24">LGD કોડ</th>
+                    <th class="p-3 sticky left-50 bg-emerald-800 z-30 border-r w-36">ગ્રામ પંચાયતનું નામ</th>
                 `;
                 headers.forEach(h => {
                     headerHtml += `<th class="p-3 min-w-[150px] border-r">${h}</th>`;
@@ -332,14 +370,18 @@
                 for (let i = 0; i < talukaPanchayats.length; i++) {
                     const p = talukaPanchayats[i];
                     const pId = p.lgdCode || p.id;
+                    const isChecked = selectedPanchayats.length === 0 || selectedPanchayats.includes(pId);
 
-                    const subSnap = await getDoc(doc(db, "panchayats", pId, "submitted_reports", "current_sheet"));
+                    const subSnap = await getDoc(doc(db, "panchayats", pId, "submitted_reports", `${activeSheetKey}_data`));
                     const subData = subSnap.exists() ? subSnap.data().values || {} : {};
 
                     bodyHtml += `<tr class="hover:bg-gray-50">
-                        <th class="p-3 sticky left-0 bg-white z-10 border-r text-gray-600 font-bold">${i + 1}</th>
-                        <th class="p-3 sticky left-12 bg-white z-10 border-r font-mono text-indigo-700">${pId}</th>
-                        <th class="p-3 sticky left-36 bg-white z-10 border-r font-bold text-emerald-900">${p.panchayatName || '-'}</th>
+                        <td class="p-3 sticky left-0 bg-white z-10 border-r text-center">
+                            <input type="checkbox" value="${pId}" class="panchayat-select-chk w-4 h-4 text-emerald-600 rounded cursor-pointer" ${isChecked ? 'checked' : ''}>
+                        </td>
+                        <th class="p-3 sticky left-14 bg-white z-10 border-r text-gray-600 font-bold">${i + 1}</th>
+                        <th class="p-3 sticky left-26 bg-white z-10 border-r font-mono text-indigo-700">${pId}</th>
+                        <th class="p-3 sticky left-50 bg-white z-10 border-r font-bold text-emerald-900">${p.panchayatName || '-'}</th>
                     `;
 
                     headers.forEach(h => {
@@ -354,28 +396,28 @@
 
             } catch (err) {
                 console.error("Error loading exchange sheet:", err);
-                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-red-500">ડેટા લોડ કરવામાં એરર આવી.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-red-500">ડેટા લોડ કરવામાં એરર આવી.</td></tr>`;
             }
         }
 
-        // 🌟 ૩. શીટ ખાલી કરવી (Firebase માંથી ડીલીટ કરવું જેથી સ્ટોરેજ પ્રશ્ન ન રહે)
-        window.clearCollectionSheet = async function() {
-            const passkey = prompt("ચેતવણી: આ પ્રક્રિયાથી માંગેલી શીટ અને પંચાયતોએ ભરેલો તમામ ડેટા ફાયરબેઝમાંથી કાયમી ધોરણે ડીલીટ થઈ જશે.\n\nકન્ફર્મ કરવા માટે તાલુકા એડમિન પાસવર્ડ દાખલ કરો:");
+        window.clearActiveSheet = async function() {
+            const sheetName = activeSheetKey === 'sheet_1' ? 'શીટ ૧' : 'શીટ ૨';
+            const passkey = prompt(`ચેતવણી: આ પ્રક્રિયાથી ${sheetName} અને પંચાયતોએ ભરેલો તમામ ડેટા ફાયરબેઝમાંથી કાયમી ધોરણે ડીલીટ થઈ જશે.\n\nકન્ફર્મ કરવા માટે પાસવર્ડ દાખલ કરો:`);
             if (!passkey) return;
 
             try {
-                await deleteDoc(doc(db, "taluka_sheets", talukaNameScope));
+                await deleteDoc(doc(db, "taluka_sheets", `${talukaNameScope}_${activeSheetKey}`));
 
                 const panchayatsSnap = await getDocs(collection(db, "panchayats"));
                 for (let d of panchayatsSnap.docs) {
                     const p = d.data();
                     if (p.taluka && p.taluka.toLowerCase() === talukaNameScope.toLowerCase()) {
                         const pId = p.lgdCode || d.id;
-                        await deleteDoc(doc(db, "panchayats", pId, "submitted_reports", "current_sheet"));
+                        await deleteDoc(doc(db, "panchayats", pId, "submitted_reports", `${activeSheetKey}_data`));
                     }
                 }
 
-                alert("🗑️ શીટ અને સબમિટ થયેલ ડેટા સફળતાપૂર્વક ડીલીટ કરી દેવામાં આવ્યા છે!");
+                alert(`🗑️ ${sheetName} સફળતાપૂર્વક ખાલી કરી દેવામાં આવી છે!`);
                 loadTalukaExchangeSheet();
             } catch (err) {
                 console.error("Error clearing sheet:", err);
@@ -383,7 +425,6 @@
             }
         };
 
-        // 🌟 ૪. ડેટા કોપી કરવા માટે (Excel friendly)
         window.copyExchangeTable = function() {
             const table = document.getElementById("exchange-sheet-table");
             let range = document.createRange();
@@ -395,7 +436,7 @@
             alert("📋 શીટનો આખો ડેટા ટેબલ ફોર્મેટમાં કોપી થઈ ગયો છે! તમે તેને Excel માં સીધો પેસ્ટ કરી શકો છો.");
         };
 
-        // Load Panchayats matching current Taluka
+        // Standard Panchayat loader & modal functions...
         async function loadTalukaPanchayats(talukaName) {
             const tableBody = document.getElementById("taluka-panchayats-table-body");
             tableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-500">પંચાયતોનો ડેટા લોડ થઈ રહ્યો છે...</td></tr>`;
@@ -445,225 +486,9 @@
             }
         }
 
-        // Global function to fetch and render exact website layout in popup
-        window.showPanchayatData = async function(lgdCode, dataType, title) {
-            const modal = document.getElementById("data-modal");
-            const modalTitle = document.getElementById("modal-title");
-            const modalContent = document.getElementById("modal-content");
-
-            modalTitle.textContent = `${title} (LGD Code: ${lgdCode})`;
-            modalContent.innerHTML = `<div class="text-center py-8 text-gray-500"><i class="fa-solid fa-spinner fa-spin mr-2"></i> માહિતી લોડ થઈ રહી છે...</div>`;
-            modal.classList.remove("hidden");
-
-            try {
-                let htmlOutput = "";
-
-                if (dataType === 'about') {
-                    const snap = await getDocs(collection(db, "panchayats", lgdCode, "village_glance"));
-                    if (snap.empty) {
-                        modalContent.innerHTML = `<div class="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-lg text-center text-xs">⚠️ આ પંચાયત માટે હજુ સુધી "મારૂ ગામ - એક નજરમાં" ની માહિતી ભરવામાં આવી નથી.</div>`;
-                        return;
-                    }
-
-                    let sections = {};
-                    snap.forEach(docSnap => {
-                        const data = docSnap.data();
-                        const secName = data.sectionName || "અન્ય માહિતી";
-                        if (!sections[secName]) sections[secName] = [];
-                        sections[secName].push(data);
-                    });
-
-                    for (let sectionName in sections) {
-                        let rowsHtml = sections[sectionName].map(item => `
-                            <tr class="border-b hover:bg-gray-50 text-xs">
-                                <td class="p-2.5 font-semibold text-gray-800 w-1/3">${item.title || '-'}</td>
-                                <td class="p-2.5 text-emerald-700 font-bold w-1/3">${item.value || '-'}</td>
-                                <td class="p-2.5 text-gray-600 text-[11px] w-1/3">${item.extraInfo || '-'}</td>
-                            </tr>
-                        `).join("");
-
-                        htmlOutput += `
-                            <div class="bg-white rounded-xl shadow-md border overflow-hidden mb-4">
-                                <div class="bg-emerald-800 text-white px-4 py-2 font-bold text-xs flex items-center gap-2">
-                                    <i class="fa-solid fa-folder-open text-amber-300"></i> ${sectionName}
-                                </div>
-                                <div class="overflow-x-auto">
-                                    <table class="w-full text-left border-collapse">
-                                        <thead class="bg-emerald-50 text-emerald-900 text-xs border-b">
-                                            <tr>
-                                                <th class="p-2.5">વિગત / સુવિધા</th>
-                                                <th class="p-2.5">આંકડો / મુખ્ય માહિતી</th>
-                                                <th class="p-2.5">વધારાની વિગત</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="divide-y">${rowsHtml}</tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        `;
-                    }
-                } 
-                else if (dataType === 'staff') {
-                    let termText = "-";
-                    try {
-                        const metaDoc = await getDoc(doc(db, "panchayats", lgdCode, "panchayat_meta", "staff_page"));
-                        if (metaDoc.exists()) termText = metaDoc.data().term || "-";
-                    } catch (e) {}
-
-                    const commSnap = await getDocs(collection(db, "panchayats", lgdCode, "panchayat_committee"));
-                    let commRows = "";
-                    if (!commSnap.empty) {
-                        let idx = 1;
-                        commSnap.forEach(d => {
-                            const item = d.data();
-                            commRows += `
-                                <tr class="border-b hover:bg-gray-50 text-xs">
-                                    <td class="p-2.5 font-bold">${idx++}</td>
-                                    <td class="p-2.5 font-semibold text-gray-900">${item.name || '-'}</td>
-                                    <td class="p-2.5"><span class="bg-blue-100 text-blue-900 px-2 py-0.5 rounded font-bold">${item.designation || '-'}</span></td>
-                                    <td class="p-2.5">${item.ward || '-'}</td>
-                                    <td class="p-2.5 font-mono">${item.mobile || '-'}</td>
-                                </tr>
-                            `;
-                        });
-                    } else {
-                        commRows = `<tr><td colspan="5" class="p-3 text-center text-gray-400 text-xs">કોઈ કમિટી સભ્ય ઉપલબ્ધ નથી.</td></tr>`;
-                    }
-
-                    const staffSnap = await getDocs(collection(db, "panchayats", lgdCode, "panchayat_staff"));
-                    let staffRows = "";
-                    if (!staffSnap.empty) {
-                        let idx = 1;
-                        staffSnap.forEach(d => {
-                            const item = d.data();
-                            staffRows += `
-                                <tr class="border-b hover:bg-gray-50 text-xs">
-                                    <td class="p-2.5 font-bold">${idx++}</td>
-                                    <td class="p-2.5 font-semibold text-gray-900">${item.name || '-'}</td>
-                                    <td class="p-2.5"><span class="bg-indigo-100 text-indigo-900 px-2 py-0.5 rounded font-bold">${item.designation || '-'}</span></td>
-                                    <td class="p-2.5 font-mono">${item.mobile || '-'}</td>
-                                </tr>
-                            `;
-                        });
-                    } else {
-                        staffRows = `<tr><td colspan="4" class="p-3 text-center text-gray-400 text-xs">કોઈ કર્મચારી ઉપલબ્ધ નથી.</td></tr>`;
-                    }
-
-                    htmlOutput = `
-                        <div class="mb-5 bg-white rounded-xl shadow-md border overflow-hidden">
-                            <div class="bg-blue-900 text-white px-4 py-2.5 font-bold text-xs flex justify-between items-center">
-                                <span><i class="fa-solid fa-user-tie mr-1.5"></i> ૧. ચૂંટાયેલ પંચાયત કમિટી</span>
-                                <span class="bg-amber-400 text-amber-950 px-2 py-0.5 rounded text-[10px]">મુદત: ${termText}</span>
-                            </div>
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-left border-collapse">
-                                    <thead class="bg-blue-50 text-blue-950 text-xs border-b">
-                                        <tr>
-                                            <th class="p-2.5">ક્રમ</th>
-                                            <th class="p-2.5">નામ</th>
-                                            <th class="p-2.5">હોદ્દો</th>
-                                            <th class="p-2.5">વોર્ડ નં.</th>
-                                            <th class="p-2.5">મોબાઈલ નંબર</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="divide-y">${commRows}</tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <div class="bg-white rounded-xl shadow-md border overflow-hidden">
-                            <div class="bg-indigo-900 text-white px-4 py-2.5 font-bold text-xs">
-                                <i class="fa-solid fa-address-book mr-1.5"></i> ૨. ગ્રામ પંચાયત કર્મચારીઓ
-                            </div>
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-left border-collapse">
-                                    <thead class="bg-indigo-50 text-indigo-950 text-xs border-b">
-                                        <tr>
-                                            <th class="p-2.5">ક્રમ</th>
-                                            <th class="p-2.5">કર્મચારીનું નામ</th>
-                                            <th class="p-2.5">હોદ્દો</th>
-                                            <th class="p-2.5">મોબાઈલ નંબર</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="divide-y">${staffRows}</tbody>
-                                </table>
-                            </div>
-                        </div>
-                    `;
-                }
-                else if (dataType === 'committees') {
-                    const snap = await getDocs(collection(db, "panchayats", lgdCode, "active_committees"));
-                    if (snap.empty) {
-                        modalContent.innerHTML = `<div class="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-lg text-center text-xs">⚠️ આ પંચાયત માટે હજુ સુધી "કાર્યરત સમિતિઓ" ની માહિતી ભરવામાં આવી નથી.</div>`;
-                        return;
-                    }
-
-                    let commHtml = "";
-                    snap.forEach(d => {
-                        const item = d.data();
-                        let membersRows = "";
-
-                        if (item.members && item.members.length > 0) {
-                            item.members.forEach((m, idx) => {
-                                membersRows += `
-                                    <tr class="hover:bg-gray-50 border-b text-xs">
-                                        <td class="p-2.5 font-bold">${idx + 1}</td>
-                                        <td class="p-2.5 font-semibold text-gray-800">${m.name || '-'}</td>
-                                        <td class="p-2.5">${m.originalDesignation || '-'}</td>
-                                        <td class="p-2.5"><span class="bg-purple-100 text-purple-900 px-2 py-0.5 rounded font-bold text-[11px]">${m.committeeRole || '-'}</span></td>
-                                    </tr>
-                                `;
-                            });
-                        } else {
-                            membersRows = `<tr><td colspan="4" class="p-3 text-center text-gray-400 text-xs">કોઈ સભ્ય ઉમેરેલ નથી.</td></tr>`;
-                        }
-
-                        commHtml += `
-                            <div class="bg-white rounded-xl shadow-md border overflow-hidden mb-4">
-                                <div class="bg-purple-900 text-white px-4 py-2.5 font-bold text-xs flex items-center gap-2">
-                                    <i class="fa-solid fa-users text-amber-300"></i> ${item.committeeName || 'સમિતિ'}
-                                </div>
-                                <div class="overflow-x-auto">
-                                    <table class="w-full text-left border-collapse">
-                                        <thead class="bg-purple-50 text-purple-950 text-xs border-b">
-                                            <tr>
-                                                <th class="p-2.5">ક્રમ</th>
-                                                <th class="p-2.5">સભ્યનું નામ</th>
-                                                <th class="p-2.5">મૂળ હોદ્દો</th>
-                                                <th class="p-2.5">સમિતિમાં હોદ્દો</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="divide-y">${membersRows}</tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        `;
-                    });
-
-                    htmlOutput = commHtml;
-                }
-
-                modalContent.innerHTML = htmlOutput || `<div class="text-center text-gray-500 py-6 text-xs">માહિતી ઉપલબ્ધ નથી.</div>`;
-
-            } catch (err) {
-                console.error("Error rendering panchayat layout:", err);
-                modalContent.innerHTML = `<div class="text-red-600 p-4 text-xs">ડેટા લોડ કરવામાં એરર આવી: ${err.message}</div>`;
-            }
-        };
-
-        window.closeDataModal = function() {
-            document.getElementById("data-modal").classList.add("hidden");
-        };
-
+        window.closeDataModal = function() { document.getElementById("data-modal").classList.add("hidden"); };
         window.copyModalContent = function() {
-            const contentEl = document.getElementById("modal-content");
-            const textToCopy = contentEl.innerText;
-            
-            navigator.clipboard.writeText(textToCopy).then(() => {
-                alert("📋 માહિતી ટેબલ ફોર્મેટમાં સફળતાપૂર્વક કોપી થઈ ગઈ છે! તમે તેને Excel કે Word માં પેસ્ટ કરી શકો છો.");
-            }).catch(err => {
-                alert("કોપી કરવામાં નિષ્ફળતા.");
-            });
+            navigator.clipboard.writeText(document.getElementById("modal-content").innerText).then(() => alert("📋 કોપી થઈ ગયું!"));
         };
 
         checkTalukaAuth();
