@@ -1,1 +1,79 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>માહિતી - ગ્રામ પંચાયત</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .animate-fade-in-down { animation: fadeInDown 0.8s ease-out forwards; }
+        .animate-fade-in-up { animation: fadeInUp 0.8s ease-out forwards; 0.3s; }
+        .animate-float { animation: float 3s ease-in-out infinite; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-emerald-50 via-teal-50 to-slate-100 min-h-screen flex items-center justify-center p-4 font-sans">
 
+    <div class="max-w-md w-full bg-white/80 backdrop-blur-md rounded-3xl shadow-2xl p-8 text-center border border-emerald-100 space-y-6 animate-fade-in-down">
+        
+        <!-- Animated Icon -->
+        <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-3xl shadow-inner animate-float">
+            <i class="fa-solid fa-hourglass-half"></i>
+        </div>
+
+        <!-- Heading -->
+        <h2 class="text-2xl font-bold text-slate-800 tracking-wide">
+            માહિતી ઉપલબ્ધ નથી
+        </h2>
+
+        <!-- Message -->
+        <p class="text-sm text-gray-600 leading-relaxed animate-fade-in-up">
+            આ પૃષ્ઠ પર ભવિષ્યમાં જરૂરી માહિતી ઉમેરવામાં આવશે. આપના સહકાર બદલ આભાર...
+        </p>
+
+        <!-- Divider -->
+        <div class="w-16 h-1 bg-emerald-500 mx-auto rounded-full"></div>
+
+        <!-- Back to Home Button (LGD Safe) -->
+        <div class="pt-2">
+            <button onclick="goBackToHome()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2 text-sm group">
+                <i class="fa-solid fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
+                મુખ્ય પૃષ્ઠ પર જાઓ
+            </button>
+        </div>
+
+    </div>
+
+    <!-- Script to handle dynamic LGD Code redirection -->
+    <script>
+        function goBackToHome() {
+            // URL અથવા LocalStorage માંથી LGD Code પકડો
+            const urlParams = new URLSearchParams(window.location.search);
+            let lgdCode = urlParams.get('id') || localStorage.getItem("currentPanchayatId");
+
+            if (lgdCode) {
+                // જો LGD Code હાજર હોય તો તેને સાથે રાખીને મુખ્ય પૃષ્ઠ (index.html) પર જાઓ
+                window.location.href = `index.html?id=${lgdCode}`;
+            } else {
+                // જો LGD Code ન મળે તો સાદી રીતે index.html પર રીડાયરેક્ટ કરો
+                window.location.href = 'index.html';
+            }
+        }
+    </script>
+
+</body>
+</html>
