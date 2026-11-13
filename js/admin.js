@@ -195,7 +195,7 @@ function initAdminPanel() {
     loadAdminFeedbacks();
     loadDownloadsAdminData();
     loadProactiveAdminData();
-    loadPanchayatDataExchangeForm();
+   
 }
 
 // --- ૧. વેબસાઇટ સેટિંગ્સ લાઈવ પ્રીવ્યુ ---
@@ -2241,7 +2241,7 @@ document.getElementById("downloads-admin-form")?.addEventListener("submit", asyn
 
 
 
-// --- ૨૦. તાલુકા ડેટા કલેક્શન અને ડ્યુઅલ એક્સચેન્જ મેનેજર (પંચાયત એડમિન સાઈડ) ---
+// --- ૨૦. તાલુકા ડેટಾ કલેક્શન અને ડ્યુઅલ એક્સચેન્જ મેનેજર (પંચાયત એડમિન સાઈડ) ---
 
 window.openTalukaSheetModal = function() {
     document.getElementById("taluka-sheet-modal")?.classList.remove("hidden");
@@ -2252,7 +2252,7 @@ window.closeTalukaSheetModal = function() {
     document.getElementById("taluka-sheet-modal")?.classList.add("hidden");
 };
 
-// નોટિફિકેશન ચેક (બંને શીટ્સ માટે)
+// 🌟 સુધારેલું નોટિફિકેશન ચેક ફંક્શન (રેડ ડોટ માટે)
 async function checkTalukaNotification() {
     try {
         if (!lgdCode) return;
@@ -2262,12 +2262,16 @@ async function checkTalukaNotification() {
         if (!talukaName) return;
 
         let hasActiveRequest = false;
+        
+        // શીટ ૧ અને શીટ ૨ બંને માટે ચેક કરો
         for (let sheetKey of ['sheet_1', 'sheet_2']) {
             const sheetSnap = await getDoc(doc(db, "taluka_sheets", `${talukaName}_${sheetKey}`));
             if (sheetSnap.exists()) {
                 const data = sheetSnap.data();
                 const headers = data.headers || [];
                 const selectedPanchayats = data.selectedPanchayats || [];
+                
+                // જો હેડિંગ હોય અને આ પંચાયત સિલેક્ટ કરેલી હોય
                 if (headers.length > 0 && (selectedPanchayats.length === 0 || selectedPanchayats.includes(lgdCode))) {
                     hasActiveRequest = true;
                     break;
@@ -2275,17 +2279,20 @@ async function checkTalukaNotification() {
             }
         }
 
-        if (hasActiveRequest) {
-            document.getElementById("taluka-req-badge")?.classList.remove("hidden");
-        } else {
-            document.getElementById("taluka-req-badge")?.classList.add("hidden");
+        const badge = document.getElementById("taluka-req-badge");
+        if (badge) {
+            if (hasActiveRequest) {
+                badge.classList.remove("hidden");
+            } else {
+                badge.classList.add("hidden");
+            }
         }
     } catch (e) {
         console.error("Notification check error:", e);
     }
 }
 
-// પંચાયત એડમિન પેનલ પર બંને શીટ્સના ફોર્મ્સ લોડ કરવા
+// પંચાયત એડમિન પેનલ પર ફોર્મ્સ લોડ કરવા માટેનું મુખ્ય ફંક્શન
 async function loadPanchayatDataExchangeForms() {
     const container = document.getElementById("panchayat-sheet-form-container");
     if (!container) return;
@@ -2364,7 +2371,6 @@ async function loadPanchayatDataExchangeForms() {
 
         container.innerHTML = combinedHtml;
 
-        // સબમિટ ઇવેન્ટ્સ બાઈન્ડ કરવી
         document.querySelectorAll(".submitted-sheet-form").forEach(form => {
             form.addEventListener("submit", async (e) => {
                 e.preventDefault();
@@ -2380,6 +2386,7 @@ async function loadPanchayatDataExchangeForms() {
                     }, { merge: true });
 
                     alert(`✅ ${sKey === 'sheet_1' ? 'શીટ ૧' : 'શીટ ૨'} ની માહિતી સફળતાપૂર્વક સબમિટ થઈ ગઈ!`);
+                    checkTalukaNotification();
                 } catch (err) {
                     console.error("Error submitting report:", err);
                     alert("સબમિટ કરવામાં ભૂલ આવી: " + err.message);
