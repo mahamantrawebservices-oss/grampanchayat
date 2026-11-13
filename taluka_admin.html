@@ -173,7 +173,7 @@
                                 <th class="p-3">LGD કોડ / ID</th>
                                 <th class="p-3">ગ્રામ પંચાયતનું નામ</th>
                                 <th class="p-3 text-center">માહિતી જોવા માટેના બટનો</th>
-                                <th class="p-3 text-center">વેબસાઇટ લિંક</th>
+                                <th class="p-3 text-center">વેબસાઇਟ લિંક</th>
                             </tr>
                         </thead>
                         <tbody id="taluka-panchayats-table-body" class="divide-y divide-gray-200 text-xs">
@@ -575,7 +575,7 @@
                     if (pTaluka.toLowerCase() === talukaName.toLowerCase() || lgdCode.toLowerCase().includes(talukaName.toLowerCase())) {
                         count++;
                         
-                        // 🌟 મેઈન ડૉક અને સબ-કલેક્શન બંનેમાંથી ગામો ફેચ કરવા માટેનું સેફ લૉજિક
+                        // 🌟 મેઈન ડોક અને સબ-કલેક્શન બંનેમાંથી ગામો ફેચ કરવા માટેનું સેફ લૉજિક
                         let pVillages = pData.villages || "";
                         if (!pVillages) {
                             try {
@@ -785,12 +785,16 @@
 
                         if (item.members && item.members.length > 0) {
                             item.members.forEach((m, idx) => {
+                                // 🌟 સુધારો: mainRole અથવા main_role અને commRole અથવા comm_role બંને ફિલ્ડ્સ માટે સપોર્ટ
+                                const originalRole = m.mainRole || m.main_role || '-';
+                                const committeeRole = m.commRole || m.comm_role || '-';
+
                                 membersRows += `
                                     <tr class="hover:bg-gray-50 border-b text-xs">
                                         <td class="p-2.5 font-bold">${idx + 1}</td>
                                         <td class="p-2.5 font-semibold text-gray-800">${m.name || '-'}</td>
-                                        <td class="p-2.5">${m.originalDesignation || '-'}</td>
-                                        <td class="p-2.5"><span class="bg-purple-100 text-purple-900 px-2 py-0.5 rounded font-bold text-[11px]">${m.committeeRole || '-'}</span></td>
+                                        <td class="p-2.5"><span class="bg-blue-50 text-blue-900 px-2 py-0.5 rounded font-medium">${originalRole}</span></td>
+                                        <td class="p-2.5"><span class="bg-purple-100 text-purple-900 px-2 py-0.5 rounded font-bold text-[11px]">${committeeRole}</span></td>
                                     </tr>
                                 `;
                             });
@@ -801,7 +805,7 @@
                         commHtml += `
                             <div class="bg-white rounded-xl shadow-md border overflow-hidden mb-4">
                                 <div class="bg-purple-900 text-white px-4 py-2.5 font-bold text-xs flex items-center gap-2">
-                                    <i class="fa-solid fa-users text-amber-300"></i> ${item.committeeName || 'સમિતિ'}
+                                    <i class="fa-solid fa-users text-amber-300"></i> ${item.committeeName || item.cgTitle || 'સમિતિ'}
                                 </div>
                                 <div class="overflow-x-auto">
                                     <table class="w-full text-left border-collapse">
