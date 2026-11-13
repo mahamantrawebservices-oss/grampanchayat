@@ -254,7 +254,6 @@ function initAdminPanel() {
     loadProactiveAdminData();
    
 }
-
 // --- ૧. વેબસાઇટ સેટિંગ્સ લાઈવ પ્રીવ્યુ ---
 async function loadWebsiteSettings() {
     if (!lgdCode) return;
@@ -263,14 +262,17 @@ async function loadWebsiteSettings() {
         const data = snap.data();
         if (document.getElementById("set-gp-name")) document.getElementById("set-gp-name").value = data.name || "";
         if (document.getElementById("set-gp-tagline")) document.getElementById("set-gp-tagline").value = data.tagline || "";
+        // 🌟 પંચાયતના તબા હેઠળના ગામો લોડ કરવા માટે
+        if (document.getElementById("set-gp-villages")) document.getElementById("set-gp-villages").value = data.villages || "";
         
         const preview = document.getElementById("settings-preview");
         if (preview) {
             preview.innerHTML = `
-                <div class="bg-white p-2.5 rounded-lg border border-emerald-300 mt-2 text-xs">
+                <div class="bg-white p-2.5 rounded-lg border border-emerald-300 mt-2 text-xs space-y-1">
                     <p class="font-bold text-emerald-900">📌 વર્તમાન સેવ થયેલ વિગત:</p>
                     <p><b>પંચાયત:</b> ${data.name || 'નથી સેટ કરી'}</p>
                     <p><b>ટેગ લાઇન:</b> ${data.tagline || 'નથી સેટ કરી'}</p>
+                    <p><b>તબા હેઠળના ગામો:</b> ${data.villages || 'નથી સેટ કર્યા'}</p>
                 </div>
             `;
         }
@@ -281,8 +283,10 @@ document.getElementById("settings-form")?.addEventListener("submit", async (e) =
     e.preventDefault();
     const name = document.getElementById("set-gp-name")?.value.trim();
     const tagline = document.getElementById("set-gp-tagline")?.value.trim();
+    // 🌟 પંચાયતના તબા હેઠળના ગામોની કિંમત મેળવવા માટે
+    const villages = document.getElementById("set-gp-villages")?.value.trim() || "";
 
-    await setDoc(getPanchayatDoc("settings", "general"), { name, tagline, updatedAt: new Date() }, { merge: true });
+    await setDoc(getPanchayatDoc("settings", "general"), { name, tagline, villages, updatedAt: new Date() }, { merge: true });
     alert("સેટિંગ્સ સફળતાપૂર્વક સેવ થઈ ગયા!");
     loadWebsiteSettings();
 });
