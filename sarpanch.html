@@ -6,11 +6,10 @@
     <title>સરપંચ પોર્ટલ - ગ્રામ પંચાયત</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans min-h-screen flex flex-col">
 
+    <!-- સ્પ્લેશ સ્ક્રીન -->
     <div id="splash-screen" class="fixed inset-0 bg-emerald-900 flex flex-col items-center justify-center z-50 transition-opacity duration-700">
         <div id="splash-logo-container" class="w-20 h-20 mb-4 flex items-center justify-center bg-white rounded-full shadow-lg overflow-hidden p-1">
             <i class="fa-solid fa-landmark text-3xl text-emerald-800"></i>
@@ -19,9 +18,14 @@
         <p class="text-emerald-200 text-xs mt-1">લોડ થઈ રહ્યું છે...</p>
     </div>
 
+    <!-- લૉગિન મોડલ -->
     <div id="sarpanch-login-modal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-40 p-4">
         <div class="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-sm text-center">
+            <div id="login-logo-container" class="w-16 h-16 mx-auto mb-2 flex items-center justify-center bg-emerald-50 rounded-full border border-emerald-200 overflow-hidden">
+                <i class="fa-solid fa-landmark text-2xl text-emerald-800"></i>
+            </div>
             <h2 class="text-xl font-bold text-gray-800 mb-1">સરપંચ લૉગિન</h2>
+            <p class="text-xs text-emerald-700 font-bold mb-4">ગ્રામ પંચાયત એડમિન પોર્ટલ</p>
             <form id="sarpanch-login-form" class="space-y-3 text-left">
                 <div>
                     <label class="block text-xs font-bold text-gray-700 mb-1">LGD કોડ / પંચાયત ID</label>
@@ -29,17 +33,33 @@
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-gray-700 mb-1">પાસવર્ડ</label>
-                    <input type="password" id="login-password" placeholder="પાસવર્ડ દાખલ કરો" required class="w-full border p-2.5 rounded text-sm">
+                    <div class="relative">
+                        <input type="password" id="login-password" placeholder="પાસવર્ડ દાખલ કરો" required class="w-full border p-2.5 pr-10 rounded text-sm">
+                        <button type="button" id="toggle-pass" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
+                            <i id="eye-icon" class="fa-solid fa-eye text-sm"></i>
+                        </button>
+                    </div>
                 </div>
                 <button type="submit" class="w-full bg-emerald-600 text-white font-bold py-2.5 rounded hover:bg-emerald-700 transition mt-2 text-sm shadow">લૉગિન કરો</button>
             </form>
         </div>
     </div>
 
+    <!-- મુખ્ય ડેશબોર્ડ -->
     <div id="sarpanch-dashboard" class="hidden flex-1 flex flex-col">
         <header class="bg-emerald-900 text-white shadow-md py-3 px-4 flex justify-between items-center sticky top-0 z-30">
-            <h1 class="text-sm font-bold" id="sarpanch-header-title">ગ્રામ પંચાયત - સરપંચ હેન્ડલ</h1>
-            <button id="logout-btn" class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg">લોગઆઉટ</button>
+            <div class="flex items-center gap-2.5">
+                <div id="header-logo-container" class="w-9 h-9 bg-white rounded-full flex items-center justify-center shadow overflow-hidden p-0.5">
+                    <i class="fa-solid fa-landmark text-emerald-900 text-sm"></i>
+                </div>
+                <div>
+                    <h1 class="text-sm font-bold" id="sarpanch-header-title">ગ્રામ પંચાયત - સરપંચ હેન્ડલ</h1>
+                    <p class="text-[10px] text-emerald-200">સરપંચ ડેશબોર્ડ મોનિટરિંગ</p>
+                </div>
+            </div>
+            <button id="logout-btn" class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition shadow flex items-center gap-1">
+                <i class="fa-solid fa-right-from-bracket"></i> લોગઆઉટ
+            </button>
         </header>
 
         <main class="flex-1 p-4 max-w-4xl mx-auto w-full space-y-6">
@@ -47,21 +67,30 @@
             <!-- ૨. નવી પોસ્ટ / નોટિસ મૂકો (કલેક્શન: notices) -->
             <div class="bg-blue-50/80 border border-blue-200 p-5 rounded-xl shadow-sm space-y-4">
                 <h3 class="font-bold border-b border-blue-300 pb-2 text-blue-950 text-sm">૨. નવી પોસ્ટ / નોટિસ મૂકો</h3>
+                
                 <form id="sarpanch-add-notice-form" class="bg-white p-4 rounded-xl border border-blue-100 shadow-sm space-y-3">
                     <input type="hidden" id="edit-notice-id" value="">
                     <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1">નોટિસનું શીર્ષક (Title)</label>
-                        <input type="text" id="notice-title" placeholder="દા.ત. ગ્રામસભા અંગે અગત્યની સૂચના" required class="w-full border p-2 rounded text-xs">
+                        <label class="block text-xs font-bold text-gray-700 mb-1">નોટિસ / પોસ્ટનું શીર્ષક (Title)</label>
+                        <input type="text" id="notice-title" placeholder="દા.ત. ગ્રામસભા અંગે અગત્યની સૂચના" required class="w-full border border-gray-300 p-2 rounded text-xs focus:ring-1 focus:ring-blue-500">
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-gray-700 mb-1">વિગત (Description)</label>
-                        <textarea id="notice-desc" rows="3" placeholder="માહિતી અહીં લખો..." required class="w-full border p-2 rounded text-xs"></textarea>
+                        <textarea id="notice-desc" rows="3" placeholder="નોટિસ અંગેની સંપૂર્ણ માહિતી અહીં લખો..." required class="w-full border border-gray-300 p-2 rounded text-xs focus:ring-1 focus:ring-blue-500"></textarea>
                     </div>
                     <div class="flex gap-2">
-                        <button type="submit" id="notice-submit-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded text-xs">નોટિસ પોસ્ટ કરો</button>
-                        <button type="button" id="notice-cancel-btn" class="hidden bg-gray-500 text-white font-bold px-4 py-2 rounded text-xs">રદ કરો</button>
+                        <button type="submit" id="notice-submit-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded text-xs shadow transition">નોટિસ પોસ્ટ કરો</button>
+                        <button type="button" id="notice-cancel-btn" class="hidden bg-gray-500 hover:bg-gray-600 text-white font-bold px-4 py-2 rounded text-xs shadow transition">રદ કરો</button>
                     </div>
                 </form>
+
+                <!-- હાલની તમામ નોટિસોનું લિસ્ટ -->
+                <div class="space-y-2 pt-2">
+                    <span class="text-xs font-bold text-gray-700">હાલની તમામ નોટિસો / પોસ્ટ્સ:</span>
+                    <div id="sarpanch-notices-list" class="space-y-2 max-h-60 overflow-y-auto pr-1">
+                        <p class="text-xs text-gray-500">નોટિસો લોડ થઈ રહી છે...</p>
+                    </div>
+                </div>
             </div>
 
             <!-- ૧. તાજી પોસ્ટ્સ અને ન્યૂઝ મેનેજ કરો 📢 (કલેક્શન: posts) -->
@@ -71,42 +100,54 @@
                     <input type="hidden" id="edit-post-id" value="">
                     <div>
                         <label class="block text-xs font-bold text-gray-700 mb-1">પોસ્ટ / ન્યૂઝનું શીર્ષક (Title)</label>
-                        <input type="text" id="post-title" placeholder="દા.ત. નવું આરોગ્ય કેન્દ્ર મંજૂર" required class="w-full border p-2 rounded text-xs">
+                        <input type="text" id="post-title" placeholder="દા.ત. ગામમાં નવું પ્રાથમિક આરોગ્ય કેન્દ્ર મંજૂર" required class="w-full border border-gray-300 p-2 rounded text-xs focus:ring-1 focus:ring-emerald-500">
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-gray-700 mb-1">વિગત (Description)</label>
-                        <textarea id="post-desc" rows="3" placeholder="વિગત લખો..." required class="w-full border p-2 rounded text-xs"></textarea>
+                        <textarea id="post-desc" rows="3" placeholder="પોસ્ટ અંગેની સંપૂર્ણ માહિતી લખો..." required class="w-full border border-gray-300 p-2 rounded text-xs focus:ring-1 focus:ring-emerald-500"></textarea>
                     </div>
                     <div class="flex gap-2">
-                        <button type="submit" id="post-submit-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded text-xs">પોસ્ટ ઉમેરો</button>
-                        <button type="button" id="post-cancel-btn" class="hidden bg-gray-500 text-white font-bold px-4 py-2 rounded text-xs">રદ કરો</button>
+                        <button type="submit" id="post-submit-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded text-xs shadow transition">પોસ્ટ ઉમેરો</button>
+                        <button type="button" id="post-cancel-btn" class="hidden bg-gray-500 hover:bg-gray-600 text-white font-bold px-4 py-2 rounded text-xs shadow transition">રદ કરો</button>
                     </div>
                 </form>
-                <div class="space-y-2 mt-3">
+
+                <div class="space-y-2 pt-2">
                     <span class="text-xs font-bold text-gray-700">હાલની તમામ પોસ્ટ્સ અને ન્યૂઝ:</span>
-                    <div id="sarpanch-posts-list" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
+                    <div id="sarpanch-posts-list" class="space-y-2 max-h-60 overflow-y-auto pr-1">
+                        <p class="text-xs text-gray-500">પોસ્ટ્સ લોડ થઈ રહી છે...</p>
+                    </div>
                 </div>
             </div>
 
-            <!-- ૫. આવેલ ફરિયાદો અને સ્ટેટસ મેનેજર -->
+            <!-- ૫. આવેલ ફરિયાદો અને સ્ટેટસ મેનેજર (ફક્ત ફિલ્ટર અને સ્ટેટસ સાથે) -->
             <div class="bg-emerald-50/80 border border-emerald-200 p-5 rounded-xl shadow-sm space-y-4">
                 <h3 class="font-bold border-b border-emerald-300 pb-2 text-emerald-950 text-sm">૫. આવેલ ફરિયાદો અને સ્ટેટસ મેનેજર</h3>
                 
-                <div class="flex flex-wrap items-center justify-between gap-2">
-                    <select id="admin-complaint-filter" class="border border-emerald-300 p-2 rounded text-xs bg-white font-medium">
+                <!-- વેબસાઇટ પર ફરિયાદ વિભાગ સેટિંગ્સ -->
+                <div class="bg-white p-3 rounded-xl border border-emerald-200 flex flex-wrap items-center justify-between gap-3 text-xs">
+                    <div class="flex items-center gap-2 flex-1">
+                        <span class="font-bold text-gray-700">🌐 વેબસાઇટ પર ફરિયાદ વિભાગ સેટિંગ્સ:</span>
+                        <select id="complaint-section-status" class="border border-emerald-300 p-1.5 rounded bg-white font-medium">
+                            <option value="true">ચાલુ રાખવો (Show)</option>
+                            <option value="false">બંધ રાખવો (Hide)</option>
+                        </select>
+                        <input type="number" id="complaint-daily-limit" value="50" class="border border-emerald-300 p-1.5 rounded w-16 text-center font-medium" title="દૈનિક મર્યાદા">
+                    </div>
+                    <button type="button" id="save-config-btn" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-3 py-1.5 rounded shadow transition">સેવ કરો</button>
+                </div>
+
+                <!-- ફક્ત ફિલ્ટર ડ્રોપડાઉન -->
+                <div class="flex items-center justify-between">
+                    <select id="admin-complaint-filter" class="border border-emerald-300 p-2 rounded text-xs bg-white font-bold text-gray-700 focus:outline-none">
                         <option value="ALL">તમામ ફરિયાદો</option>
                         <option value="PENDING">ફક્ત પેન્ડિંગ</option>
                         <option value="RESOLVED">નિવારણ થયેલ (Resolved)</option>
                     </select>
-                    <div class="flex items-center gap-2">
-                        <input type="month" id="report-month-select" class="border border-emerald-300 p-1.5 rounded text-xs bg-white">
-                        <button type="button" id="download-pdf-btn" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-3 py-1.5 rounded shadow flex items-center gap-1">
-                            <i class="fa-solid fa-file-pdf"></i> PDF ડાઉનલોડ
-                        </button>
-                    </div>
                 </div>
 
-                <div id="admin-complaint-list" class="space-y-3 max-h-[400px] overflow-y-auto pr-1">
+                <!-- ફરિયાદોની યાદી -->
+                <div id="admin-complaint-list" class="space-y-3 max-h-[450px] overflow-y-auto pr-1">
                     <p class="text-xs text-gray-500">ફરિયાદો લોડ થઈ રહી છે...</p>
                 </div>
             </div>
@@ -116,7 +157,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, getDocs, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCMhWWI_6oxPIVEQEVlq2SIBf72EI2o8NI",
@@ -135,11 +176,43 @@
         function getCol(sub) { return collection(db, "panchayats", lgdCode, sub); }
         function getDocRef(sub, id) { return doc(db, "panchayats", lgdCode, sub, id); }
 
-        setTimeout(() => {
+        async function applyPanchayatLogo() {
+            if (!lgdCode) return;
+            try {
+                const genSnap = await getDoc(doc(db, "panchayats", lgdCode, "settings", "general"));
+                if (genSnap.exists()) {
+                    const data = genSnap.data();
+                    if (data.name) {
+                        document.getElementById("sarpanch-header-title").textContent = `${data.name} - સરપંચ હેન્ડલ`;
+                    }
+                    if (data.logoUrl) {
+                        const logoUrl = data.logoUrl;
+                        document.getElementById("splash-logo-container").innerHTML = `<img src="${logoUrl}" alt="Logo" class="w-full h-full object-cover rounded-full">`;
+                        document.getElementById("login-logo-container").innerHTML = `<img src="${logoUrl}" alt="Logo" class="w-full h-full object-cover rounded-full">`;
+                        document.getElementById("header-logo-container").innerHTML = `<img src="${logoUrl}" alt="Logo" class="w-full h-full object-cover rounded-full">`;
+                    }
+                }
+            } catch (e) {}
+        }
+
+        setTimeout(async () => {
             const splash = document.getElementById("splash-screen");
             if (splash) { splash.classList.add("opacity-0"); setTimeout(() => splash.remove(), 700); }
+            if (lgdCode) await applyPanchayatLogo();
             checkAuth();
         }, 1500);
+
+        document.getElementById("toggle-pass")?.addEventListener("click", () => {
+            const passInput = document.getElementById("login-password");
+            const eyeIcon = document.getElementById("eye-icon");
+            if (passInput.type === "password") {
+                passInput.type = "text";
+                eyeIcon.classList.replace("fa-eye", "fa-eye-slash");
+            } else {
+                passInput.type = "password";
+                eyeIcon.classList.replace("fa-eye-slash", "fa-eye");
+            }
+        });
 
         function checkAuth() {
             if (lgdCode) {
@@ -155,45 +228,144 @@
             e.preventDefault();
             const inputCode = document.getElementById("login-lgd").value.trim();
             const password = document.getElementById("login-password").value.trim();
-            const snap = await getDoc(doc(db, "panchayats", inputCode));
-            if (snap.exists() && (snap.data().adminPassword || "admin123") === password) {
-                lgdCode = inputCode;
-                sessionStorage.setItem("sarpanch_lgd_code", lgdCode);
-                checkAuth();
-            } else {
-                alert("❌ ખોટો LGD કોડ અથવા પાસવર્ડ!");
+            try {
+                const snap = await getDoc(doc(db, "panchayats", inputCode));
+                if (snap.exists() && (snap.data().adminPassword || "admin123") === password) {
+                    lgdCode = inputCode;
+                    sessionStorage.setItem("sarpanch_lgd_code", lgdCode);
+                    await applyPanchayatLogo();
+                    checkAuth();
+                } else {
+                    alert("❌ ખોટો LGD કોડ અથવા પાસવર્ડ!");
+                }
+            } catch (err) {
+                alert("લૉગિન એરર: " + err.message);
             }
         });
 
         document.getElementById("logout-btn")?.addEventListener("click", () => {
-            sessionStorage.removeItem("sarpanch_lgd_code");
-            location.reload();
+            if (confirm("શું તમે લોગઆઉટ કરવા માંગો છો?")) {
+                sessionStorage.removeItem("sarpanch_lgd_code");
+                location.reload();
+            }
         });
 
         function loadData() {
+            loadNotices();
             loadPosts();
+            loadComplaintConfig();
             loadComplaints();
         }
 
-        // ૧. પોસ્ટ્સ મેનેજમેન્ટ (posts collection)
-        let postsCache = {};
-        async function loadPosts() {
-            const container = document.getElementById("sarpanch-posts-list");
-            const snap = await getDocs(getCol("posts"));
-            container.innerHTML = "";
-            postsCache = {};
-            if (snap.empty) { container.innerHTML = `<p class="text-xs text-gray-500">કોઈ પોસ્ટ નથી.</p>`; return; }
-            snap.forEach(d => {
-                const item = d.data();
-                postsCache[d.id] = item;
-                container.innerHTML += `
-                    <div class="bg-white p-2.5 border rounded flex justify-between items-center text-xs">
-                        <div><b>${item.title}</b><p class="text-gray-500 text-[11px]">${item.desc || ''}</p></div>
-                        <div class="flex gap-1">
-                            <button onclick="editPost('${d.id}')" class="bg-blue-600 text-white px-2 py-1 rounded">એડિટ</button>
-                            <button onclick="deletePost('${d.id}')" class="bg-red-500 text-white px-2 py-1 rounded">ડિલીટ</button>
+        // ==========================================
+        // ૨. નવી પોસ્ટ / નોટિસ મૂકો (કલેક્શન: notices)
+        // ==========================================
+        let noticesCache = {};
+        function loadNotices() {
+            const container = document.getElementById("sarpanch-notices-list");
+            if (!container || !lgdCode) return;
+
+            onSnapshot(getCol("notices"), (snapshot) => {
+                container.innerHTML = "";
+                noticesCache = {};
+                if (snapshot.empty) {
+                    container.innerHTML = `<p class="text-xs text-gray-500 p-2">કોઈ નોટિસ ઉપલબ્ધ નથી.</p>`;
+                    return;
+                }
+                snapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    const id = docSnap.id;
+                    noticesCache[id] = data;
+
+                    container.innerHTML += `
+                        <div class="bg-white p-3 border border-blue-100 rounded-lg shadow-sm flex justify-between items-start gap-2 text-xs">
+                            <div>
+                                <h4 class="font-bold text-gray-900">${data.title || '-'}</h4>
+                                <p class="text-gray-600 mt-0.5">${data.desc || ''}</p>
+                            </div>
+                            <div class="flex gap-1 shrink-0">
+                                <button type="button" onclick="editNotice('${id}')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-2 py-1 rounded shadow">એડિટ</button>
+                                <button type="button" onclick="deleteNotice('${id}')" class="bg-red-500 hover:bg-red-600 text-white font-bold px-2 py-1 rounded shadow">ડિલીટ</button>
+                            </div>
                         </div>
-                    </div>`;
+                    `;
+                });
+            });
+        }
+
+        document.getElementById("sarpanch-add-notice-form")?.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const editId = document.getElementById("edit-notice-id").value;
+            const title = document.getElementById("notice-title").value.trim();
+            const desc = document.getElementById("notice-desc").value.trim();
+
+            if (editId) {
+                await updateDoc(getDocRef("notices", editId), { title, desc, updatedAt: new Date() });
+                alert("✅ નોટિસ સફળતાપૂર્વક અપડેટ થઈ ગઈ!");
+            } else {
+                await addDoc(getCol("notices"), { title, desc, createdAt: new Date() });
+                alert("✅ નોટિસ સફળતાપૂર્વક પબ્લિશ થઈ ગઈ!");
+            }
+            document.getElementById("notice-cancel-btn")?.click();
+        });
+
+        window.editNotice = (id) => {
+            const data = noticesCache[id];
+            if (!data) return;
+            document.getElementById("edit-notice-id").value = id;
+            document.getElementById("notice-title").value = data.title || "";
+            document.getElementById("notice-desc").value = data.desc || "";
+            document.getElementById("notice-submit-btn").innerText = "અપડેટ કરો";
+            document.getElementById("notice-cancel-btn").classList.remove("hidden");
+            document.getElementById("sarpanch-add-notice-form").scrollIntoView({ behavior: 'smooth' });
+        };
+
+        document.getElementById("notice-cancel-btn")?.addEventListener("click", () => {
+            document.getElementById("sarpanch-add-notice-form").reset();
+            document.getElementById("edit-notice-id").value = "";
+            document.getElementById("notice-submit-btn").innerText = "નોટિસ પોસ્ટ કરો";
+            document.getElementById("notice-cancel-btn").classList.add("hidden");
+        });
+
+        window.deleteNotice = async (id) => {
+            if (confirm("શું તમે આ નોટિસ ડિલીટ કરવા માંગો છો?")) {
+                await deleteDoc(getDocRef("notices", id));
+            }
+        };
+
+        // ==========================================
+        // ૧. તાજી પોસ્ટ્સ અને ન્યૂઝ મેનેજ કરો (કલેક્શન: posts)
+        // ==========================================
+        let postsCache = {};
+        function loadPosts() {
+            const container = document.getElementById("sarpanch-posts-list");
+            if (!container || !lgdCode) return;
+
+            onSnapshot(getCol("posts"), (snapshot) => {
+                container.innerHTML = "";
+                postsCache = {};
+                if (snapshot.empty) {
+                    container.innerHTML = `<p class="text-xs text-gray-500 p-2">કોઈ પોસ્ટ કે ન્યૂઝ મળેલી નથી.</p>`;
+                    return;
+                }
+                snapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    const id = docSnap.id;
+                    postsCache[id] = data;
+
+                    container.innerHTML += `
+                        <div class="bg-white p-3 border border-gray-200 rounded-lg shadow-sm flex justify-between items-start gap-2 text-xs">
+                            <div>
+                                <h4 class="font-bold text-emerald-800">${data.title || '-'}</h4>
+                                <p class="text-gray-600 mt-0.5">${data.desc || ''}</p>
+                            </div>
+                            <div class="flex gap-1 shrink-0">
+                                <button type="button" onclick="editPost('${id}')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-2 py-1 rounded shadow">એડિટ</button>
+                                <button type="button" onclick="deletePost('${id}')" class="bg-red-500 hover:bg-red-600 text-white font-bold px-2 py-1 rounded shadow">ડિલીટ</button>
+                            </div>
+                        </div>
+                    `;
+                });
             });
         }
 
@@ -202,16 +374,15 @@
             const editId = document.getElementById("edit-post-id").value;
             const title = document.getElementById("post-title").value.trim();
             const desc = document.getElementById("post-desc").value.trim();
+
             if (editId) {
                 await updateDoc(getDocRef("posts", editId), { title, desc, updatedAt: new Date() });
+                alert("✅ પોસ્ટ સફળતાપૂર્વક અપડેટ થઈ ગઈ!");
             } else {
                 await addDoc(getCol("posts"), { title, desc, createdAt: new Date() });
+                alert("✅ પોસ્ટ સફળતાપૂર્વક ઉમેરાઈ ગઈ!");
             }
-            document.getElementById("sarpanch-add-post-form").reset();
-            document.getElementById("edit-post-id").value = "";
-            document.getElementById("post-submit-btn").innerText = "પોસ્ટ ઉમેરો";
-            document.getElementById("post-cancel-btn").classList.add("hidden");
-            loadPosts();
+            document.getElementById("post-cancel-btn")?.click();
         });
 
         window.editPost = (id) => {
@@ -222,98 +393,127 @@
             document.getElementById("post-desc").value = data.desc || "";
             document.getElementById("post-submit-btn").innerText = "અપડેટ કરો";
             document.getElementById("post-cancel-btn").classList.remove("hidden");
+            document.getElementById("sarpanch-add-post-form").scrollIntoView({ behavior: 'smooth' });
         };
 
+        document.getElementById("post-cancel-btn")?.addEventListener("click", () => {
+            document.getElementById("sarpanch-add-post-form").reset();
+            document.getElementById("edit-post-id").value = "";
+            document.getElementById("post-submit-btn").innerText = "પોસ્ટ ઉમેરો";
+            document.getElementById("post-cancel-btn").classList.add("hidden");
+        });
+
         window.deletePost = async (id) => {
-            if (confirm("પોસ્ટ ડિલીટ કરવી છે?")) {
+            if (confirm("શું તમે આ પોસ્ટ ડિલીટ કરવા માંગો છો?")) {
                 await deleteDoc(getDocRef("posts", id));
-                loadPosts();
             }
         };
 
-        // ૨. નોટિસ મેનેજમેન્ટ (notices collection)
-        document.getElementById("sarpanch-add-notice-form")?.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const title = document.getElementById("notice-title").value.trim();
-            const desc = document.getElementById("notice-desc").value.trim();
-            await addDoc(getCol("notices"), { title, desc, createdAt: new Date() });
-            alert("✅ નોટિસ સફળતાપૂર્વક પબ્લિશ થઈ ગઈ!");
-            e.target.reset();
-        });
-
-        // ૫. ફરિયાદો અને સ્ટેટસ મેનેજર (તારીખ સાથે)
-        async function loadComplaints() {
-            const container = document.getElementById("admin-complaint-list");
-            const filter = document.getElementById("admin-complaint-filter")?.value || "ALL";
-            const snap = await getDocs(getCol("complaints"));
-            container.innerHTML = "";
-            if (snap.empty) { container.innerHTML = `<p class="text-xs text-gray-500">કોઈ ફરિયાદ નથી.</p>`; return; }
-            
-            snap.forEach(d => {
-                const item = d.data();
-                const status = item.status || "ફરિયાદ પેન્ડિંગ રાખવામા આવેલ છે";
-                
-                let dateStr = "તારીખ ઉપલબ્ધ નથી";
-                if (item.createdAt && item.createdAt.toDate) {
-                    dateStr = item.createdAt.toDate().toLocaleString('gu-IN', { dateStyle: 'short', timeStyle: 'short' });
+        // ==========================================
+        // ૫. આવેલ ફરિયાદો અને સ્ટેટસ મેનેજર
+        // ==========================================
+        async function loadComplaintConfig() {
+            if (!lgdCode) return;
+            try {
+                const snap = await getDoc(getDocRef("settings", "complaint_config"));
+                if (snap.exists()) {
+                    const data = snap.data();
+                    if (document.getElementById("complaint-section-status")) {
+                        document.getElementById("complaint-section-status").value = data.isEnabled !== false ? "true" : "false";
+                    }
+                    if (document.getElementById("complaint-daily-limit")) {
+                        document.getElementById("complaint-daily-limit").value = data.dailyLimit || 50;
+                    }
                 }
-
-                if (filter === "PENDING" && !status.includes("પેન્ડિંગ") && !status.includes("કામ ચાલી")) return;
-                if (filter === "RESOLVED" && !status.includes("નિવારણ") && !status.includes("Resolved")) return;
-
-                container.innerHTML += `
-                    <div class="bg-white p-3 border rounded-xl text-xs space-y-1.5 shadow-sm">
-                        <div class="flex justify-between font-bold border-b pb-1">
-                            <span>ટોકન: <span class="text-emerald-700">${item.token || 'N/A'}</span> | નામ: ${item.name || 'અનામી'} (મો: ${item.mobile || '-'})</span>
-                            <span class="bg-blue-50 text-blue-800 px-2 py-0.5 rounded">${item.type || 'સામાન્ય'}</span>
-                        </div>
-                        <p><b>તારીખ:</b> <span class="text-amber-700 font-semibold">${dateStr}</span> | <b>વિસ્તાર:</b> ${item.area || '-'}</p>
-                        <p class="text-gray-700"><b>વિગત:</b> ${item.details || ''}</p>
-                        <div class="flex items-center gap-2 pt-1 border-t">
-                            <label class="font-bold text-gray-700">સ્ટેટસ:</label>
-                            <select onchange="updateStatus('${d.id}', this.value)" class="border p-1 rounded bg-amber-50 text-[11px] font-bold flex-1">
-                                <option value="${status}" selected>હાલનું: ${status}</option>
-                                <option value="ફરિયાદ પર કામ ચાલી રહ્યું છે">ફરિયાદ પર કામ ચાલી રહ્યું છે</option>
-                                <option value="ફરિયાદ નિવારણ થઈ ગયું છે">ફરિયાદ નિવારણ થઈ ગયું છે</option>
-                                <option value="ફરિયાદ પેન્ડિંગ રાખવામા આવેલ છે">ફરિયાદ પેન્ડિંગ રાખવામા આવેલ છે</option>
-                            </select>
-                        </div>
-                    </div>`;
-            });
+            } catch (e) {}
         }
 
-        window.updateStatus = async (id, status) => {
-            await updateDoc(getDocRef("complaints", id), { status, updatedAt: new Date() });
-            loadComplaints();
+        document.getElementById("save-config-btn")?.addEventListener("click", async () => {
+            if (!lgdCode) return;
+            const isEnabled = document.getElementById("complaint-section-status").value === "true";
+            const dailyLimit = parseInt(document.getElementById("complaint-daily-limit").value) || 50;
+            try {
+                await setDoc(getDocRef("settings", "complaint_config"), { isEnabled, dailyLimit, updatedAt: new Date() }, { merge: true });
+                alert("✅ ફરિયાદ વિભાગ સેટિંગ્સ સેવ થઈ ગયા!");
+            } catch (err) {
+                alert("એરર: " + err.message);
+            }
+        });
+
+        async function loadComplaints() {
+            if (!lgdCode) return;
+            const container = document.getElementById("admin-complaint-list");
+            const filter = document.getElementById("admin-complaint-filter")?.value || "ALL";
+            if (!container) return;
+
+            try {
+                const snap = await getDocs(getCol("complaints"));
+                container.innerHTML = "";
+                
+                if (snap.empty) {
+                    container.innerHTML = `<p class="text-xs text-gray-500 p-2">કોઈ ફરિયાદ મળેલી નથી.</p>`;
+                    return;
+                }
+
+                let count = 0;
+                snap.forEach(d => {
+                    const item = d.data();
+                    const status = item.status || "ફરિયાદ પેન્ડિંગ રાખવામા આવેલ છે";
+                    
+                    let dateStr = "તારીખ ઉપલબ્ધ નથી";
+                    if (item.createdAt && item.createdAt.toDate) {
+                        dateStr = item.createdAt.toDate().toLocaleString('gu-IN', { dateStyle: 'short', timeStyle: 'short' });
+                    }
+
+                    const isPending = status.includes("પેન્ડિંગ") || status.includes("કામ ચાલી");
+                    const isResolved = status.includes("નિવારણ થઈ ગયું") || status.includes("Resolved");
+
+                    if (filter === "PENDING" && !isPending) return;
+                    if (filter === "RESOLVED" && !isResolved) return;
+
+                    count++;
+                    container.innerHTML += `
+                        <div class="bg-white p-3 border border-emerald-200 rounded-xl shadow-sm text-xs space-y-2 mb-2">
+                            <div class="flex justify-between font-bold border-b pb-1">
+                                <span>ટોકન: <span class="text-emerald-700">${item.token || 'N/A'}</span> | નામ: ${item.name || 'અનામી'} (મો: ${item.mobile || '-'})</span>
+                                <span class="bg-blue-50 text-blue-800 px-2 py-0.5 rounded">${item.type || 'સામાન્ય'}</span>
+                            </div>
+                            <p><b>તારીખ:</b> <span class="text-amber-700 font-semibold">${dateStr}</span> | <b>વિસ્તાર/ફળિયું:</b> ${item.area || '-'}</p>
+                            <p class="text-gray-700"><b>વિગત:</b> ${item.details || item.msg || ''}</p>
+                            <div class="flex items-center gap-2 pt-1 border-t">
+                                <label class="font-bold text-gray-700">સ્ટેટસ બદલો:</label>
+                                <select onchange="updateComplaintStatus('${d.id}', this.value)" class="border border-emerald-300 p-1 rounded bg-amber-50 text-[11px] font-bold flex-1 focus:outline-none">
+                                    <option value="${status}" selected>હાલનું: ${status}</option>
+                                    <option value="ફરિયાદ પર કામ ચાલી રહ્યું છે">ફરિયાદ પર કામ ચાલી રહ્યું છે</option>
+                                    <option value="ફરિયાદ નિવારણ થઈ ગયું છે">ફરિયાદ નિવારણ થઈ ગયું છે</option>
+                                    <option value="ફરિયાદ પેન્ડિંગ રાખવામા આવેલ છે">ફરિયાદ પેન્ડિંગ રાખવામા આવેલ છે</option>
+                                    <option value="ફરિયાદ અયોગ્ય હોય રદ કરવામાં આવેલ છે">ફરિયાદ અયોગ્ય હોય રદ કરવામાં આવેલ છે</option>
+                                </select>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                if (count === 0) {
+                    container.innerHTML = `<p class="text-xs text-gray-500 p-2">આ ફિલ્ટર મુજબ કોઈ ફરિયાદ નથી.</p>`;
+                }
+            } catch (err) {
+                container.innerHTML = `<p class="text-xs text-red-500">ફરિયાદો લોડ કરવામાં એરર.</p>`;
+            }
+        }
+
+        window.updateComplaintStatus = async (id, status) => {
+            if (!lgdCode) return;
+            try {
+                await updateDoc(getDocRef("complaints", id), { status, updatedAt: new Date() });
+                alert("✅ ફરિયાદનું સ્ટેટસ સફળતાપૂર્વક અપડેટ થઈ ગયું!");
+                loadComplaints();
+            } catch (err) {
+                alert("સ્ટેટસ અપડેટ કરવામાં ભૂલ આવી.");
+            }
         };
 
         document.getElementById("admin-complaint-filter")?.addEventListener("change", loadComplaints);
-
-        // મહિનો સિલેક્ટ કરીને માત્ર તે જ મહિનાની PDF ડાઉનલોડ
-        document.getElementById("download-pdf-btn")?.addEventListener("click", async () => {
-            const monthVal = document.getElementById("report-month-select")?.value;
-            if (!monthVal) { alert("⚠️ કૃપા કરીને પહેલા મહિનો સિલેક્ટ કરો!"); return; }
-
-            const snap = await getDocs(getCol("complaints"));
-            let list = [];
-            snap.forEach(d => {
-                const item = d.data();
-                if (item.createdAt && item.createdAt.toDate) {
-                    if (item.createdAt.toDate().toISOString().slice(0, 7) === monthVal) {
-                        let dt = item.createdAt.toDate().toLocaleDateString('gu-IN');
-                        list.push([item.token || '-', item.name || '-', item.mobile || '-', item.type || '-', dt, item.status || '-']);
-                    }
-                }
-            });
-
-            if (list.length === 0) { alert("આ મહિનામાં કોઈ ફરિયાદ નથી."); return; }
-
-            const { jsPDF } = window.jspdf;
-            const docPdf = new jsPDF();
-            docPdf.text(`Complaint Report - ${monthVal}`, 14, 15);
-            docPdf.autoTable({ startY: 20, head: [['Token', 'Name', 'Mobile', 'Type', 'Date', 'Status']], body: list, styles: { fontSize: 8 } });
-            docPdf.save(`Complaints_${monthVal}.pdf`);
-        });
 
         checkAuth();
     </script>
