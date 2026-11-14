@@ -2551,3 +2551,54 @@ window.closeSubscriptionAlert = function() {
         console.error("subscription-alert-modal ID મળી નથી!");
     }
 };
+
+// Subscription Modal Logic
+const subModal = document.getElementById("subscription-modal");
+document.getElementById("open-subscription-btn")?.addEventListener("click", async () => {
+    subModal.classList.remove("hidden");
+    await loadSubscriptionDetails();
+});
+
+document.getElementById("close-subscription-modal")?.addEventListener("click", () => {
+    subModal.classList.add("hidden");
+});
+
+document.getElementById("close-sub-btn")?.addEventListener("click", () => {
+    subModal.classList.add("hidden");
+});
+
+// સુપર એડમિનના ગ્લોબલ સેટિંગ્સમાંથી સબ્સ્ક્રિપ્શન માહિતી અને પંચાયતની એક્સપાયરી ડેટ ફેચ કરવી
+async function loadSubscriptionDetails() {
+    try {
+        // ૧. સુપર એડમિનના ગ્લોબલ સેટિંગ્સ (QR Code, Amount, Support Email) ફેચ કરવા
+        const globalConfigSnap = await getDoc(doc(db, "admin_settings", "global_config"));
+        if (globalConfigSnap.exists()) {
+            const gData = globalConfigSnap.data();
+            document.getElementById("sub-payable-amount").innerText = "₹" + (gData.payableAmount || "0");
+            document.getElementById("sub-support-email").innerText = gData.supportEmail || "support@panchayat.com";
+            
+            const qrImg = document.getElementById("sub-qr-img");
+            const qrPlaceholder = document.getElementById("sub-qr-placeholder");
+            if (gData.qrCodeUrl) {
+                qrImg.src = gData.qrCodeUrl;
+                qrImg.classList.remove("hidden");
+                qrPlaceholder.classList.add("hidden");
+            }
+        }
+
+        // ૨. હાલની પંચાયતની ડેટામાંથી expiryDate ફેચ કરવી
+        const panchayatSnap = await getDoc(doc(db, "panchayats", lgdCode));
+        if (panchayatSnap.exists()) {
+            const pData = panchayatSnap.data();
+            if (pData.expiryDate) {
+                document.getElementById("sub-expiry-date").innerText = pData.expiryDate;
+            } else {
+                document.getElementById("expiry-date").innerText = "નિર્ધારિત નથી";
+            }
+        }
+    } catch (err) {
+        console.error("Error loading subscription details:", err);
+    }
+}
+
+
