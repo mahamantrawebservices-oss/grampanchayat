@@ -48,7 +48,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-       import { getFirestore, doc, setDoc, getDoc, addDoc, updateDoc, deleteDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCMhWWI_6oxPIVEQEVlq2SIBf72EI2o8NI",
@@ -63,23 +63,62 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-       const urlParams = new URLSearchParams(window.location.search);
-        const panchayatId = urlParams.get('id') || "ahmedabad_daskroi_motapipalva";
-        // ચોક્કસપણે pageId જ ફેચ કરે તેની ખાતરી કરો
+        const urlParams = new URLSearchParams(window.location.search);
+        // જો URL માં id ન હોય તો જ ડિફોલ્ટ લેશે, બાકી સાચો LGD Code જ રહેશે
+        const panchayatId = urlParams.get('id'); 
         const customPageId = urlParams.get('pageId'); 
 
-        // મુખ્ય પૃષ્ઠ લિંક સાથે panchayat id જાળવી રાખવો
-        document.getElementById("back-home-btn").href = `index.html?id=${panchayatId}`;
+        // જો panchayatId હાજર હોય તો જ 'back' બટનમાં LGD code સચવાઈ રહેશે
+        if (panchayatId) {
+            document.getElementById("back-home-btn").href = `index.html?id=${panchayatId}`;
+        }
 
-        async function loadCustomPageContent() {
+        // મુખ્ય વેરિફિકેશન અને લોડિંગ ફંક્શન
+        async function verifyAndLoad() {
             const contentDiv = document.getElementById("page-content");
-            const headerTitle = document.getElementById("header-title");
-            const pageTitle = document.getElementById("page-title");
+
+            if (!panchayatId) {
+                contentDiv.innerHTML = "<p class='text-red-500 text-center'>⚠️ અમાન્ય LGD Code (પંચાયત આઈડી મળ્યો નથી).</p>";
+                return;
+            }
 
             if (!customPageId) {
                 contentDiv.innerHTML = "<p class='text-red-500 text-center'>⚠️ અમાન્ય પેજ લિંક (pageId મળ્યો નથી).</p>";
                 return;
             }
+
+            try {
+                // 1. Global Maintenance Check
+                const maintSnap = await getDoc(doc(db, "system_settings", "global_config"));
+                if (maintSnap.exists() && maintSnap.data().isMaintenance) {
+                    document.getElementById("maintenance-screen").classList.remove("hidden");
+                    if (maintSnap.data().maintenanceMessage) {
+                        document.getElementById("maintenance-msg-text").textContent = maintSnap.data().maintenanceMessage;
+                    }
+                    return;
+                }
+
+                // 2. Panchayat Active Status Check
+                const pSnap = await getDoc(doc(db, "panchayats", panchayatId));
+                if (pSnap.exists() && pSnap.data().isActive === false) {
+                    document.getElementById("deactive-screen").classList.remove("hidden");
+                    return;
+                }
+
+                // 3. Load Custom Page Content
+                await loadCustomPageContent();
+
+            } catch (err) {
+                console.error("Verification error:", err);
+                contentDiv.innerHTML = "<p class='text-red-500 text-center'>સિસ્ટમ એરર: માહિતી લોડ થઈ શકી નથી.</p>";
+            }
+        }
+
+        // કસ્ટમ પેજ કન્ટેન્ટ ફેચ કરવા માટેનું ફંક્શન
+        async function loadCustomPageContent() {
+            const contentDiv = document.getElementById("page-content");
+            const headerTitle = document.getElementById("header-title");
+            const pageTitle = document.getElementById("page-title");
 
             try {
                 const docSnap = await getDoc(doc(db, "panchayats", panchayatId, "custom_pages", customPageId));
@@ -98,34 +137,7 @@
             }
         }
 
-        async function loadCustomPageContent() {
-            const contentDiv = document.getElementById("page-content");
-            const headerTitle = document.getElementById("header-title");
-            const pageTitle = document.getElementById("page-title");
-
-            const customPageId = urlParams.get('pageId');
-            if (!customPageId) {
-                contentDiv.innerHTML = "<p class='text-red-500 text-center'>અમાન્ય પેજ લિંક.</p>";
-                return;
-            }
-
-            try {
-                const docSnap = await getDoc(doc(db, "panchayats", panchayatId, "custom_pages", customPageId));
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    headerTitle.innerHTML = `<i class="fa-solid fa-file-lines"></i> ${data.buttonTitle || 'સેવા'}`;
-                    pageTitle.innerText = data.buttonTitle || 'પંચાયત સેવા';
-                    
-                    contentDiv.innerHTML = data.htmlContent || "<p class='text-gray-500 text-center'>કોઈ કન્ટેન્ટ ઉપલબ્ધ નથી.</p>";
-                } else {
-                    contentDiv.innerHTML = "<p class='text-red-500 text-center'>પેજ મળ્યું નથી.</p>";
-                }
-            } catch (err) {
-                console.error("પેજ કન્ટેન્ટ લોડ કરવામાં ભૂલ:", err);
-                contentDiv.innerHTML = "<p class='text-red-500 text-center'>કન્ટેન્ટ લોડ કરવામાં સમસ્યા આવી.</p>";
-            }
-        }
-
+        // પ્રોસેસ શરૂ કરવા માટે
         verifyAndLoad();
     </script>
 </body>
