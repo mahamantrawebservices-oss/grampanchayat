@@ -1,23 +1,23 @@
 {
-  "name": "ગ્રામ પંચાયત ડિજિટલ પોર્ટલ",
-  "short_name": "ગ્રામ પંચાયત",
-  "description": "ડિજિટલ ગ્રામ પંચાયત અને સરપંચ એડમિન પોર્ટલ",
-  "start_url": "index.html",
+  "name": "સરપંચ ડિજિટલ પોર્ટલ",
+  "short_name": "સરપંચ પોર્ટલ",
+  "description": "ગ્રામ પંચાયત સરપંચ અને એડમિન ડેશબોર્ડ પોર્ટલ",
+  "start_url": "sarpanch.html",
   "scope": "./",
   "display": "standalone",
   "background_color": "#065f46",
   "theme_color": "#065f46",
   "icons": [
     {
-      "src": "logo.png",
+      "src": "logo.jpg",
       "sizes": "192x192",
-      "type": "image/png",
+      "type": "image/jpeg",
       "purpose": "any maskable"
     },
     {
-      "src": "logo.png",
+      "src": "logo.jpg",
       "sizes": "512x512",
-      "type": "image/png",
+      "type": "image/jpeg",
       "purpose": "any maskable"
     }
   ]
