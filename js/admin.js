@@ -2601,4 +2601,23 @@ async function loadSubscriptionDetails() {
     }
 }
 
+// 📋 સપોર્ટ ઈમેઈલ કૉપી કરવાનું બટન લોજિક
+document.getElementById("copy-email-btn")?.addEventListener("click", () => {
+    const emailText = document.getElementById("sub-support-email").innerText.trim();
+    const copyEmailBtn = document.getElementById("copy-email-btn");
 
+    navigator.clipboard.writeText(emailText).then(() => {
+        copyEmailBtn.innerHTML = `<i class="fa-solid fa-check"></i> કૉપી થઈ ગયું!`;
+        copyEmailBtn.classList.remove("bg-blue-600", "hover:bg-blue-700");
+        copyEmailBtn.classList.add("bg-emerald-600");
+
+        setTimeout(() => {
+            copyEmailBtn.innerHTML = `<i class="fa-solid fa-copy"></i> કૉપી કરો`;
+            copyEmailBtn.classList.remove("bg-emerald-600");
+            copyEmailBtn.classList.add("bg-blue-600", "hover:bg-blue-700");
+        }, 2000);
+    }).catch(err => {
+        console.error("Email copy failed", err);
+        alert("ઈમેઈલ કૉપી કરવામાં નિષ્ફળતા.");
+    });
+});
