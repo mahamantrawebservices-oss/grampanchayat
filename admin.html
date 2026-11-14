@@ -118,6 +118,12 @@
     <i id="taluka-bell-icon" class="fa-solid fa-bell text-sm text-red-600 animate-bounce"></i>
     <span>તાલુકા માહિતી ફોર્મ</span>
 </button>
+
+<!-- Subscription Renewal Button -->
+<button id="open-subscription-btn" class="bg-amber-500 hover:bg-amber-600 text-white font-bold px-3 py-1.5 rounded-lg text-xs shadow transition flex items-center gap-1">
+    <i class="fa-solid fa-rotate"></i> Subscription Renewal
+</button>
+
             
             <button id="logout-btn" class="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1.5 rounded transition font-bold">લોગઆઉટ</button>
         </header>
@@ -853,6 +859,49 @@
         </div>
     </div>
 </div>
+
+
+<!-- 💳 Subscription Renewal Modal -->
+<div id="subscription-modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-emerald-100 text-sm">
+        <div class="flex justify-between items-center border-b pb-2">
+            <h3 class="font-bold text-emerald-900 text-base flex items-center gap-2">
+                <i class="fa-solid fa-file-invoice-dollar text-emerald-600"></i> સબ્સ્ક્રિપ્શન રિન્યુઅલ
+            </h3>
+            <button type="button" id="close-subscription-modal" class="text-gray-500 hover:text-red-600 font-bold text-base">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="space-y-3 text-gray-700">
+            <p><b>સબ્સ્ક્રિપ્શન સમાપ્તિ તારીખ (Expiry Date):</b> <span id="sub-expiry-date" class="text-red-600 font-bold">-</span></p>
+            
+            <div class="bg-amber-50 border border-amber-200 p-3 rounded-xl text-xs space-y-1">
+                <p class="font-bold text-amber-900">ચુકવણી સૂચના:</p>
+                <p>નીચેના QR કોડને સ્કેન કરીને દર્શાવેલ રકમ ભરીને આપણું સબ્સ્ક્રિપ્શન renew કરો.</p>
+            </div>
+
+            <!-- QR Code & Amount Container -->
+            <div class="text-center space-y-2 bg-slate-50 p-3 rounded-xl border">
+                <p class="font-bold text-emerald-900">ભરવાપાત્ર રકમ (Payable Amount): <span id="sub-payable-amount" class="text-emerald-700 text-base">₹0</span></p>
+                <div class="w-40 h-40 mx-auto bg-white p-2 rounded-lg border shadow-sm flex items-center justify-center">
+                    <img id="sub-qr-img" src="" alt="QR Code" class="w-full h-full object-contain hidden"/>
+                    <span id="sub-qr-placeholder" class="text-xs text-gray-400">QR કોડ ઉપલબ્ધ નથી</span>
+                </div>
+            </div>
+
+            <div class="bg-blue-50 border border-blue-200 p-3 rounded-xl text-[11px] text-blue-950 space-y-1">
+                <p><b>નોંધ:</b> પેમેન્ટ કર્યા બાદ નીચે આપેલ સંપર્ક ઈમેઈલ આઈડી પર પોતાનો ટ્રાન્ઝેક્શન આઈડી (Transaction ID) સહિતનો સ્ક્રીનશોટ મોકલી આપો. ૨૪ કલાકમાં આપને કન્ફર્મેશન આપવામાં આવશે.</p>
+                <p class="pt-1 font-bold">સંપર્ક ઈમેઈલ: <span id="sub-support-email" class="text-blue-700">support@mahamantra.com</span></p>
+            </div>
+        </div>
+
+        <button type="button" id="close-sub-btn" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-bold py-2.5 rounded-xl text-xs transition">
+            બંધ કરો (OK)
+        </button>
+    </div>
+</div>
+
     
 </body>
 </html>
