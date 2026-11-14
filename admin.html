@@ -896,12 +896,17 @@
                     <span id="sub-qr-placeholder" class="text-xs text-gray-400">QR કોડ ઉપલબ્ધ નથી</span>
                 </div>
             </div>
-
-            <div class="bg-blue-50 border border-blue-200 p-3 rounded-xl text-[11px] text-blue-950 space-y-1">
+<div class="bg-blue-50 border border-blue-200 p-3 rounded-xl text-[11px] text-blue-950 space-y-1">
                 <p><b>નોંધ:</b> પેમેન્ટ કર્યા બાદ નીચે આપેલ સંપર્ક ઈમેઈલ આઈડી પર પોતાનો ટ્રાન્ઝેક્શન આઈડી (Transaction ID) સહિતનો સ્ક્રીનશોટ મોકલી આપો. ૨૪ કલાકમાં આપને કન્ફર્મેશન આપવામાં આવશે.</p>
-                <p class="pt-1 font-bold">સંપર્ક ઈમેઈલ: <span id="sub-support-email" class="text-blue-700">support@mahamantra.com</span></p>
+                
+                <!-- 📋 ઈમેઈલ આઈડી અને કૉપી બટન -->
+                <div class="flex items-center justify-between pt-1 font-bold">
+                    <span>સંપર્ક ઈમેઈલ: <span id="sub-support-email" class="text-blue-700 select-all">support@mahamantra.com</span></span>
+                    <button type="button" id="copy-email-btn" class="bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold px-2.5 py-1 rounded-md shadow transition flex items-center gap-1">
+                        <i class="fa-solid fa-copy"></i> કૉપી કરો
+                    </button>
+                </div>
             </div>
-        </div>
 
         <button type="button" id="close-sub-btn" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-bold py-2.5 rounded-xl text-xs transition">
             બંધ કરો (OK)
