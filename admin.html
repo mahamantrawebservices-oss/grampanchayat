@@ -671,7 +671,7 @@
                 </div>
             </div>
 
-            <!--સેક્શન ૧૫: ડાઉનલોડ્સ અને ફોર્મ્સ મેનેજર -->
+<!--સેક્શન ૧૫: ડાઉનલોડ્સ અને ફોર્મ્સ મેનેજર -->
 <div class="bg-white p-5 rounded-2xl shadow-md border space-y-6 md:col-span-2 lg:col-span-3">
     <h3 class="font-bold text-sm text-emerald-800 flex items-center gap-2 border-b pb-2">
         <i class="fa-solid fa-download text-emerald-600"></i>૧૫. ડાઉનલોડ્સ અને ફોર્મ્સ પેજ મેનેજ કરો
@@ -685,7 +685,10 @@
 
         <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
             <h4 class="font-bold text-gray-800 border-b pb-1">૨. ડાઉનલોડ ફાઇલો ઉમેરો / એડિટ કરો</h4>
-            <div id="download-rows" class="space-y-3"></div>
+            
+            <!-- 👇 અહીં max-h-[320px] અને overflow-y-auto ઉમેર્યું છે જેથી ૫ ફાઇલો પછી સ્ક્રોલ થાય -->
+            <div id="download-rows" class="space-y-3 max-h-[320px] overflow-y-auto pr-1"></div>
+            
             <button type="button" onclick="addDownloadRow()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-[11px] font-bold transition">+ નવી PDF ફાઇલ ઉમેરો</button>
         </div>
 
