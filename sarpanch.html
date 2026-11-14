@@ -8,6 +8,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- jsPDF & autoTable for PDF Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <!-- PWA Manifest Link -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#065f46">
@@ -35,7 +38,7 @@
             <form id="sarpanch-login-form" class="space-y-3 text-left">
                 <div>
                     <label class="block text-xs font-bold text-gray-700 mb-1">LGD કોડ / પંચાયત ID</label>
-                    <input type="text" id="login-lgd-code" placeholder="દા.ત. 123456" required class="w-full border p-2.5 rounded text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                    <input type="text" id="login-lgd" placeholder="દા.ત. 500000" required class="w-full border p-2.5 rounded text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-gray-700 mb-1">પાસવર્ડ</label>
@@ -70,13 +73,12 @@
             </button>
         </header>
 
-        <!-- Main Sections Container (Only 3 Requested Sections) -->
+        <!-- Main Sections Container -->
         <main class="flex-1 p-4 max-w-4xl mx-auto w-full space-y-6">
             
-            <!-- Hidden input for editing posts -->
             <input type="hidden" id="edit-post-id" value="">
 
-            <!-- ૨. નવી પોસ્ટ / નોટિસ મૂકો (સ્ક્રીનશોટ સરપંચ૨ મુજબ) -->
+            <!-- ૨. નવી પોસ્ટ / નોટિસ મૂકો -->
             <div class="bg-blue-50/80 border border-blue-200 p-5 rounded-xl shadow-sm space-y-4">
                 <h3 class="font-bold border-b border-blue-300 pb-2 text-blue-950 text-sm">૨. નવી પોસ્ટ / નોટિસ મૂકો</h3>
                 
@@ -96,18 +98,18 @@
                 </form>
             </div>
 
-            <!-- ૧. તાજી પોસ્ટ્સ અને ન્યૂઝ મેનેજ કરો 📢 (સ્ક્રીનશોટ સરપંચ૧ મુજબ) -->
+            <!-- ૧. તાજી પોસ્ટ્સ અને ન્યૂઝ મેનેજ કરો 📢 -->
             <div class="bg-blue-50/80 border border-blue-200 p-5 rounded-xl shadow-sm space-y-4">
                 <h3 class="font-bold border-b border-blue-300 pb-2 text-blue-950 text-sm">૧. તાજી પોસ્ટ્સ અને ન્યૂઝ મેનેજ કરો 📢</h3>
                 <div class="space-y-2">
                     <span class="text-xs font-bold text-gray-700">હાલની તમામ નોટિસો / પોસ્ટ્સ:</span>
-                    <div id="sarpanch-posts-list" class="space-y-2 max-h-72 overflow-y-auto pr-1">
+                    <div id="admin-notices-list" class="space-y-2 max-h-72 overflow-y-auto pr-1">
                         <p class="text-xs text-gray-500">લોડ થઈ રહ્યું છે...</p>
                     </div>
                 </div>
             </div>
 
-            <!-- ૫. આવેલ ફરિયાદો અને સ્ટેટસ મેનેજર (સ્ક્રીનશોટ સરપંચ૩ મુજબ) -->
+            <!-- ૫. આવેલ ફરિયાદો અને સ્ટેટસ મેનેજર -->
             <div class="bg-emerald-50/80 border border-emerald-200 p-5 rounded-xl shadow-sm space-y-4">
                 <h3 class="font-bold border-b border-emerald-300 pb-2 text-emerald-950 text-sm">૫. આવેલ ફરિયાદો અને સ્ટેટસ મેનેજર</h3>
                 
@@ -115,34 +117,32 @@
                 <div class="bg-white p-3 rounded-xl border border-emerald-200 flex flex-wrap items-center justify-between gap-3 text-xs">
                     <div class="flex items-center gap-2 flex-1">
                         <span class="font-bold text-gray-700">🌐 વેબસાઇટ પર ફરિયાદ વિભાગ સેટિંગ્સ:</span>
-                        <select id="complaint-status-setting" class="border border-emerald-300 p-1.5 rounded bg-white font-medium">
-                            <option value="show">ચાલુ રાખવું (Show)</option>
-                            <option value="hide">બંધ રાખવું (Hide)</option>
+                        <select id="complaint-section-status" class="border border-emerald-300 p-1.5 rounded bg-white font-medium">
+                            <option value="true">ચાલુ રાખવો (Show)</option>
+                            <option value="false">બંધ રાખવો (Hide)</option>
                         </select>
-                        <input type="number" id="complaint-limit-setting" value="3" class="border border-emerald-300 p-1.5 rounded w-16 text-center font-medium">
+                        <input type="number" id="complaint-daily-limit" value="50" class="border border-emerald-300 p-1.5 rounded w-16 text-center font-medium">
                     </div>
-                    <button onclick="saveComplaintSettings()" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-3 py-1.5 rounded shadow transition">સેવ કરો</button>
+                    <button type="button" id="save-config-btn" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-3 py-1.5 rounded shadow transition">સેવ કરો</button>
                 </div>
 
                 <!-- ફિલ્ટર અને PDF બટન -->
                 <div class="flex flex-wrap items-center justify-between gap-2">
-                    <select id="complaint-filter-cat" onchange="loadSarpanchComplaints()" class="border border-emerald-300 p-2 rounded text-xs bg-white font-medium">
-                        <option value="all">તમામ ફરિયાદો</option>
-                        <option value="પીવાના પાણી સંબંધિત">પીવાના પાણી સંબંધિત</option>
-                        <option value="ગટર સંબંધિત">ગટર સંબંધિત</option>
-                        <option value="સ્ટ્રીટ લાઈટ સંબંધિત">સ્ટ્રીટ લાઈટ સંબંધિત</option>
-                        <option value="અન્ય">અન્ય</option>
+                    <select id="admin-complaint-filter" class="border border-emerald-300 p-2 rounded text-xs bg-white font-medium">
+                        <option value="ALL">તમામ ફરિયાદો</option>
+                        <option value="PENDING">ફક્ત પેન્ડિંગ</option>
+                        <option value="RESOLVED">નિવારણ થયેલ (Resolved)</option>
                     </select>
                     <div class="flex items-center gap-2">
-                        <input type="date" id="complaint-filter-date" onchange="loadSarpanchComplaints()" class="border border-emerald-300 p-1.5 rounded text-xs bg-white">
-                        <button onclick="downloadComplaintsPDF()" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-3 py-1.5 rounded shadow flex items-center gap-1">
-                            <i class="fa-solid fa-file-pdf"></i> PDF
+                        <input type="month" id="report-month-select" class="border border-emerald-300 p-1.5 rounded text-xs bg-white">
+                        <button type="button" id="download-pdf-btn" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-3 py-1.5 rounded shadow flex items-center gap-1">
+                            <i class="fa-solid fa-file-pdf"></i> PDF ડાઉનલોડ
                         </button>
                     </div>
                 </div>
 
                 <!-- ફરિયાદોની યાદી -->
-                <div id="sarpanch-complaints-list" class="space-y-3 max-h-[450px] overflow-y-auto pr-1">
+                <div id="admin-complaint-list" class="space-y-3 max-h-[450px] overflow-y-auto pr-1">
                     <p class="text-xs text-gray-500">ફરિયાદો લોડ થઈ રહી છે...</p>
                 </div>
             </div>
@@ -152,8 +152,8 @@
 
     <!-- Firebase Scripts Setup -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCMhWWI_6oxPIVEQEVlq2SIBf72EI2o8NI",
@@ -228,7 +228,7 @@
 
         document.getElementById("sarpanch-login-form")?.addEventListener("submit", async (e) => {
             e.preventDefault();
-            const inputCode = document.getElementById("login-lgd-code").value.trim();
+            const inputCode = document.getElementById("login-lgd").value.trim();
             const password = document.getElementById("login-password").value.trim();
 
             try {
@@ -276,186 +276,246 @@
                 }
             } catch (e) {}
 
-            loadSarpanchPosts();
-            loadSarpanchComplaints();
-            loadComplaintSettings();
+            loadNotices();
+            loadAdminComplaints();
+            loadComplaintConfig();
         }
 
-        // ૧ & ૨. પોસ્ટ્સ અને નોટિસ મેનેજમેન્ટ (એડિટ અને ડિલીટ સાથે)
-        async function loadSarpanchPosts() {
-            const container = document.getElementById("sarpanch-posts-list");
-            try {
-                const snap = await getDocs(getPanchayatCol("news_posts"));
+        // ૧ & ૨. નોટિસ / પોસ્ટ્સ મેનેજમેન્ટ
+        let noticesCache = {};
+        function loadNotices() {
+            const container = document.getElementById("admin-notices-list");
+            if (!container || !lgdCode) return;
+
+            getDocs(getPanchayatCol("notices")).then(snapshot => {
                 container.innerHTML = "";
-                if (snap.empty) {
-                    container.innerHTML = `<p class="text-xs text-gray-500">કોઈ પોસ્ટ ઉપલબ્ધ નથી.</p>`;
+                noticesCache = {};
+                if (snapshot.empty) {
+                    container.innerHTML = `<p class="text-xs text-gray-500 p-2">કોઈ નોટિસ ઉપલબ્ધ નથી.</p>`;
                     return;
                 }
-                snap.forEach(d => {
-                    const item = d.data();
+                snapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    const id = docSnap.id;
+                    noticesCache[id] = data;
+
                     container.innerHTML += `
                         <div class="bg-white p-3 border border-blue-100 rounded-lg shadow-sm flex justify-between items-start gap-2 text-xs">
                             <div>
-                                <h4 class="font-bold text-gray-900">${item.title || '-'}</h4>
-                                <p class="text-gray-600 mt-0.5">${item.description || ''}</p>
+                                <h4 class="font-bold text-gray-900">${data.title || '-'}</h4>
+                                <p class="text-gray-600 mt-0.5">${data.desc || ''}</p>
                             </div>
                             <div class="flex gap-1 shrink-0">
-                                <button type="button" onclick="editPost('${d.id}', '${encodeURIComponent(item.title || '')}', '${encodeURIComponent(item.description || '')}')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-2 py-1 rounded shadow">એડિટ</button>
-                                <button type="button" onclick="deletePost('${d.id}')" class="bg-red-500 hover:bg-red-600 text-white font-bold px-2 py-1 rounded shadow">ડિલીટ</button>
+                                <button type="button" onclick="editNotice('${id}')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-2 py-1 rounded shadow">એડિટ</button>
+                                <button type="button" onclick="deleteNotice('${id}')" class="bg-red-500 hover:bg-red-600 text-white font-bold px-2 py-1 rounded shadow">ડિલીટ</button>
                             </div>
                         </div>
                     `;
                 });
-            } catch (err) {
-                container.innerHTML = `<p class="text-xs text-red-500">પોસ્ટ લોડ કરવામાં એરર.</p>`;
-            }
+            });
         }
 
         document.getElementById("sarpanch-add-post-form")?.addEventListener("submit", async (e) => {
             e.preventDefault();
-            const editId = document.getElementById("edit-post-id").value.trim();
+            const editId = document.getElementById("edit-post-id").value;
             const title = document.getElementById("post-title").value.trim();
-            const description = document.getElementById("post-desc").value.trim();
+            const desc = document.getElementById("post-desc").value.trim();
 
-            try {
-                if (editId) {
-                    await updateDoc(getPanchayatDoc("news_posts", editId), { title, description, updatedAt: new Date() });
-                    alert("✅ પોસ્ટ સફળતાપૂર્વક અપડેટ થઈ ગઈ!");
-                } else {
-                    await addDoc(getPanchayatCol("news_posts"), { title, description, createdAt: new Date() });
-                    alert("✅ પોસ્ટ સફળતાપૂર્વક પબ્લિશ થઈ ગઈ!");
-                }
-                document.getElementById("post-cancel-btn")?.click();
-                loadSarpanchPosts();
-            } catch (err) {
-                alert("એરર: " + err.message);
+            if (editId) {
+                await updateDoc(getPanchayatDoc("notices", editId), { title, desc, updatedAt: new Date() });
+                alert("✅ નોટિસ સફળતાપૂર્વક અપડેટ થઈ ગઈ!");
+            } else {
+                await addDoc(getPanchayatCol("notices"), { title, desc, createdAt: new Date() });
+                alert("✅ નોટિસ સફળતાપૂર્વક પબ્લિશ થઈ ગઈ!");
             }
+            document.getElementById("sarpanch-add-post-form").reset();
+            document.getElementById("edit-post-id").value = "";
+            document.getElementById("post-cancel-btn").classList.add("hidden");
+            document.getElementById("post-submit-btn").innerText = "નોટિસ પોસ્ટ કરો";
+            loadNotices();
         });
 
-        window.editPost = function(id, titleEnc, descEnc) {
-            document.getElementById("edit-post-id").value = id;
-            document.getElementById("post-title").value = decodeURIComponent(titleEnc);
-            document.getElementById("post-desc").value = decodeURIComponent(descEnc);
-
-            const submitBtn = document.getElementById("post-submit-btn");
-            submitBtn.textContent = "અપડેટ કરો";
-            submitBtn.className = "bg-amber-600 hover:bg-amber-700 text-white font-bold px-4 py-2 rounded text-xs shadow transition";
-            document.getElementById("post-cancel-btn")?.classList.remove("hidden");
-            document.getElementById("sarpanch-add-post-form")?.scrollIntoView({ behavior: 'smooth' });
+        window.editNotice = (id) => {
+            const data = noticesCache[id];
+            if (!data) return;
+            document.getElementById('edit-post-id').value = id;
+            document.getElementById('post-title').value = data.title || "";
+            document.getElementById('post-desc').value = data.desc || "";
+            document.getElementById('post-submit-btn').innerText = "અપડેટ કરો";
+            document.getElementById('post-cancel-btn').classList.remove('hidden');
+            document.getElementById('sarpanch-add-post-form').scrollIntoView({ behavior: 'smooth' });
         };
 
         document.getElementById("post-cancel-btn")?.addEventListener("click", () => {
             document.getElementById("sarpanch-add-post-form").reset();
             document.getElementById("edit-post-id").value = "";
-            const submitBtn = document.getElementById("post-submit-btn");
-            submitBtn.textContent = "નોટિસ પોસ્ટ કરો";
-            submitBtn.className = "bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded text-xs shadow transition";
-            document.getElementById("post-cancel-btn")?.classList.add("hidden");
+            document.getElementById("post-submit-btn").innerText = "નોટિસ પોસ્ટ કરો";
+            document.getElementById("post-cancel-btn").classList.add("hidden");
         });
 
-        window.deletePost = async function(id) {
-            if (confirm("શું તમે આ પોસ્ટ ડિલીટ કરવા માંગો છો?")) {
-                await deleteDoc(getPanchayatDoc("news_posts", id));
-                loadSarpanchPosts();
+        window.deleteNotice = async (id) => {
+            if (confirm("શું તમે આ નોટિસ ડિલીટ કરવા માંગો છો?")) {
+                await deleteDoc(getPanchayatDoc("notices", id));
+                loadNotices();
             }
         };
 
         // ૫. આવેલ ફરિયાદો અને સ્ટેટસ મેનેજર
-        async function loadComplaintSettings() {
+        async function loadComplaintConfig() {
+            if (!lgdCode) return;
             try {
-                const snap = await getDoc(doc(db, "panchayats", lgdCode, "settings", "complaints"));
+                const snap = await getDoc(getPanchayatDoc("settings", "complaint_config"));
                 if (snap.exists()) {
                     const data = snap.data();
-                    document.getElementById("complaint-status-setting").value = data.status || "show";
-                    document.getElementById("complaint-limit-setting").value = data.limit || 3;
+                    if (document.getElementById("complaint-section-status")) {
+                        document.getElementById("complaint-section-status").value = data.isEnabled !== false ? "true" : "false";
+                    }
+                    if (document.getElementById("complaint-daily-limit")) {
+                        document.getElementById("complaint-daily-limit").value = data.dailyLimit || 50;
+                    }
                 }
             } catch (e) {}
         }
 
-        window.saveComplaintSettings = async function() {
-            const status = document.getElementById("complaint-status-setting").value;
-            const limit = parseInt(document.getElementById("complaint-limit-setting").value) || 3;
+        document.getElementById("save-config-btn")?.addEventListener("click", async () => {
+            if (!lgdCode) return;
+            const isEnabled = document.getElementById("complaint-section-status").value === "true";
+            const dailyLimit = parseInt(document.getElementById("complaint-daily-limit").value) || 50;
             try {
-                await setDoc(doc(db, "panchayats", lgdCode, "settings", "complaints"), { status, limit }, { merge: true });
+                await setDoc(getPanchayatDoc("settings", "complaint_config"), { isEnabled, dailyLimit, updatedAt: new Date() }, { merge: true });
                 alert("✅ ફરિયાદ વિભાગ સેટિંગ્સ સેવ થઈ ગયા!");
             } catch (err) {
                 alert("એરર: " + err.message);
             }
-        };
+        });
 
-        async function loadSarpanchComplaints() {
-            const container = document.getElementById("sarpanch-complaints-list");
-            const filterCat = document.getElementById("complaint-filter-cat").value;
-            const filterDate = document.getElementById("complaint-filter-date").value;
+        async function loadAdminComplaints() {
+            if (!lgdCode) return;
+            const container = document.getElementById("admin-complaint-list");
+            const filter = document.getElementById("admin-complaint-filter")?.value || "ALL";
+            if (!container) return;
 
             try {
                 const snap = await getDocs(getPanchayatCol("complaints"));
                 container.innerHTML = "";
+                
                 if (snap.empty) {
-                    container.innerHTML = `<p class="text-xs text-gray-500">કોઈ ફરિયાદ આવેલ નથી.</p>`;
+                    container.innerHTML = `<p class="text-xs text-gray-500 p-2">કોઈ ફરિયાદ મળેલી નથી.</p>`;
                     return;
                 }
 
                 let count = 0;
                 snap.forEach(d => {
                     const item = d.data();
-                    if (filterCat !== "all" && item.category !== filterCat) return;
+                    const status = item.status || "ફરિયાદ પેન્ડિંગ રાખવામા આવેલ છે";
+                    
+                    const isPending = status.includes("પેન્ડિંગ") || status.includes("કામ ચાલી");
+                    const isResolved = status.includes("નિવારણ થઈ ગયું") || status.includes("Resolved");
+
+                    if (filter === "PENDING" && !isPending) return;
+                    if (filter === "RESOLVED" && !isResolved) return;
 
                     count++;
-                    const status = item.status || "Pending";
-                    
                     container.innerHTML += `
-                        <div class="bg-white p-3 border border-emerald-200 rounded-xl shadow-sm text-xs space-y-2">
-                            <div class="flex justify-between items-center border-b pb-1.5">
-                                <span class="font-bold text-gray-900">ટોકન: ${item.token || 'GP-' + d.id.slice(0,6)} | નામ: ${item.citizenName || 'નાગરિક'} (મો.: ${item.mobile || '-'})</span>
-                                <span class="bg-blue-100 text-blue-900 px-2 py-0.5 rounded font-bold text-[11px]">${item.category || 'સામાન્ય'}</span>
+                        <div class="bg-white p-3 border border-emerald-200 rounded-xl shadow-sm text-xs space-y-2 mb-2">
+                            <div class="flex justify-between font-bold border-b pb-1">
+                                <span>ટોકન: <span class="text-emerald-700">${item.token || 'N/A'}</span> | નામ: ${item.name || 'અનામી'} (મો: ${item.mobile || '-'})</span>
+                                <span class="bg-blue-50 text-blue-800 px-2 py-0.5 rounded">${item.type || 'સામાન્ય'}</span>
                             </div>
-                            <div>
-                                <span class="text-gray-500 font-medium">વિસ્તાર/ફળિયું:</span> <b>${item.area || '-'}</b><br>
-                                <span class="text-gray-500 font-medium">વિગત:</span> <span class="text-gray-800">${item.complaintText || '-'}</span>
-                            </div>
-                            <div class="flex items-center justify-between pt-1 border-t">
-                                <div class="flex items-center gap-2">
-                                    <span class="font-bold text-gray-700">સ્ટેટસ બદલો:</span>
-                                    <select onchange="updateComplaintStatus('${d.id}', this.value)" class="border border-emerald-300 p-1 rounded bg-white font-medium text-xs">
-                                        <option value="Pending" ${status === 'Pending' ? 'selected' : ''}>હાલનું: Pending</option>
-                                        <option value="In Progress" ${status === 'In Progress' ? 'selected' : ''}>હાલનું: પ્રક્રિયામાં છે</option>
-                                        <option value="Resolved" ${status === 'Resolved' ? 'selected' : ''}>હાલનું: ફરિયાદ નિવારણ થઈ ગયું છે</option>
-                                    </select>
-                                </div>
-                                <button onclick="deleteComplaint('${d.id}')" class="bg-red-500 hover:bg-red-600 text-white font-bold px-2.5 py-1 rounded">ડિલીટ</button>
+                            <p><b>વિસ્તાર/ફળિયું:</b> ${item.area || '-'}</p>
+                            <p class="text-gray-700"><b>વિગત:</b> ${item.details || item.msg || ''}</p>
+                            <div class="flex items-center gap-2 pt-1 border-t">
+                                <label class="font-bold text-gray-700">સ્ટેટસ બદલો:</label>
+                                <select onchange="updateComplaintStatus('${d.id}', this.value)" class="border border-emerald-300 p-1 rounded bg-amber-50 text-[11px] font-bold flex-1 focus:outline-none">
+                                    <option value="${status}" selected>હાલનું: ${status}</option>
+                                    <option value="ફરિયાદ પર કામ ચાલી રહ્યું છે">ફરિયાદ પર કામ ચાલી રહ્યું છે</option>
+                                    <option value="ફરિયાદ નિવારણ થઈ ગયું છે">ફરિયાદ નિવારણ થઈ ગયું છે</option>
+                                    <option value="ફરિયાદ પેન્ડિંગ રાખવામા આવેલ છે">ફરિયાદ પેન્ડિંગ રાખવામા આવેલ છે</option>
+                                    <option value="ફરિયાદ અયોગ્ય હોય રદ કરવામાં આવેલ છે">ફરિયાદ અયોગ્ય હોય રદ કરવામાં આવેલ છે</option>
+                                </select>
                             </div>
                         </div>
                     `;
                 });
 
                 if (count === 0) {
-                    container.innerHTML = `<p class="text-xs text-gray-500">આ ફિલ્ટર મુજબ કોઈ ફરિયાદ નથી.</p>`;
+                    container.innerHTML = `<p class="text-xs text-gray-500 p-2">આ ફિલ્ટર મુજબ કોઈ ફરિયાદ નથી.</p>`;
                 }
             } catch (err) {
                 container.innerHTML = `<p class="text-xs text-red-500">ફરિયાદો લોડ કરવામાં એરર.</p>`;
             }
         }
 
-        window.updateComplaintStatus = async function(id, newStatus) {
+        window.updateComplaintStatus = async (id, status) => {
+            if (!lgdCode) return;
             try {
-                await updateDoc(getPanchayatDoc("complaints", id), { status: newStatus });
-                loadSarpanchComplaints();
+                await updateDoc(getPanchayatDoc("complaints", id), { status, updatedAt: new Date() });
+                alert("✅ ફરિયાદનું સ્ટેટસ સફળતાપૂર્વક અપડેટ થઈ ગયું!");
+                loadAdminComplaints();
             } catch (err) {
-                alert("સ્ટેટસ અપડેટ કરવામાં ભૂલ: " + err.message);
+                alert("સ્ટેટસ અપડેટ કરવામાં ભૂલ આવી.");
             }
         };
 
-        window.deleteComplaint = async function(id) {
-            if (confirm("શું આ ફરિયાદ ડિલીટ કરવી છે?")) {
-                await deleteDoc(getPanchayatDoc("complaints", id));
-                loadSarpanchComplaints();
-            }
-        };
+        document.getElementById("admin-complaint-filter")?.addEventListener("change", loadAdminComplaints);
 
-        window.downloadComplaintsPDF = function() {
-            window.print();
-        };
+        // માત્ર ફરિયાદ સેક્શનની જ PDF ડાઉનલોડ કરવા માટે (மહિનો સિલેક્ટ કરીને)
+        document.getElementById("download-pdf-btn")?.addEventListener("click", async () => {
+            const monthVal = document.getElementById("report-month-select")?.value;
+            if (!monthVal) {
+                alert("⚠️ કૃપા કરીને પહેલા મહિનો (Month) પસંદ કરો!");
+                return;
+            }
+
+            try {
+                const snap = await getDocs(getPanchayatCol("complaints"));
+                let filteredComplaints = [];
+
+                snap.forEach(d => {
+                    const item = d.data();
+                    if (item.createdAt && item.createdAt.toDate) {
+                        const cDate = item.createdAt.toDate();
+                        const cMonthStr = cDate.toISOString().slice(0, 7);
+                        if (cMonthStr === monthVal) {
+                            filteredComplaints.push(item);
+                        }
+                    }
+                });
+
+                if (filteredComplaints.length === 0) {
+                    alert("⚠️ પસંદ કરેલ મહિનામાં કોઈ ફરિયાદ મળી નથી.");
+                    return;
+                }
+
+                const { jsPDF } = window.jspdf;
+                const docPdf = new jsPDF();
+
+                docPdf.setFont("helvetica", "bold");
+                docPdf.setFontSize(14);
+                docPdf.text(`Gram Panchayat Complaint Report (${monthVal})`, 14, 15);
+
+                const tableData = filteredComplaints.map(c => [
+                    c.token || '-',
+                    c.name || '-',
+                    c.mobile || '-',
+                    c.type || '-',
+                    c.details || '-',
+                    c.status || 'Pending'
+                ]);
+
+                docPdf.autoTable({
+                    startY: 20,
+                    head: [['Token', 'Name', 'Mobile', 'Type', 'Details', 'Status']],
+                    body: tableData,
+                    styles: { fontSize: 8 }
+                });
+
+                docPdf.save(`Complaint_Report_${monthVal}.pdf`);
+            } catch (err) {
+                console.error("PDF generation error:", err);
+                alert("PDF ડાઉનલોડ કરવામાં ભૂલ આવી.");
+            }
+        });
 
         checkAuth();
     </script>
