@@ -1447,6 +1447,22 @@ window.editCustomBtn = (id) => {
     document.getElementById("add-page-button-form")?.scrollIntoView({ behavior: 'smooth' });
 };
 
+// 🌟 ઉમેરેલું ડિલીટ ફંક્શન (જેથી ડિલીટ બટન પરફેક્ટ કામ કરે)
+window.deleteCustomBtn = async (id) => {
+    if (!confirm("શું તમે આ કસ્ટમ બટન / સેવા કાયમી ધોરણે ડિલીટ કરવા માંગો છો?")) {
+        return;
+    }
+
+    try {
+        await deleteDoc(getPanchayatDoc("custom_pages", id));
+        alert("✅ કસ્ટમ બટન સફળતાપૂર્વક ડિલીટ થઈ ગયું!");
+        loadAdminCustomButtons();
+    } catch (err) {
+        console.error("Delete Custom Button Error:", err);
+        alert("❌ ડિલીટ કરવામાં ટેકનિકલ ભૂલ આવી: " + err.message);
+    }
+};
+
 document.getElementById("custom-page-cancel-btn")?.addEventListener("click", () => {
     const form = document.getElementById("add-page-button-form");
     if (form) form.reset();
