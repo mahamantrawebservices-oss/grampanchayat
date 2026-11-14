@@ -4,12 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>સરપંચ પોર્ટલ - ગ્રામ પંચાયત</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- PWA Manifest & Theme Color -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#065f46">
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans min-h-screen flex flex-col">
 
-    <!-- સ્પ્લેશ સ્ક્રીન -->
+    <!-- 🌟 સ્પ્લેશ લોડિંગ સ્ક્રીન -->
     <div id="splash-screen" class="fixed inset-0 bg-emerald-900 flex flex-col items-center justify-center z-50 transition-opacity duration-700">
         <div id="splash-logo-container" class="w-20 h-20 mb-4 flex items-center justify-center bg-white rounded-full shadow-lg overflow-hidden p-1">
             <i class="fa-solid fa-landmark text-3xl text-emerald-800"></i>
@@ -18,7 +23,7 @@
         <p class="text-emerald-200 text-xs mt-1">લોડ થઈ રહ્યું છે...</p>
     </div>
 
-    <!-- લૉગિન મોડલ -->
+    <!-- 🌟 સરપંચ લૉગિન મોડલ -->
     <div id="sarpanch-login-modal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-40 p-4">
         <div class="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-sm text-center">
             <div id="login-logo-container" class="w-16 h-16 mx-auto mb-2 flex items-center justify-center bg-emerald-50 rounded-full border border-emerald-200 overflow-hidden">
@@ -45,7 +50,7 @@
         </div>
     </div>
 
-    <!-- મુખ્ય ડેશબોર્ડ -->
+    <!-- 🌟 સરપંચ ડેશબોર્ડ -->
     <div id="sarpanch-dashboard" class="hidden flex-1 flex flex-col">
         <header class="bg-emerald-900 text-white shadow-md py-3 px-4 flex justify-between items-center sticky top-0 z-30">
             <div class="flex items-center gap-2.5">
@@ -72,11 +77,11 @@
                     <input type="hidden" id="edit-notice-id" value="">
                     <div>
                         <label class="block text-xs font-bold text-gray-700 mb-1">નોટિસ / પોસ્ટનું શીર્ષક (Title)</label>
-                        <input type="text" id="notice-title" placeholder="દા.ત. ગ્રામસભા અંગે અગત્યની સૂચના" required class="w-full border border-gray-300 p-2 rounded text-xs focus:ring-1 focus:ring-blue-500">
+                        <input type="text" id="notice-title" placeholder="દા.ત. ગ્રામસભા અંગે અગત્યની સૂચના" required class="w-full border p-2 rounded text-xs focus:ring-1 focus:ring-blue-500">
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-gray-700 mb-1">વિગત (Description)</label>
-                        <textarea id="notice-desc" rows="3" placeholder="નોટિસ અંગેની સંપૂર્ણ માહિતી અહીં લખો..." required class="w-full border border-gray-300 p-2 rounded text-xs focus:ring-1 focus:ring-blue-500"></textarea>
+                        <textarea id="notice-desc" rows="3" placeholder="નોટિસ અંગેની સંપૂર્ણ માહિતી અહીં લખો..." required class="w-full border p-2 rounded text-xs focus:ring-1 focus:ring-blue-500"></textarea>
                     </div>
                     <div class="flex gap-2">
                         <button type="submit" id="notice-submit-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded text-xs shadow transition">નોટિસ પોસ્ટ કરો</button>
@@ -84,7 +89,6 @@
                     </div>
                 </form>
 
-                <!-- હાલની તમામ નોટિસોનું લિસ્ટ -->
                 <div class="space-y-2 pt-2">
                     <span class="text-xs font-bold text-gray-700">હાલની તમામ નોટિસો / પોસ્ટ્સ:</span>
                     <div id="sarpanch-notices-list" class="space-y-2 max-h-60 overflow-y-auto pr-1">
@@ -100,11 +104,11 @@
                     <input type="hidden" id="edit-post-id" value="">
                     <div>
                         <label class="block text-xs font-bold text-gray-700 mb-1">પોસ્ટ / ન્યૂઝનું શીર્ષક (Title)</label>
-                        <input type="text" id="post-title" placeholder="દા.ત. ગામમાં નવું પ્રાથમિક આરોગ્ય કેન્દ્ર મંજૂર" required class="w-full border border-gray-300 p-2 rounded text-xs focus:ring-1 focus:ring-emerald-500">
+                        <input type="text" id="post-title" placeholder="દા.ત. ગામમાં નવું પ્રાથમિક આરોગ્ય કેન્દ્ર મંજૂર" required class="w-full border p-2 rounded text-xs focus:ring-1 focus:ring-emerald-500">
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-gray-700 mb-1">વિગત (Description)</label>
-                        <textarea id="post-desc" rows="3" placeholder="પોસ્ટ અંગેની સંપૂર્ણ માહિતી લખો..." required class="w-full border border-gray-300 p-2 rounded text-xs focus:ring-1 focus:ring-emerald-500"></textarea>
+                        <textarea id="post-desc" rows="3" placeholder="પોસ્ટ અંગેની સંપૂર્ણ માહિતી લખો..." required class="w-full border p-2 rounded text-xs focus:ring-1 focus:ring-emerald-500"></textarea>
                     </div>
                     <div class="flex gap-2">
                         <button type="submit" id="post-submit-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded text-xs shadow transition">પોસ્ટ ઉમેરો</button>
@@ -120,11 +124,10 @@
                 </div>
             </div>
 
-            <!-- ૫. આવેલ ફરિયાદો અને સ્ટેટસ મેનેજર (ફક્ત ફિલ્ટર અને સ્ટેટસ સાથે) -->
+            <!-- ૫. આવેલ ફરિયાદો અને સ્ટેટસ મેનેજર -->
             <div class="bg-emerald-50/80 border border-emerald-200 p-5 rounded-xl shadow-sm space-y-4">
                 <h3 class="font-bold border-b border-emerald-300 pb-2 text-emerald-950 text-sm">૫. આવેલ ફરિયાદો અને સ્ટેટસ મેનેજર</h3>
                 
-                <!-- વેબસાઇટ પર ફરિયાદ વિભાગ સેટિંગ્સ -->
                 <div class="bg-white p-3 rounded-xl border border-emerald-200 flex flex-wrap items-center justify-between gap-3 text-xs">
                     <div class="flex items-center gap-2 flex-1">
                         <span class="font-bold text-gray-700">🌐 વેબસાઇટ પર ફરિયાદ વિભાગ સેટિંગ્સ:</span>
@@ -137,7 +140,6 @@
                     <button type="button" id="save-config-btn" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-3 py-1.5 rounded shadow transition">સેવ કરો</button>
                 </div>
 
-                <!-- ફક્ત ફિલ્ટર ડ્રોપડાઉન -->
                 <div class="flex items-center justify-between">
                     <select id="admin-complaint-filter" class="border border-emerald-300 p-2 rounded text-xs bg-white font-bold text-gray-700 focus:outline-none">
                         <option value="ALL">તમામ ફરિયાદો</option>
@@ -146,7 +148,6 @@
                     </select>
                 </div>
 
-                <!-- ફરિયાદોની યાદી -->
                 <div id="admin-complaint-list" class="space-y-3 max-h-[450px] overflow-y-auto pr-1">
                     <p class="text-xs text-gray-500">ફરિયાદો લોડ થઈ રહી છે...</p>
                 </div>
@@ -155,6 +156,7 @@
         </main>
     </div>
 
+    <!-- Firebase Scripts Setup -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, onSnapshot, getDocs, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -176,6 +178,7 @@
         function getCol(sub) { return collection(db, "panchayats", lgdCode, sub); }
         function getDocRef(sub, id) { return doc(db, "panchayats", lgdCode, sub, id); }
 
+        // લોગો ડાયનેમિક સેટ કરવા માટેનું ફંક્શન
         async function applyPanchayatLogo() {
             if (!lgdCode) return;
             try {
@@ -299,14 +302,21 @@
             const title = document.getElementById("notice-title").value.trim();
             const desc = document.getElementById("notice-desc").value.trim();
 
-            if (editId) {
-                await updateDoc(getDocRef("notices", editId), { title, desc, updatedAt: new Date() });
-                alert("✅ નોટિસ સફળતાપૂર્વક અપડેટ થઈ ગઈ!");
-            } else {
-                await addDoc(getCol("notices"), { title, desc, createdAt: new Date() });
-                alert("✅ નોટિસ સફળતાપૂર્વક પબ્લિશ થઈ ગઈ!");
+            try {
+                if (editId) {
+                    await updateDoc(getDocRef("notices", editId), { title, desc, updatedAt: new Date() });
+                    alert("✅ નોટિસ સફળતાપૂર્વક અપડેટ થઈ ગઈ!");
+                } else {
+                    await addDoc(getCol("notices"), { title, desc, createdAt: new Date() });
+                    alert("✅ નોટિસ સફળતાપૂર્વક પબ્લિશ થઈ ગઈ!");
+                }
+                document.getElementById("sarpanch-add-notice-form").reset();
+                document.getElementById("edit-notice-id").value = "";
+                document.getElementById("notice-submit-btn").innerText = "નોટિસ પોસ્ટ કરો";
+                document.getElementById("notice-cancel-btn").classList.add("hidden");
+            } catch (err) {
+                alert("એરર: " + err.message);
             }
-            document.getElementById("notice-cancel-btn")?.click();
         });
 
         window.editNotice = (id) => {
@@ -375,14 +385,21 @@
             const title = document.getElementById("post-title").value.trim();
             const desc = document.getElementById("post-desc").value.trim();
 
-            if (editId) {
-                await updateDoc(getDocRef("posts", editId), { title, desc, updatedAt: new Date() });
-                alert("✅ પોસ્ટ સફળતાપૂર્વક અપડેટ થઈ ગઈ!");
-            } else {
-                await addDoc(getCol("posts"), { title, desc, createdAt: new Date() });
-                alert("✅ પોસ્ટ સફળતાપૂર્વક ઉમેરાઈ ગઈ!");
+            try {
+                if (editId) {
+                    await updateDoc(getDocRef("posts", editId), { title, desc, updatedAt: new Date() });
+                    alert("✅ પોસ્ટ સફળતાપૂર્વક અપડેટ થઈ ગઈ!");
+                } else {
+                    await addDoc(getCol("posts"), { title, desc, createdAt: new Date() });
+                    alert("✅ પોસ્ટ સફળતાપૂર્વક ઉમેરાઈ ગઈ!");
+                }
+                document.getElementById("sarpanch-add-post-form").reset();
+                document.getElementById("edit-post-id").value = "";
+                document.getElementById("post-submit-btn").innerText = "પોસ્ટ ઉમેરો";
+                document.getElementById("post-cancel-btn").classList.add("hidden");
+            } catch (err) {
+                alert("એરર: " + err.message);
             }
-            document.getElementById("post-cancel-btn")?.click();
         });
 
         window.editPost = (id) => {
