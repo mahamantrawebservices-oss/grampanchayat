@@ -233,6 +233,33 @@
 
         </div>
 
+<!-- Super Admin Global Settings for Subscription -->
+<div class="bg-white p-6 rounded-2xl shadow-lg border space-y-4">
+    <h2 class="text-lg font-bold text-gray-900 border-b pb-2">સબ્સ્ક્રિપ્શન અને પેમેન્ટ સેટિંગ્સ (Super Admin)</h2>
+    
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+            <label class="text-xs font-semibold text-gray-700">કોમન ભરવાપાત્ર રકમ (Payable Amount ₹)</label>
+            <input type="number" id="admin-payable-amount" class="w-full border p-2 rounded-lg text-sm mt-1" placeholder="દા.ત. 1000">
+        </div>
+        <div>
+            <label class="text-xs font-semibold text-gray-700">સપોર્ટ ઈમેઈલ (Support Email)</label>
+            <input type="email" id="admin-support-email" class="w-full border p-2 rounded-lg text-sm mt-1" placeholder="support@domain.com">
+        </div>
+    </div>
+
+    <div>
+        <label class="text-xs font-semibold text-gray-700">પેમેન્ટ QR કોડ ઈમેજ URL (లేదా Base64 / Image Link)</label>
+        <input type="text" id="admin-qr-url" class="w-full border p-2 rounded-lg text-sm mt-1" placeholder="QR Code Image URL paste કરો">
+    </div>
+
+    <button type="button" id="save-global-settings-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2.5 rounded-xl text-sm shadow">
+        સેટિંગ્સ સેવ કરો
+    </button>
+</div>
+
+
+        
     </div>
 
     <!-- INLINE FIREBASE & LOGIC SCRIPT -->
@@ -850,6 +877,29 @@
                 console.error("Copy failed:", err);
             });
         };
+
+// સુપર એડમિન સેટિંગ્સ સેવ કરવા
+document.getElementById("save-global-settings-btn")?.addEventListener("click", async () => {
+    const payableAmount = document.getElementById("admin-payable-amount").value.trim();
+    const supportEmail = document.getElementById("admin-support-email").value.trim();
+    const qrCodeUrl = document.getElementById("admin-qr-url").value.trim();
+
+    try {
+        await setDoc(doc(db, "admin_settings", "global_config"), {
+            payableAmount,
+            supportEmail,
+            qrCodeUrl,
+            updatedAt: new Date()
+        }, { merge: true });
+
+        alert("✅ સબ્સ્ક્રિપ્શન પેમેન્ટ સેટિંગ્સ સફળતાપૂર્વક સેવ થઈ ગયા!");
+    } catch (err) {
+        console.error("Error saving global settings:", err);
+        alert("સેવ કરવામાં ભૂલ આવી.");
+    }
+});
+
+        
     </script>
 </body>
 </html>
