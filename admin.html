@@ -107,25 +107,32 @@
     </div>
 </div>
 
-    <!-- Main Admin Dashboard -->
+   <!-- Main Admin Dashboard -->
     <div id="admin-dashboard" class="hidden min-h-screen flex flex-col">
         
         <!-- Top Navigation Header -->
-        <header class="bg-emerald-900 text-white px-6 py-4 flex justify-between items-center shadow-md">
-            <h1 class="text-xl font-bold" id="dashboard-header-title">ગ્રામ પંચાયત એડમિન પેનલ</h1>
+        <header class="bg-emerald-900 text-white px-4 md:px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-3 shadow-md">
+            <h1 class="text-lg md:text-xl font-bold text-center md:text-left" id="dashboard-header-title">ગ્રામ પંચાયત એડમિન પેનલ</h1>
 
-<button type="button" onclick="openTalukaSheetModal()" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-3.5 py-2 rounded-lg shadow transition flex items-center gap-2 relative">
-    <i id="taluka-bell-icon" class="fa-solid fa-bell text-sm text-red-600 animate-bounce"></i>
-    <span>તાલુકા માહિતી ફોર્મ</span>
-</button>
+            <!-- Right Side Buttons Container -->
+            <div class="flex flex-wrap items-center justify-center md:justify-end gap-2.5 sm:gap-3 w-full md:w-auto">
+                <button type="button" onclick="openTalukaSheetModal()" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-3.5 py-2 rounded-lg shadow transition flex items-center gap-2 relative">
+                    <i id="taluka-bell-icon" class="fa-solid fa-bell text-sm text-red-600 animate-bounce"></i>
+                    <span>તાલુકા માહિતી ફોર્મ</span>
+                </button>
 
-<!-- Subscription Renewal Button -->
-<button id="open-subscription-btn" class="bg-amber-500 hover:bg-amber-600 text-white font-bold px-3 py-1.5 rounded-lg text-xs shadow transition flex items-center gap-1">
-    <i class="fa-solid fa-rotate"></i> Subscription Renewal
-</button>
-
-            
-            <button id="logout-btn" class="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1.5 rounded transition font-bold">લોગઆઉટ</button>
+                <!-- Subscription Renewal Button -->
+                <button id="open-subscription-btn" class="bg-teal-600 hover:bg-teal-700 text-white font-bold px-3.5 py-2 rounded-lg text-xs shadow transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-rotate"></i>
+                    <span>Subscription Renewal</span>
+                </button>
+                
+                <!-- Logout Button -->
+                <button id="logout-btn" class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-3.5 py-2 rounded-lg shadow transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>લોગઆઉટ</span>
+                </button>
+            </div>
         </header>
 
         <!-- Main Grid Container -->
