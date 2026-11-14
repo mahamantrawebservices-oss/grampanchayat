@@ -75,7 +75,7 @@
                             <option value="પીવાના પાણી સંબંધિત">પીવાના પાણી સંબંધિત</option>
                             <option value="ગટર સંબંધિત">ગટર સંબંધિત</option>
                             <option value="સફાઈ સંબંધિત">સફાઈ સંબંધિત</option>
-                            <option value="સ્ટ્રીટ લાઈਟ સંબંધિત">સ્ટ્રીટ લાઈટ સંબંધિત</option>
+                            <option value="સ્ટ્રીટ લાઈટ સંબંધિત">સ્ટ્રીટ લાઈટ સંબંધિત</option>
                             <option value="અન્ય રજૂઆત">અન્ય રજૂઆત</option>
                         </select>
                     </div>
@@ -212,7 +212,7 @@
             tokenModal.classList.add("hidden");
         });
 
-        // સ્ટેટસ ચેક
+        // સ્ટેટસ ચેક (તારીખ અને સમય સાથે)
         document.getElementById("check-status-form").addEventListener("submit", async (e) => {
             e.preventDefault();
             const tokenInput = document.getElementById("search-token").value.trim();
@@ -223,14 +223,32 @@
                 resultDiv.classList.remove("hidden");
                 if (!querySnap.empty) {
                     const data = querySnap.docs[0].data();
-                    resultDiv.innerHTML = `<p class="font-bold text-emerald-900">ટોકન નં: <span class="text-amber-600">${data.token}</span></p><p><b>અરજદાર:</b> ${data.name}</p><p><b>પ્રકાર:</b> ${data.type}</p><p><b>સ્ટેટસ:</b> <span class="bg-amber-100 text-amber-900 px-2 py-0.5 rounded font-bold">${data.status}</span></p>`;
+                    
+                    // ફરિયાદ બુક થયાની તારીખ અને સમય ફોર્મેટ કરવો
+                    let dateStr = "તારીખ ઉપલબ્ધ નથી";
+                    if (data.createdAt && data.createdAt.toDate) {
+                        dateStr = data.createdAt.toDate().toLocaleString('gu-IN', { 
+                            dateStyle: 'short', 
+                            timeStyle: 'short' 
+                        });
+                    }
+
+                    resultDiv.innerHTML = `
+                        <p class="font-bold text-emerald-950">ટોકન નં: <span class="text-amber-700">${data.token}</span></p>
+                        <p><b>તારીખ / સમય:</b> <span class="text-teal-800 font-semibold">${dateStr}</span></p>
+                        <p><b>અરજદાર:</b> ${data.name}</p>
+                        <p><b>પ્રકાર:</b> ${data.type}</p>
+                        <p><b>સ્ટેટસ:</b> <span class="bg-amber-100 text-amber-900 px-2 py-0.5 rounded font-bold">${data.status}</span></p>
+                    `;
                 } else {
                     resultDiv.innerHTML = `<p class="text-red-600 font-medium">આપેલ ફરિયાદ નંબર મુજબ કોઈ રેકોર્ડ મળ્યો નથી.</p>`;
                 }
-            } catch (err) { console.error(err); }
+            } catch (err) { 
+                console.error(err); 
+            }
         });
 
-// 🛑 એડમિન પેનલના સેટિંગ મુજબ ફરિયાદ વિભાગ બંધ છે કે નહીં તે ચકાસવું
+        // 🛑 એડમિન પેનલના સેટિંગ મુજબ ફરિયાદ બંધ છે કે નહીં તે ચકાસવું
         async function checkComplaintPageStatus() {
             try {
                 const configSnap = await getDoc(doc(db, "panchayats", panchayatId, "settings", "complaint_config"));
