@@ -1404,13 +1404,18 @@ async function loadAdminCustomButtons() {
             return;
         }
 
+        // ગ્લોબલ સ્ટોરેજમાં ડેટા સેવ કરવા જેથી એડિટ કરતી વખતે એન્કોડિંગની ઝંઝટ ન રહે
+        window.customPagesCache = window.customPagesCache || {};
+
         snap.forEach(d => {
             const item = d.data();
+            window.customPagesCache[d.id] = item; // કેશમાં સેવ કર્યું
+
             container.innerHTML += `
                 <div class="flex justify-between items-center bg-white p-2 border rounded text-xs mb-1 shadow-sm">
                     <span class="font-bold text-gray-800">📌 ${item.buttonTitle || 'બટન'}</span>
                     <div class="flex gap-1">
-                        <button type="button" onclick="editCustomBtn('${d.id}', '${encodeURIComponent(item.buttonTitle || '')}', '${encodeURIComponent(item.htmlContent || '')}')" class="bg-amber-500 hover:bg-amber-600 text-white text-[10px] px-2 py-0.5 rounded font-semibold">એડિટ</button>
+                        <button type="button" onclick="editCustomBtn('${d.id}')" class="bg-amber-500 hover:bg-amber-600 text-white text-[10px] px-2 py-0.5 rounded font-semibold">એડિટ</button>
                         <button type="button" onclick="deleteCustomBtn('${d.id}')" class="bg-red-600 hover:bg-red-700 text-white text-[10px] px-2 py-0.5 rounded font-semibold">ડિલીટ</button>
                     </div>
                 </div>
@@ -1421,28 +1426,19 @@ async function loadAdminCustomButtons() {
     }
 }
 
-window.deleteCustomBtn = async (id) => {
-    if (confirm("શું તમે આ કસ્ટમ બટન ડિલીટ કરવા માંગો છો?")) {
-        try {
-            await deleteDoc(getPanchayatDoc("custom_pages", id));
-            alert("કસ્ટમ બટન સફળતાપૂર્વક ડિલીટ થઈ ગયું!");
-            loadAdminCustomButtons();
-        } catch (err) {
-            console.error("Delete Custom Button Error:", err);
-            alert("ડિલીટ કરવામાં ભૂલ આવી.");
-        }
-    }
-};
+// સુધારેલું એડિટ ફંક્શન (કેશમાંથી ડેટા ખેંચશે જેથી કોઇ એન્કોડિંગ એરર ન આવે)
+window.editCustomBtn = (id) => {
+    const item = window.customPagesCache?.[id];
+    if (!item) return;
 
-window.editCustomBtn = (id, titleEncoded, htmlEncoded) => {
     const titleInput = document.getElementById("custom-btn-title");
     const htmlInput = document.getElementById("custom-page-html");
     const editIdInput = document.getElementById("edit-custom-page-id");
     const submitBtn = document.getElementById("custom-page-submit-btn");
     const cancelBtn = document.getElementById("custom-page-cancel-btn");
 
-    if (titleInput) titleInput.value = decodeURIComponent(titleEncoded);
-    if (htmlInput) htmlInput.value = decodeURIComponent(htmlEncoded);
+    if (titleInput) titleInput.value = item.buttonTitle || '';
+    if (htmlInput) htmlInput.value = item.htmlContent || '';
     if (editIdInput) editIdInput.value = id;
 
     if (submitBtn) submitBtn.innerText = "અપડેટ કરો";
