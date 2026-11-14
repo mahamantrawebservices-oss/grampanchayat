@@ -647,6 +647,7 @@ window.deleteMenu = async (id) => {
         }
     }
 };
+
 // --- ૧. ફરિયાદ વિભાગ સેટિંગ્સ અને દૈનિક મર્યાદા લોડ અને સેવ કરવી ---
 async function loadComplaintConfig() {
     if (!lgdCode) return;
@@ -687,7 +688,7 @@ document.getElementById("save-complaint-config-btn")?.addEventListener("click", 
     }
 });
 
-// --- ૨. એડમિન પેનલ માટે ફરિયાદો લોડ કરવી અને ફિલ્ટરિંગ કરવું ---
+// --- ૨. એડમિન પેનલ માટે ફરિયાદો લોડ કરવી અને ફિલ્ટરિંગ કરવું (તારીખ સાથે) ---
 async function loadAdminComplaints() {
     if (!lgdCode) return;
     const container = document.getElementById("admin-complaint-list");
@@ -708,6 +709,15 @@ async function loadAdminComplaints() {
             const item = d.data();
             const status = item.status || "Pending";
             
+            // ફરિયાદ બુક થયાની તારીખ અને સમય ફોર્મેટ કરવો
+            let dateStr = "તારીખ ઉપલબ્ધ નથી";
+            if (item.createdAt && item.createdAt.toDate) {
+                dateStr = item.createdAt.toDate().toLocaleString('gu-IN', { 
+                    dateStyle: 'short', 
+                    timeStyle: 'short' 
+                });
+            }
+            
             // ફિલ્ટર લોજિક
             const isPending = status.includes("પેન્ડિંગ") || status.includes("કામ ચાલી");
             const isResolved = status.includes("નિવારણ થઈ ગયું") || status.includes("Resolved");
@@ -722,7 +732,7 @@ async function loadAdminComplaints() {
                         <span>ટોકન: <span class="text-emerald-700">${item.token || 'N/A'}</span> | નામ: ${item.name || 'અનામી'} (મો: ${item.mobile || '-'})</span>
                         <span class="bg-blue-50 text-blue-800 px-2 py-0.5 rounded">${item.type || ''}</span>
                     </div>
-                    <p><b>વિસ્તાર/ફળિયું:</b> ${item.area || item.faliya || '-'}</p>
+                    <p><b>તારીખ:</b> <span class="text-amber-700 font-semibold">${dateStr}</span> | <b>વિસ્તાર/ફળિયું:</b> ${item.area || item.faliya || '-'}</p>
                     <p class="text-gray-700"><b>વિગત:</b> ${item.details || item.msg || ''}</p>
                     <div class="flex items-center gap-2 pt-1 border-t">
                         <label class="font-bold text-gray-700">સ્ટેટસ બદલો:</label>
@@ -814,6 +824,7 @@ document.getElementById("download-pdf-btn")?.addEventListener("click", async () 
                             <th>ટોકન નં</th>
                             <th>નામ</th>
                             <th>મોબાઈલ</th>
+                            <th>તારીખ / સમય</th>
                             <th>પ્રકાર</th>
                             <th>વિગત</th>
                             <th>સ્ટેટસ</th>
@@ -823,11 +834,16 @@ document.getElementById("download-pdf-btn")?.addEventListener("click", async () 
         `;
 
         filteredComplaints.forEach(c => {
+            let cDateStr = "-";
+            if (c.createdAt && c.createdAt.toDate) {
+                cDateStr = c.createdAt.toDate().toLocaleString('gu-IN', { dateStyle: 'short', timeStyle: 'short' });
+            }
             htmlContent += `
                 <tr>
                     <td><b>${c.token || '-'}</b></td>
                     <td>${c.name || '-'}</td>
                     <td>${c.mobile || '-'}</td>
+                    <td>${cDateStr}</td>
                     <td>${c.type || '-'}</td>
                     <td>${c.details || c.msg || '-'}</td>
                     <td><b>${c.status || 'Pending'}</b></td>
@@ -852,7 +868,6 @@ document.getElementById("download-pdf-btn")?.addEventListener("click", async () 
         alert("PDF રિપોર્ટ બનાવવામાં ભૂલ આવી.");
     }
 });
-
 
 // --- ૭. પંચાયત કમિટી અને સ્ટાફ મેનેજર ---
 async function loadAdminMeta() {
