@@ -178,7 +178,6 @@
         function getCol(sub) { return collection(db, "panchayats", lgdCode, sub); }
         function getDocRef(sub, id) { return doc(db, "panchayats", lgdCode, sub, id); }
 
-        // માત્ર પંચાયતનું નામ ડાયનેમિક સેટ કરવા માટે (લોગો હવે લોકલ ફાઇલમાંથી ઇન્સ્ટન્ટ લોડ થશે)
         async function applyPanchayatName() {
             if (!lgdCode) return;
             try {
