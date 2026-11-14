@@ -14,10 +14,10 @@
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans min-h-screen flex flex-col">
 
-    <!-- 🌟 સ્પ્લેશ લોડિંગ સ્ક્રીન (ડિફોલ્ટ લોગો તરીકે logo.png / logo.jpg) -->
+    <!-- 🌟 સ્પ્લેશ લોડિંગ સ્ક્રીન (ઇન્સ્ટન્ટ લોગો લોડિંગ) -->
     <div id="splash-screen" class="fixed inset-0 bg-emerald-900 flex flex-col items-center justify-center z-50 transition-opacity duration-700">
         <div id="splash-logo-container" class="w-20 h-20 mb-4 flex items-center justify-center bg-white rounded-full shadow-lg overflow-hidden p-0.5 border-2 border-amber-400">
-            <img src="logo.png" alt="Logo" class="w-full h-full object-cover rounded-full" onerror="this.src='logo.jpg'">
+            <img src="logo.jpg" alt="Logo" class="w-full h-full object-cover rounded-full" onerror="this.src='logo.png'">
         </div>
         <h1 class="text-white text-xl font-bold">ગ્રામ પંચાયત સરપંચ પોર્ટલ</h1>
         <p class="text-emerald-200 text-xs mt-1">લોડ થઈ રહ્યું છે...</p>
@@ -27,7 +27,7 @@
     <div id="sarpanch-login-modal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-40 p-4">
         <div class="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-sm text-center">
             <div id="login-logo-container" class="w-16 h-16 mx-auto mb-2 flex items-center justify-center bg-emerald-50 rounded-full border-2 border-emerald-200 overflow-hidden">
-                <img src="logo.png" alt="Logo" class="w-full h-full object-cover rounded-full" onerror="this.src='logo.jpg'">
+                <img src="logo.jpg" alt="Logo" class="w-full h-full object-cover rounded-full" onerror="this.src='logo.png'">
             </div>
             <h2 class="text-xl font-bold text-gray-800 mb-1">સરપંચ લૉગિન</h2>
             <p class="text-xs text-emerald-700 font-bold mb-4">ગ્રામ પંચાયત એડમિન પોર્ટલ</p>
@@ -55,7 +55,7 @@
         <header class="bg-emerald-900 text-white shadow-md py-3 px-4 flex justify-between items-center sticky top-0 z-30">
             <div class="flex items-center gap-2.5">
                 <div id="header-logo-container" class="w-9 h-9 bg-white rounded-full flex items-center justify-center shadow overflow-hidden p-0.5 border border-amber-300">
-                    <img src="logo.png" alt="Logo" class="w-full h-full object-cover rounded-full" onerror="this.src='logo.jpg'">
+                    <img src="logo.jpg" alt="Logo" class="w-full h-full object-cover rounded-full" onerror="this.src='logo.png'">
                 </div>
                 <div>
                     <h1 class="text-sm font-bold" id="sarpanch-header-title">ગ્રામ પંચાયત - સરપંચ હેન્ડલ</h1>
@@ -77,11 +77,11 @@
                     <input type="hidden" id="edit-notice-id" value="">
                     <div>
                         <label class="block text-xs font-bold text-gray-700 mb-1">નોટિસ / પોસ્ટનું શીર્ષક (Title)</label>
-                        <input type="text" id="notice-title" placeholder="દા.ત. ગ્રામસભા અંગે અગત્યની સૂચના" required class="w-full border p-2 rounded text-xs focus:ring-1 focus:ring-blue-500">
+                        <input type="text" id="notice-title" placeholder="દા.ત. ગ્રામસભા અંગે અગત્યની સૂચના" required class="w-full border border-gray-300 p-2 rounded text-xs focus:ring-1 focus:ring-blue-500">
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-gray-700 mb-1">વિગત (Description)</label>
-                        <textarea id="notice-desc" rows="3" placeholder="નોટિસ અંગેની સંપૂર્ણ માહિતી અહીં લખો..." required class="w-full border p-2 rounded text-xs focus:ring-1 focus:ring-blue-500"></textarea>
+                        <textarea id="notice-desc" rows="3" placeholder="નોટિસ અંગેની સંપૂર્ણ માહિતી અહીં લખો..." required class="w-full border border-gray-300 p-2 rounded text-xs focus:ring-1 focus:ring-blue-500"></textarea>
                     </div>
                     <div class="flex gap-2">
                         <button type="submit" id="notice-submit-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded text-xs shadow transition">નોટિસ પોસ્ટ કરો</button>
@@ -104,11 +104,11 @@
                     <input type="hidden" id="edit-post-id" value="">
                     <div>
                         <label class="block text-xs font-bold text-gray-700 mb-1">પોસ્ટ / ન્યૂઝનું શીર્ષક (Title)</label>
-                        <input type="text" id="post-title" placeholder="દા.ત. ગામમાં નવું પ્રાથમિક આરોગ્ય કેન્દ્ર મંજૂર" required class="w-full border p-2 rounded text-xs focus:ring-1 focus:ring-emerald-500">
+                        <input type="text" id="post-title" placeholder="દા.ત. ગામમાં નવું પ્રાથમિક આરોગ્ય કેન્દ્ર મંજૂર" required class="w-full border border-gray-300 p-2 rounded text-xs focus:ring-1 focus:ring-emerald-500">
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-gray-700 mb-1">વિગત (Description)</label>
-                        <textarea id="post-desc" rows="3" placeholder="પોસ્ટ અંગેની સંપૂર્ણ માહિતી લખો..." required class="w-full border p-2 rounded text-xs focus:ring-1 focus:ring-emerald-500"></textarea>
+                        <textarea id="post-desc" rows="3" placeholder="પોસ્ટ અંગેની સંપૂર્ણ માહિતી લખો..." required class="w-full border border-gray-300 p-2 rounded text-xs focus:ring-1 focus:ring-emerald-500"></textarea>
                     </div>
                     <div class="flex gap-2">
                         <button type="submit" id="post-submit-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded text-xs shadow transition">પોસ્ટ ઉમેરો</button>
@@ -178,21 +178,13 @@
         function getCol(sub) { return collection(db, "panchayats", lgdCode, sub); }
         function getDocRef(sub, id) { return doc(db, "panchayats", lgdCode, sub, id); }
 
-        async function applyPanchayatLogo() {
+        // માત્ર પંચાયતનું નામ ડાયનેમિક સેટ કરવા માટે (લોગો હવે લોકલ ફાઇલમાંથી ઇન્સ્ટન્ટ લોડ થશે)
+        async function applyPanchayatName() {
             if (!lgdCode) return;
             try {
                 const genSnap = await getDoc(doc(db, "panchayats", lgdCode, "settings", "general"));
-                if (genSnap.exists()) {
-                    const data = genSnap.data();
-                    if (data.name) {
-                        document.getElementById("sarpanch-header-title").textContent = `${data.name} - સરપંચ હેન્ડલ`;
-                    }
-                    if (data.logoUrl) {
-                        const logoUrl = data.logoUrl;
-                        document.getElementById("splash-logo-container").innerHTML = `<img src="${logoUrl}" alt="Logo" class="w-full h-full object-cover rounded-full">`;
-                        document.getElementById("login-logo-container").innerHTML = `<img src="${logoUrl}" alt="Logo" class="w-full h-full object-cover rounded-full">`;
-                        document.getElementById("header-logo-container").innerHTML = `<img src="${logoUrl}" alt="Logo" class="w-full h-full object-cover rounded-full">`;
-                    }
+                if (genSnap.exists() && genSnap.data().name) {
+                    document.getElementById("sarpanch-header-title").textContent = `${genSnap.data().name} - સરપંચ હેન્ડલ`;
                 }
             } catch (e) {}
         }
@@ -200,9 +192,9 @@
         setTimeout(async () => {
             const splash = document.getElementById("splash-screen");
             if (splash) { splash.classList.add("opacity-0"); setTimeout(() => splash.remove(), 700); }
-            if (lgdCode) await applyPanchayatLogo();
+            if (lgdCode) await applyPanchayatName();
             checkAuth();
-        }, 1500);
+        }, 2000);
 
         document.getElementById("toggle-pass")?.addEventListener("click", () => {
             const passInput = document.getElementById("login-password");
@@ -235,7 +227,7 @@
                 if (snap.exists() && (snap.data().adminPassword || "admin123") === password) {
                     lgdCode = inputCode;
                     sessionStorage.setItem("sarpanch_lgd_code", lgdCode);
-                    await applyPanchayatLogo();
+                    await applyPanchayatName();
                     checkAuth();
                 } else {
                     alert("❌ ખોટો LGD કોડ અથવા પાસવર્ડ!");
