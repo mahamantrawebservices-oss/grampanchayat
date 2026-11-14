@@ -14,10 +14,10 @@
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans min-h-screen flex flex-col">
 
-    <!-- 🌟 સ્પ્લેશ લોડિંગ સ્ક્રીન -->
+    <!-- 🌟 સ્પ્લેશ લોડિંગ સ્ક્રીન (ડિફોલ્ટ લોગો તરીકે logo.png / logo.jpg) -->
     <div id="splash-screen" class="fixed inset-0 bg-emerald-900 flex flex-col items-center justify-center z-50 transition-opacity duration-700">
-        <div id="splash-logo-container" class="w-20 h-20 mb-4 flex items-center justify-center bg-white rounded-full shadow-lg overflow-hidden p-1">
-            <i class="fa-solid fa-landmark text-3xl text-emerald-800"></i>
+        <div id="splash-logo-container" class="w-20 h-20 mb-4 flex items-center justify-center bg-white rounded-full shadow-lg overflow-hidden p-0.5 border-2 border-amber-400">
+            <img src="logo.png" alt="Logo" class="w-full h-full object-cover rounded-full" onerror="this.src='logo.jpg'">
         </div>
         <h1 class="text-white text-xl font-bold">ગ્રામ પંચાયત સરપંચ પોર્ટલ</h1>
         <p class="text-emerald-200 text-xs mt-1">લોડ થઈ રહ્યું છે...</p>
@@ -26,8 +26,8 @@
     <!-- 🌟 સરપંચ લૉગિન મોડલ -->
     <div id="sarpanch-login-modal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-40 p-4">
         <div class="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-sm text-center">
-            <div id="login-logo-container" class="w-16 h-16 mx-auto mb-2 flex items-center justify-center bg-emerald-50 rounded-full border border-emerald-200 overflow-hidden">
-                <i class="fa-solid fa-landmark text-2xl text-emerald-800"></i>
+            <div id="login-logo-container" class="w-16 h-16 mx-auto mb-2 flex items-center justify-center bg-emerald-50 rounded-full border-2 border-emerald-200 overflow-hidden">
+                <img src="logo.png" alt="Logo" class="w-full h-full object-cover rounded-full" onerror="this.src='logo.jpg'">
             </div>
             <h2 class="text-xl font-bold text-gray-800 mb-1">સરપંચ લૉગિન</h2>
             <p class="text-xs text-emerald-700 font-bold mb-4">ગ્રામ પંચાયત એડમિન પોર્ટલ</p>
@@ -54,8 +54,8 @@
     <div id="sarpanch-dashboard" class="hidden flex-1 flex flex-col">
         <header class="bg-emerald-900 text-white shadow-md py-3 px-4 flex justify-between items-center sticky top-0 z-30">
             <div class="flex items-center gap-2.5">
-                <div id="header-logo-container" class="w-9 h-9 bg-white rounded-full flex items-center justify-center shadow overflow-hidden p-0.5">
-                    <i class="fa-solid fa-landmark text-emerald-900 text-sm"></i>
+                <div id="header-logo-container" class="w-9 h-9 bg-white rounded-full flex items-center justify-center shadow overflow-hidden p-0.5 border border-amber-300">
+                    <img src="logo.png" alt="Logo" class="w-full h-full object-cover rounded-full" onerror="this.src='logo.jpg'">
                 </div>
                 <div>
                     <h1 class="text-sm font-bold" id="sarpanch-header-title">ગ્રામ પંચાયત - સરપંચ હેન્ડલ</h1>
@@ -69,7 +69,7 @@
 
         <main class="flex-1 p-4 max-w-4xl mx-auto w-full space-y-6">
             
-            <!-- ૨. નવી પોસ્ટ / નોટિસ મૂકો (કલેક્શન: notices) -->
+            <!-- ૨. નવી પોસ્ટ / નોટિસ મૂકો -->
             <div class="bg-blue-50/80 border border-blue-200 p-5 rounded-xl shadow-sm space-y-4">
                 <h3 class="font-bold border-b border-blue-300 pb-2 text-blue-950 text-sm">૨. નવી પોસ્ટ / નોટિસ મૂકો</h3>
                 
@@ -97,7 +97,7 @@
                 </div>
             </div>
 
-            <!-- ૧. તાજી પોસ્ટ્સ અને ન્યૂઝ મેનેજ કરો 📢 (કલેક્શન: posts) -->
+            <!-- ૧. તાજી પોસ્ટ્સ અને ન્યૂઝ મેનેજ કરો 📢 -->
             <div class="bg-blue-50/80 border border-blue-200 p-5 rounded-xl shadow-sm space-y-4">
                 <h3 class="font-bold border-b border-blue-300 pb-2 text-blue-950 text-sm">૧. તાજી પોસ્ટ્સ અને ન્યૂઝ મેનેજ કરો 📢</h3>
                 <form id="sarpanch-add-post-form" class="bg-white p-4 rounded-xl border border-blue-100 shadow-sm space-y-3">
@@ -178,7 +178,6 @@
         function getCol(sub) { return collection(db, "panchayats", lgdCode, sub); }
         function getDocRef(sub, id) { return doc(db, "panchayats", lgdCode, sub, id); }
 
-        // લોગો ડાયનેમિક સેટ કરવા માટેનું ફંક્શન
         async function applyPanchayatLogo() {
             if (!lgdCode) return;
             try {
