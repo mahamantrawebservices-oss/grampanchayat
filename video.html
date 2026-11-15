@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>દૃશ્ય-પરિચય (Video Gallery) - ગ્રામ પંચાયત</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-50 font-sans text-gray-800 min-h-screen flex flex-col">
+
+    <!-- ડાર્ક/રૉયલ પર્પલ ગ્રેડિયન્ટ હેડર -->
+    <header class="bg-gradient-to-r from-purple-900 via-indigo-900 to-purple-900 text-white shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <img id="gp-logo" src="./logo.png" alt="લોગો" class="h-12 w-12 object-contain rounded-full border-2 border-amber-400 p-0.5 bg-white shadow-sm">
+                <div>
+                    <h1 id="gp-name" class="text-lg md:text-xl font-bold text-amber-300 leading-tight">ગ્રામ પંચાયત</h1>
+                    <p class="text-[10px] md:text-xs text-purple-200 font-medium">દૃશ્ય-પરિચય અને વિડિયો ગેલેરી</p>
+                </div>
+            </div>
+            <a id="back-home-btn" href="index.html" class="bg-purple-950 hover:bg-black text-white text-xs font-bold px-3.5 py-2 rounded-lg border border-purple-700 transition flex items-center gap-1.5">
+                <i class="fa-solid fa-arrow-left"></i> મુખ્ય પૃષ્ઠ
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8 max-w-7xl flex-grow space-y-6">
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-purple-100 text-center space-y-2">
+            <h2 class="text-xl md:text-2xl font-bold text-purple-950 flex items-center justify-center gap-2">
+                <i class="fa-solid fa-video text-amber-500"></i> પંચાયત વિડિયો દૃશ્ય-પરિચય
+            </h2>
+            <p class="text-xs md:text-sm text-gray-600">ગ્રામ પંચાયતના વિકાસ કાર્યો, યોજનાઓ અને સામાજિક પ્રવૃત્તિઓના વિડિયો નિહાળો.</p>
+        </div>
+
+        <!-- Videos Grid -->
+        <div id="videos-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="col-span-full text-center py-12 text-gray-400 text-sm">વિડિયો લોડ થઈ રહ્યા છે...</div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-white text-center py-6 mt-12 text-xs">
+        <p>ડિજિટલ ગ્રામ પંચાયત પ્લેટફોર્મ | સર્વાંગી વિકાસ એજ અમારું લક્ષ્ય</p>
+    </footer>
+
+    <!-- Firebase Scripts -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCMhWWI_6oxPIVEQEVlq2SIBf72EI2o8NI",
+            authDomain: "gram-panchayat-33c86.firebaseapp.com",
+            projectId: "gram-panchayat-33c86",
+            storageBucket: "gram-panchayat-33c86.firebasestorage.app",
+            messagingSenderId: "1025176315779",
+            appId: "1:1025176315779:web:a24ca10a06c55edcc8f8b6",
+            measurementId: "G-TQBSXCWNBV"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const panchayatId = urlParams.get('id');
+
+        if (panchayatId) {
+            document.getElementById("back-home-btn").href = `index.html?id=${panchayatId}`;
+            loadPanchayatHeader(panchayatId);
+            loadPublicVideos(panchayatId);
+        } else {
+            document.getElementById("videos-grid").innerHTML = `<div class="col-span-full text-center py-10 text-red-500 font-medium">⚠️ અમાન્ય પંચાયત આઈડી (LGD Code) મળ્યો નથી.</div>`;
+        }
+
+        async function loadPanchayatHeader(pId) {
+            try {
+                const docSnap = await getDoc(doc(db, "panchayats", pId));
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if (data.panchayatName) document.getElementById("gp-name").textContent = data.panchayatName;
+                    if (data.logoUrl) document.getElementById("gp-logo").src = data.logoUrl;
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        async function loadPublicVideos(pId) {
+            const grid = document.getElementById("videos-grid");
+            try {
+                const snap = await getDocs(collection(db, "panchayats", pId, "videos"));
+                if (snap.empty) {
+                    grid.innerHTML = `<div class="col-span-full text-center py-12 text-gray-500 text-sm bg-white rounded-2xl border p-8">હાલમાં કોઈ વિડિયો ઉપલબ્ધ નથી.</div>`;
+                    return;
+                }
+
+                grid.innerHTML = "";
+                snap.forEach(d => {
+                    const v = d.data();
+                    grid.innerHTML += `
+                        <div class="bg-white rounded-2xl shadow-sm border border-purple-100 overflow-hidden flex flex-col justify-between hover:shadow-md transition">
+                            <div class="relative aspect-video bg-gray-900">
+                                ${v.videoEmbedHtml || '<div class="flex items-center justify-center h-full text-white text-xs">અમાન્ય વિડિયો લિંક</div>'}
+                            </div>
+                            <div class="p-4">
+                                <span class="inline-block bg-purple-100 text-purple-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full mb-2">વિડિયો પ્રસ્તુતિ</span>
+                                <h3 class="text-sm font-bold text-gray-900">${v.videoTitle || 'શીર્ષક વગરનો વિડિયો'}</h3>
+                            </div>
+                        </div>
+                    `;
+                });
+            } catch (err) {
+                console.error(err);
+                grid.innerHTML = `<div class="col-span-full text-center py-10 text-red-500">વિડિયો લોડ કરવામાં સમસ્યા આવી.</div>`;
+            }
+        }
+    </script>
+</body>
+</html>
