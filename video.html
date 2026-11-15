@@ -17,6 +17,7 @@
             <div class="flex items-center space-x-3">
                 <img id="gp-logo" src="./logo.png" alt="લોગો" class="h-12 w-12 object-contain rounded-full border-2 border-amber-400 p-0.5 bg-white shadow-sm">
                 <div>
+                    <!-- અહીં પંચાયતના નામ પાછળ 'ગ્રામ પંચાયત' સેટ થશે -->
                     <h1 id="gp-name" class="text-lg md:text-xl font-bold text-amber-300 leading-tight">ગ્રામ પંચાયત</h1>
                     <p class="text-[10px] md:text-xs text-purple-200 font-medium">દૃશ્ય-પરિચય અને વિડિયો ગેલેરી</p>
                 </div>
@@ -81,7 +82,10 @@
                 const docSnap = await getDoc(doc(db, "panchayats", pId));
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    if (data.panchayatName) document.getElementById("gp-name").textContent = data.panchayatName;
+                    // હેડરમાં ગામના નામની પાછળ 'ગ્રામ પંચાયત' ઉમેરવામાં આવ્યું છે
+                    if (data.panchayatName) {
+                        document.getElementById("gp-name").textContent = data.panchayatName + " ગ્રામ પંચાયત";
+                    }
                     if (data.logoUrl) document.getElementById("gp-logo").src = data.logoUrl;
                 }
             } catch (err) { console.error(err); }
@@ -101,8 +105,8 @@
                     const v = d.data();
                     grid.innerHTML += `
                         <div class="bg-white rounded-2xl shadow-sm border border-purple-100 overflow-hidden flex flex-col justify-between hover:shadow-md transition">
-                            <div class="relative aspect-video bg-gray-900">
-                                ${v.videoEmbedHtml || '<div class="flex items-center justify-center h-full text-white text-xs">અમાન્ય વિડિયો લિંક</div>'}
+                            <div class="relative aspect-video bg-gray-950">
+                                ${v.videoEmbedHtml ? v.videoEmbedHtml.replace('<iframe', '<iframe class="w-full h-full absolute inset-0"') : '<div class="flex items-center justify-center h-full text-white text-xs">અમાન્ય વિડિયો લિંક</div>'}
                             </div>
                             <div class="p-4">
                                 <span class="inline-block bg-purple-100 text-purple-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full mb-2">વિડિયો પ્રસ્તુતિ</span>
