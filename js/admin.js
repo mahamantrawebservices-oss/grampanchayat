@@ -2130,22 +2130,56 @@ async function loadProactiveAdminData() {
         if (snap.exists()) {
             const data = snap.data();
             
-            // તાલુકો અને જિલ્લો લોડ કરવા
+            // સ્થાન
             if (document.getElementById("adm-taluka")) document.getElementById("adm-taluka").value = data.taluka || "";
             if (document.getElementById("adm-district")) document.getElementById("adm-district").value = data.district || "";
 
-            // ઓફિસર વિગતો
+            // અધિકારી
             if (data.officer) {
                 if (document.getElementById("off-name")) document.getElementById("off-name").value = data.officer.name || "";
                 if (document.getElementById("off-phone")) document.getElementById("off-phone").value = data.officer.phone || "";
                 if (document.getElementById("off-appeal")) document.getElementById("off-appeal").value = data.officer.appealOfficer || "";
             }
 
-            // અન્ય માહિતી
+            // ૫. ઘરો અને આકારણી
+            if (data.housing) {
+                if (document.getElementById("house-total")) document.getElementById("house-total").value = data.housing.totalHouses || "";
+                if (document.getElementById("house-assessment")) document.getElementById("house-assessment").value = data.housing.assessedHouses || "";
+                if (document.getElementById("family-total")) document.getElementById("family-total").value = data.housing.totalFamilies || "";
+                if (document.getElementById("family-nfsa")) document.getElementById("family-nfsa").value = data.housing.nfsa || "";
+                if (document.getElementById("family-non-nfsa")) document.getElementById("family-non-nfsa").value = data.housing.nonNfsa || "";
+                if (document.getElementById("family-bpl")) document.getElementById("family-bpl").value = data.housing.bpl || "";
+                if (document.getElementById("family-apl")) document.getElementById("family-apl").value = data.housing.apl || "";
+            }
+
+            // ૬. આરોગ્ય સેવાઓ
+            if (data.health) {
+                if (document.getElementById("health-phc")) document.getElementById("health-phc").value = data.health.phc || "";
+                if (document.getElementById("health-chc")) document.getElementById("health-chc").value = data.health.chc || "";
+                if (document.getElementById("health-homeo")) document.getElementById("health-homeo").value = data.health.homeo || "";
+                if (document.getElementById("health-ayur")) document.getElementById("health-ayur").value = data.health.ayur || "";
+                if (document.getElementById("health-private")) document.getElementById("health-private").value = data.health.privateDoc || "";
+            }
+
+            // ૭. નાણાકીય સેવાઓ
+            if (data.finance) {
+                if (document.getElementById("fin-bank")) document.getElementById("fin-bank").value = data.finance.bank || "";
+                if (document.getElementById("fin-atm")) document.getElementById("fin-atm").value = data.finance.atm || "";
+                if (document.getElementById("fin-post")) document.getElementById("fin-post").value = data.finance.post || "";
+                if (document.getElementById("fin-lender")) document.getElementById("fin-lender").value = data.finance.lender || "";
+            }
+
+            // ૮. કૃષિ માહિતી
+            if (data.agriculture) {
+                if (document.getElementById("agri-crops")) document.getElementById("agri-crops").value = data.agriculture.crops || "";
+                if (document.getElementById("agri-irrigation")) document.getElementById("agri-irrigation").value = data.agriculture.irrigation || "";
+            }
+
+            // ૯. અન્ય માહિતી
             if (document.getElementById("extra-title-input")) document.getElementById("extra-title-input").value = data.extraTitle || "";
             if (document.getElementById("extra-content-input")) document.getElementById("extra-content-input").value = data.extraContent || "";
 
-            // વસ્તી ટેબલ રીલોડ
+            // ટેબલ્સ (વસ્તી, પાણી, મિલકત)
             const popContainer = document.getElementById("population-rows");
             if (popContainer) {
                 popContainer.innerHTML = "";
@@ -2154,7 +2188,6 @@ async function loadProactiveAdminData() {
                 }
             }
 
-            // પાણી ટેબલ રીલોડ
             const waterContainer = document.getElementById("water-rows");
             if (waterContainer) {
                 waterContainer.innerHTML = "";
@@ -2163,7 +2196,6 @@ async function loadProactiveAdminData() {
                 }
             }
 
-            // મિલકત ટેબલ રીલોડ
             const propContainer = document.getElementById("prop-rows");
             if (propContainer) {
                 propContainer.innerHTML = "";
@@ -2177,18 +2209,35 @@ async function loadProactiveAdminData() {
     }
 }
 
-// વસ્તી રો ઉમેરવા માટે
+// વસ્તી રો (બાળ, SC, ST, સ્ત્રી, પુરુષ, કુલ સાથે)
 window.addPopulationRow = (data = {}) => {
     const container = document.getElementById("population-rows");
     if (!container) return;
     const div = document.createElement("div");
-    div.className = "flex gap-2 items-center bg-white p-2 rounded border pop-row";
+    div.className = "bg-white p-3 rounded-lg border space-y-2 pop-row shadow-sm";
     div.innerHTML = `
-        <input type="text" placeholder="વિગત (દા.ત. અનુસૂચિત જાતિ)" value="${data.title || ''}" class="border p-1.5 rounded w-1/3 pop-title">
-        <input type="number" placeholder="સ્ત્રી" value="${data.female || ''}" class="border p-1.5 rounded w-1/5 pop-female" oninput="calcPopTotal(this)">
-        <input type="number" placeholder="પુરુષ" value="${data.male || ''}" class="border p-1.5 rounded w-1/5 pop-male" oninput="calcPopTotal(this)">
-        <input type="number" placeholder="કુલ" value="${data.total || ''}" class="border p-1.5 rounded w-1/5 bg-gray-100 pop-total" readonly>
-        <button type="button" onclick="this.parentElement.remove()" class="bg-red-500 text-white px-2 py-1 rounded text-xs font-bold">×</button>
+        <div class="flex justify-between items-center">
+            <span class="font-bold text-emerald-900 text-[11px]">વસ્તી વિગત (દા.ત. કુલ વસ્તી / અનુ. જાતિ / અનુ. જનજાતિ / બાળ વસ્તી)</span>
+            <button type="button" onclick="this.closest('.pop-row').remove()" class="bg-red-500 hover:bg-red-600 text-white px-2 py-0.5 rounded text-[10px] font-bold">ડિલીટ કરો</button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
+            <div>
+                <label class="block text-[11px] font-bold text-gray-700 mb-1">વિગતનું નામ:</label>
+                <input type="text" placeholder="દા.ત. કુલ / SC / ST / બાળ" value="${data.title || ''}" class="border p-1.5 rounded w-full pop-title text-xs">
+            </div>
+            <div>
+                <label class="block text-[11px] font-bold text-gray-700 mb-1">સ્ત્રી:</label>
+                <input type="number" placeholder="સ્ત્રી" value="${data.female || ''}" class="border p-1.5 rounded w-full pop-female text-xs" oninput="calcPopTotal(this)">
+            </div>
+            <div>
+                <label class="block text-[11px] font-bold text-gray-700 mb-1">પુરુષ:</label>
+                <input type="number" placeholder="પુરુષ" value="${data.male || ''}" class="border p-1.5 rounded w-full pop-male text-xs" oninput="calcPopTotal(this)">
+            </div>
+            <div>
+                <label class="block text-[11px] font-bold text-gray-700 mb-1">કુલ (ઓટોમેટિક):</label>
+                <input type="number" placeholder="કુલ" value="${data.total || ''}" class="border p-1.5 rounded w-full bg-gray-100 pop-total text-xs font-bold" readonly>
+            </div>
+        </div>
     `;
     container.appendChild(div);
 };
@@ -2200,38 +2249,67 @@ window.calcPopTotal = (element) => {
     row.querySelector('.pop-total').value = female + male;
 };
 
-// પાણી/જળાશય રો ઉમેરવા માટે
 window.addWaterRow = (data = {}) => {
     const container = document.getElementById("water-rows");
     if (!container) return;
     const div = document.createElement("div");
-    div.className = "flex gap-2 items-center bg-white p-2 rounded border water-row";
+    div.className = "bg-white p-3 rounded-lg border space-y-2 water-row shadow-sm";
     div.innerHTML = `
-        <input type="text" placeholder="જળાશયનું નામ" value="${data.source || ''}" class="border p-1.5 rounded w-1/4 water-source">
-        <input type="text" placeholder="સંખ્યા" value="${data.count || ''}" class="border p-1.5 rounded w-1/4 water-count">
-        <input type="text" placeholder="વિસ્તાર (ચો.મી.)" value="${data.area || ''}" class="border p-1.5 rounded w-1/4 water-area">
-        <input type="text" placeholder="ક્ષમતા (લીટર)" value="${data.capacity || ''}" class="border p-1.5 rounded w-1/4 water-cap">
-        <button type="button" onclick="this.parentElement.remove()" class="bg-red-500 text-white px-2 py-1 rounded text-xs font-bold">×</button>
+        <div class="flex justify-between items-center">
+            <span class="font-bold text-emerald-900 text-[11px]">જળાશય વિગત</span>
+            <button type="button" onclick="this.closest('.water-row').remove()" class="bg-red-500 hover:bg-red-600 text-white px-2 py-0.5 rounded text-[10px] font-bold">ડિલીટ કરો</button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
+            <div>
+                <label class="block text-[11px] font-bold text-gray-700 mb-1">જળાશયનું નામ:</label>
+                <input type="text" placeholder="નામ" value="${data.source || ''}" class="border p-1.5 rounded w-full water-source text-xs">
+            </div>
+            <div>
+                <label class="block text-[11px] font-bold text-gray-700 mb-1">સંખ્યા:</label>
+                <input type="text" placeholder="સંખ્યા" value="${data.count || ''}" class="border p-1.5 rounded w-full water-count text-xs">
+            </div>
+            <div>
+                <label class="block text-[11px] font-bold text-gray-700 mb-1">વિસ્તાર (ચો.મી.):</label>
+                <input type="text" placeholder="વિસ્તાર" value="${data.area || ''}" class="border p-1.5 rounded w-full water-area text-xs">
+            </div>
+            <div>
+                <label class="block text-[11px] font-bold text-gray-700 mb-1">ક્ષમતા (લીટર):</label>
+                <input type="text" placeholder="ક્ષમતા" value="${data.capacity || ''}" class="border p-1.5 rounded w-full water-cap text-xs">
+            </div>
+        </div>
     `;
     container.appendChild(div);
 };
 
-// મિલકત રો ઉમેરવા માટે
 window.addPropRow = (data = {}) => {
     const container = document.getElementById("prop-rows");
     if (!container) return;
     const div = document.createElement("div");
-    div.className = "flex gap-2 items-center bg-white p-2 rounded border prop-row";
+    div.className = "bg-white p-3 rounded-lg border space-y-2 prop-row shadow-sm";
     div.innerHTML = `
-        <input type="text" placeholder="મિલકતનું નામ" value="${data.name || ''}" class="border p-1.5 rounded w-1/3 prop-name">
-        <input type="text" placeholder="સંખ્યા" value="${data.count || ''}" class="border p-1.5 rounded w-1/4 prop-count">
-        <input type="text" placeholder="અન્ય વિગત" value="${data.detail || ''}" class="border p-1.5 rounded w-1/3 prop-detail">
-        <button type="button" onclick="this.parentElement.remove()" class="bg-red-500 text-white px-2 py-1 rounded text-xs font-bold">×</button>
+        <div class="flex justify-between items-center">
+            <span class="font-bold text-emerald-900 text-[11px]">મિલકત વિગત</span>
+            <button type="button" onclick="this.closest('.prop-row').remove()" class="bg-red-500 hover:bg-red-600 text-white px-2 py-0.5 rounded text-[10px] font-bold">ડિલીટ કરો</button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+            <div>
+                <label class="block text-[11px] font-bold text-gray-700 mb-1">મિલકતનું નામ:</label>
+                <input type="text" placeholder="નામ" value="${data.name || ''}" class="border p-1.5 rounded w-full prop-name text-xs">
+            </div>
+            <div>
+                <label class="block text-[11px] font-bold text-gray-700 mb-1">સંખ્યા:</label>
+                <input type="text" placeholder="સંખ્યા" value="${data.count || ''}" class="border p-1.5 rounded w-full prop-count text-xs">
+            </div>
+            <div>
+                <label class="block text-[11px] font-bold text-gray-700 mb-1">અન્ય વિગત:</label>
+                <input type="text" placeholder="વિગત" value="${data.detail || ''}" class="border p-1.5 rounded w-full prop-detail text-xs">
+            </div>
+        </div>
     `;
     container.appendChild(div);
 };
 
-// એડમિન ફોર્મ સબમિટ (સેવ/અપડેટ)
+// ફોર્મ સબમિટ (સેવ/અપડેટ)
 document.getElementById("proactive-admin-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     if (!lgdCode) {
@@ -2248,7 +2326,36 @@ document.getElementById("proactive-admin-form")?.addEventListener("submit", asyn
         appealOfficer: document.getElementById("off-appeal").value.trim()
     };
 
-    // વસ્તી ડેટા કલેક્ટ કરો
+    const housing = {
+        totalHouses: document.getElementById("house-total").value.trim(),
+        assessedHouses: document.getElementById("house-assessment").value.trim(),
+        totalFamilies: document.getElementById("family-total").value.trim(),
+        nfsa: document.getElementById("family-nfsa").value.trim(),
+        nonNfsa: document.getElementById("family-non-nfsa").value.trim(),
+        bpl: document.getElementById("family-bpl").value.trim(),
+        apl: document.getElementById("family-apl").value.trim()
+    };
+
+    const health = {
+        phc: document.getElementById("health-phc").value.trim(),
+        chc: document.getElementById("health-chc").value.trim(),
+        homeo: document.getElementById("health-homeo").value.trim(),
+        ayur: document.getElementById("health-ayur").value.trim(),
+        privateDoc: document.getElementById("health-private").value.trim()
+    };
+
+    const finance = {
+        bank: document.getElementById("fin-bank").value.trim(),
+        atm: document.getElementById("fin-atm").value.trim(),
+        post: document.getElementById("fin-post").value.trim(),
+        lender: document.getElementById("fin-lender").value.trim()
+    };
+
+    const agriculture = {
+        crops: document.getElementById("agri-crops").value.trim(),
+        irrigation: document.getElementById("agri-irrigation").value.trim()
+    };
+
     const population = [];
     document.querySelectorAll("#population-rows .pop-row").forEach(row => {
         population.push({
@@ -2259,7 +2366,6 @@ document.getElementById("proactive-admin-form")?.addEventListener("submit", asyn
         });
     });
 
-    // પાણી ડેટા કલેક્ટ કરો
     const water = [];
     document.querySelectorAll("#water-rows .water-row").forEach(row => {
         water.push({
@@ -2270,7 +2376,6 @@ document.getElementById("proactive-admin-form")?.addEventListener("submit", asyn
         });
     });
 
-    // મિલકત ડેટા કલેક્ટ કરો
     const property = [];
     document.querySelectorAll("#prop-rows .prop-row").forEach(row => {
         property.push({
@@ -2284,6 +2389,10 @@ document.getElementById("proactive-admin-form")?.addEventListener("submit", asyn
         taluka,
         district,
         officer,
+        housing,
+        health,
+        finance,
+        agriculture,
         population,
         water,
         property,
@@ -2294,13 +2403,12 @@ document.getElementById("proactive-admin-form")?.addEventListener("submit", asyn
 
     try {
         await setDoc(getPanchayatDoc("proactive_disclosure", "main_data"), payload, { merge: true });
-        alert("✅ સ્વયં જાહેર કરેલ માહિતી અને સ્થાન સફળતાપૂર્વક સેવ થઈ ગયું!");
+        alert("✅ સ્વયં જાહેર કરેલ માહિતી સફળતાપૂર્વક સેવ થઈ ગઈ!");
     } catch (err) {
         console.error("Save Proactive Error:", err);
         alert("માહિતી સેવ કરવામાં ભૂલ આવી.");
     }
 });
-
 
 
 // --- ૧૯. ડાઉનલોડ્સ પેજ મેનેજર ---
