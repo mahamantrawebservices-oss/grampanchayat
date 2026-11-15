@@ -2633,3 +2633,116 @@ document.getElementById("copy-email-btn")?.addEventListener("click", () => {
         alert("ઈમેઈલ કૉપી કરવામાં નિષ્ફળતા.");
     });
 });
+
+
+// --- વિડિયો મેનેજમેન્ટ લોજિક ---
+async function loadAdminVideos() {
+    const container = document.getElementById("admin-videos-list");
+    if (!container || !lgdCode) return;
+
+    try {
+        const snap = await getDocs(getPanchayatCol("videos"));
+        container.innerHTML = "";
+        
+        if (snap.empty) {
+            container.innerHTML = `<p class="text-xs text-gray-400 p-2 text-center">કોઈ વિડિયો ઉપલબ્ધ નથી.</p>";
+            return;
+        }
+
+        window.videosCache = window.videosCache || {};
+        let count = 0;
+
+        snap.forEach(d => {
+            count++;
+            const item = d.data();
+            window.videosCache[d.id] = item;
+
+            container.innerHTML += `
+                <div class="flex justify-between items-center bg-white p-2.5 border rounded-xl text-xs shadow-sm">
+                    <span class="font-bold text-gray-800 truncate max-w-[220px]">🎬 ${item.videoTitle || 'વિડિયો'}</span>
+                    <div class="flex gap-1.5 shrink-0">
+                        <button type="button" onclick="editVideo('${d.id}')" class="bg-amber-500 hover:bg-amber-600 text-white text-[10px] px-2.5 py-1 rounded-lg font-semibold">એડિટ</button>
+                        <button type="button" onclick="deleteVideo('${d.id}')" class="bg-red-600 hover:bg-red-700 text-white text-[10px] px-2.5 py-1 rounded-lg font-semibold">ડિલીટ</button>
+                    </div>
+                </div>
+            `;
+        });
+
+        // જો વિડિયો ૧૦ કે તેથી વધુ હોય તો નવી એન્ટ્રી અટકાવવા માટે ચકાસણી
+        window.totalVideosCount = count;
+    } catch (err) {
+        console.error("Load Videos Error:", err);
+    }
+}
+
+window.editVideo = (id) => {
+    const item = window.videosCache?.[id];
+    if (!item) return;
+
+    document.getElementById("video-title").value = item.videoTitle || '';
+    document.getElementById("video-embed").value = item.videoEmbedHtml || '';
+    document.getElementById("edit-video-id").value = id;
+
+    document.getElementById("video-submit-btn").innerText = "વિડિયો અપડેટ કરો";
+    document.getElementById("video-cancel-btn").classList.remove("hidden");
+    document.getElementById("video-form")?.scrollIntoView({ behavior: 'smooth' });
+};
+
+window.deleteVideo = async (id) => {
+    if (!confirm("શું તમે આ વિડિયો ડિલીટ કરવા માંગો છો?")) return;
+    try {
+        await deleteDoc(getPanchayatDoc("videos", id));
+        alert("✅ વિડિયો સફળતાપૂર્વક ડિલીટ થઈ ગયો!");
+        loadAdminVideos();
+    } catch (err) {
+        console.error("Delete Video Error:", err);
+        alert("ડિલીટ કરવામાં ભૂલ આવી.");
+    }
+};
+
+document.getElementById("video-cancel-btn")?.addEventListener("click", () => {
+    document.getElementById("video-form").reset();
+    document.getElementById("edit-video-id").value = "";
+    document.getElementById("video-submit-btn").innerText = "વિડિયો ઉમેરો";
+    document.getElementById("video-cancel-btn").classList.add("hidden");
+});
+
+document.getElementById("video-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!lgdCode) {
+        alert("⚠️ LGD Code મળ્યો નથી!");
+        return;
+    }
+
+    const editId = document.getElementById("edit-video-id").value.trim();
+    const videoTitle = document.getElementById("video-title").value.trim();
+    const videoEmbedHtml = document.getElementById("video-embed").value.trim();
+
+    if (!editId && window.totalVideosCount >= 10) {
+        alert("⚠️ તમે મહત્તમ ૧૦ વિડિયો જ ઉમેરી શકો છો!");
+        return;
+    }
+
+    const payload = {
+        videoTitle,
+        videoEmbedHtml,
+        updatedAt: new Date()
+    };
+
+    try {
+        if (editId) {
+            await updateDoc(getPanchayatDoc("videos", editId), payload);
+            alert("✅ વિડિયો સફળતાપૂર્વક અપડેટ થઈ ગયો!");
+        } else {
+            payload.createdAt = new Date();
+            await addDoc(getPanchayatCol("videos"), payload);
+            alert("✅ નવો વિડિયો સફળતાપૂર્વક ઉમેરાઈ ગયો!");
+        }
+
+        document.getElementById("video-cancel-btn")?.click();
+        loadAdminVideos();
+    } catch (err) {
+        console.error("Save Video Error:", err);
+        alert("સેવ કરવામાં ભૂલ આવી: " + err.message);
+    }
+});
