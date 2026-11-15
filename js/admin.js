@@ -2635,98 +2635,128 @@ document.getElementById("copy-email-btn")?.addEventListener("click", () => {
 });
 
 
+// --- દૃશ્ય-પરિચય (Video Gallery) મેનેજમેન્ટ લોજિક ---
+
 // એક્ઝામ્પલ કોડ ક્લિપબોર્ડમાં કોપી કરવા માટેનું ફંક્શન
-    function copyExampleCode() {
-        const codeText = '<iframe src="https://www.youtube.com/embed/YOUR_VIDEO_ID" width="100%" height="100%" allowfullscreen></iframe>';
-        navigator.clipboard.writeText(codeText).then(() => {
-            alert("✅ એક્ઝામ્પલ કોડ કોપી થઈ ગયો! હવે તેને ટેક્સ્ટ બોક્સમાં પેસ્ટ કરીને લિંક બદલી લો.");
-        }).catch(err => {
-            console.error('Copy failed', err);
-        });
-    }
-
-    // વિડિયો મેનેજમેન્ટ લોજિક (Firebase Firestore સાથે કનેક્ટ કરવા માટે)
-    async function loadAdminVideos() {
-        const container = document.getElementById("admin-videos-list");
-        if (!container || typeof lgdCode === 'undefined' || !lgdCode) return;
-
-        try {
-            const snap = await getDocs(getPanchayatCol("videos"));
-            container.innerHTML = "";
-            
-            if (snap.empty) {
-                container.innerHTML = `<p class="text-xs text-gray-400 p-2 text-center">કોઈ વિડિયો ઉપલબ્ધ નથી.</p>`;
-                window.totalVideosCount = 0;
-                return;
-            }
-
-            window.videosCache = window.videosCache || {};
-            let count = 0;
-
-            snap.forEach(d => {
-                count++;
-                const item = d.data();
-                window.videosCache[d.id] = item;
-
-                container.innerHTML += `
-                    <div class="flex justify-between items-center bg-white p-2.5 border rounded-xl text-xs shadow-sm">
-                        <span class="font-bold text-gray-800 truncate max-w-[220px]">🎬 ${item.videoTitle || 'વિડિયો'}</span>
-                        <div class="flex gap-1.5 shrink-0">
-                            <button type="button" onclick="editVideo('${d.id}')" class="bg-amber-500 hover:bg-amber-600 text-white text-[10px] px-2.5 py-1 rounded-lg font-semibold">એડિટ</button>
-                            <button type="button" onclick="deleteVideo('${d.id}')" class="bg-red-600 hover:bg-red-700 text-white text-[10px] px-2.5 py-1 rounded-lg font-semibold">ડિલીટ</button>
-                        </div>
-                    </div>
-                `;
-            });
-
-            window.totalVideosCount = count;
-        } catch (err) {
-            console.error("Load Videos Error:", err);
-        }
-    }
-
-    window.editVideo = (id) => {
-        const item = window.videosCache?.[id];
-        if (!item) return;
-
-        document.getElementById("video-title").value = item.videoTitle || '';
-        document.getElementById("video-embed").value = item.videoEmbedHtml || '';
-        document.getElementById("edit-video-id").value = id;
-
-        document.getElementById("video-submit-btn").innerText = "વિડિયો અપડેટ કરો";
-        document.getElementById("video-cancel-btn").classList.remove("hidden");
-        document.getElementById("video-form")?.scrollIntoView({ behavior: 'smooth' });
-    };
-
-    window.deleteVideo = async (id) => {
-        if (!confirm("શું તમે આ વિડિયો ડિલીટ કરવા માંગો છો?")) return;
-        try {
-            await deleteDoc(getPanchayatDoc("videos", id));
-            alert("✅ વિડિયો સફળતાપૂર્વક ડિલીટ થઈ ગયો!");
-            loadAdminVideos();
-        } catch (err) {
-            console.error("Delete Video Error:", err);
-            alert("ડિલીટ કરવામાં ભૂલ આવી.");
-        }
-    };
-
-    document.getElementById("video-cancel-btn")?.addEventListener("click", () => {
-        document.getElementById("video-form").reset();
-        document.getElementById("edit-video-id").value = "";
-        document.getElementById("video-submit-btn").innerText = "વિડિયો ઉમેરો";
-        document.getElementById("video-cancel-btn").classList.add("hidden");
+function copyExampleCode() {
+    const codeText = '<iframe src="https://www.youtube.com/embed/YOUR_VIDEO_ID" width="100%" height="100%" allowfullscreen></iframe>';
+    navigator.clipboard.writeText(codeText).then(() => {
+        alert("✅ એક્ઝામ્પલ કોડ કોપી થઈ ગયો! હવે તેને ટેક્સ્ટ બોક્સમાં પેસ્ટ કરીને લિંક બદલી લો.");
+    }).catch(err => {
+        console.error('Copy failed', err);
     });
+}
 
-    document.getElementById("video-form")?.addEventListener("submit", async (e) => {
+// વિડિયો લિસ્ટ લોડ કરવા માટે
+async function loadAdminVideos() {
+    const container = document.getElementById("admin-videos-list");
+    if (!container || typeof lgdCode === 'undefined' || !lgdCode) return;
+
+    try {
+        const snap = await getDocs(getPanchayatCol("videos"));
+        container.innerHTML = "";
+        
+        if (snap.empty) {
+            container.innerHTML = `<p class="text-xs text-gray-400 p-2 text-center">કોઈ વિડિયો ઉપલબ્ધ નથી.</p>`;
+            window.totalVideosCount = 0;
+            return;
+        }
+
+        window.videosCache = window.videosCache || {};
+        let count = 0;
+
+        snap.forEach(d => {
+            count++;
+            const item = d.data();
+            window.videosCache[d.id] = item;
+
+            container.innerHTML += `
+                <div class="flex justify-between items-center bg-white p-2.5 border rounded-xl text-xs shadow-sm">
+                    <span class="font-bold text-gray-800 truncate max-w-[220px]">🎬 ${item.videoTitle || 'વિડિયો'}</span>
+                    <div class="flex gap-1.5 shrink-0">
+                        <button type="button" onclick="editVideo('${d.id}')" class="bg-amber-500 hover:bg-amber-600 text-white text-[10px] px-2.5 py-1 rounded-lg font-semibold">એડિટ</button>
+                        <button type="button" onclick="deleteVideo('${d.id}')" class="bg-red-600 hover:bg-red-700 text-white text-[10px] px-2.5 py-1 rounded-lg font-semibold">ડિલીટ</button>
+                    </div>
+                </div>
+            `;
+        });
+
+        window.totalVideosCount = count;
+    } catch (err) {
+        console.error("Load Videos Error:", err);
+    }
+}
+
+window.editVideo = (id) => {
+    const item = window.videosCache?.[id];
+    if (!item) return;
+
+    const titleEl = document.getElementById("video-title");
+    const embedEl = document.getElementById("video-embed");
+    const idEl = document.getElementById("edit-video-id");
+    const submitBtn = document.getElementById("video-submit-btn");
+    const cancelBtn = document.getElementById("video-cancel-btn");
+
+    if (titleEl) titleEl.value = item.videoTitle || '';
+    if (embedEl) embedEl.value = item.videoEmbedHtml || '';
+    if (idEl) idEl.value = id;
+
+    if (submitBtn) submitBtn.innerText = "વિડિયો અપડેટ કરો";
+    if (cancelBtn) cancelBtn.classList.remove("hidden");
+
+    document.getElementById("video-form")?.scrollIntoView({ behavior: 'smooth' });
+};
+
+window.deleteVideo = async (id) => {
+    if (!confirm("શું તમે આ વિડિયો ડિલીટ કરવા માંગો છો?")) return;
+    try {
+        await deleteDoc(getPanchayatDoc("videos", id));
+        alert("✅ વિડિયો સફળતાપૂર્વક ડિલીટ થઈ ગયો!");
+        loadAdminVideos();
+    } catch (err) {
+        console.error("Delete Video Error:", err);
+        alert("ડિલીટ કરવામાં ભૂલ આવી: " + err.message);
+    }
+};
+
+const videoCancelBtn = document.getElementById("video-cancel-btn");
+if (videoCancelBtn) {
+    videoCancelBtn.addEventListener("click", () => {
+        const form = document.getElementById("video-form");
+        if (form) form.reset();
+        
+        const editIdEl = document.getElementById("edit-video-id");
+        if (editIdEl) editIdEl.value = "";
+        
+        const submitBtn = document.getElementById("video-submit-btn");
+        if (submitBtn) submitBtn.innerText = "વિડિયો ઉમેરો";
+        
+        videoCancelBtn.classList.add("hidden");
+    });
+}
+
+const videoForm = document.getElementById("video-form");
+if (videoForm) {
+    videoForm.addEventListener("submit", async (e) => {
         e.preventDefault();
         if (typeof lgdCode === 'undefined' || !lgdCode) {
             alert("⚠️ LGD Code મળ્યો નથી!");
             return;
         }
 
-        const editId = document.getElementById("edit-video-id").value.trim();
-        const videoTitle = document.getElementById("video-title").value.trim();
-        const videoEmbedHtml = document.getElementById("video-embed").value.trim();
+        const editIdInput = document.getElementById("edit-video-id");
+        const editId = editIdInput ? editIdInput.value.trim() : "";
+
+        const titleInput = document.getElementById("video-title");
+        const embedInput = document.getElementById("video-embed");
+
+        const videoTitle = titleInput ? titleInput.value.trim() : "";
+        const videoEmbedHtml = embedInput ? embedInput.value.trim() : "";
+
+        if (!videoTitle || !videoEmbedHtml) {
+            alert("⚠️ કૃપા કરીને વિડિયોનું નામ અને એમ્બેડ કોડ બંને ભરો!");
+            return;
+        }
 
         if (!editId && window.totalVideosCount >= 10) {
             alert("⚠️ તમે મહત્તમ ૧૦ વિડિયો જ ઉમેરી શકો છો!");
@@ -2756,3 +2786,4 @@ document.getElementById("copy-email-btn")?.addEventListener("click", () => {
             alert("સેવ કરવામાં ભૂલ આવી: " + err.message);
         }
     });
+}
