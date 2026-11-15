@@ -2643,7 +2643,7 @@ async function loadAdminVideos() {
     if (!container) return;
     
     if (typeof lgdCode === 'undefined' || !lgdCode) {
-        container.innerHTML = `<p class="text-xs text-red-500 p-2 text-center">⚠️ LGD Code ઉપલબ્ધ નથી.</p>";
+        container.innerHTML = `<p class="text-xs text-red-500 p-2 text-center">⚠️ LGD Code ઉપલબ્ધ નથી.</p>`;
         return;
     }
 
@@ -2702,7 +2702,6 @@ window.editVideo = (id) => {
             let match = rawHtml.match(/src="([^"]+)"/);
             if (match && match[1]) {
                 let embedUrl = match[1];
-                // જો embed યુઆરએલ હોય તો તેને નોર્મલ watch યુઆરએલમાં ફેરવી શકાય અથવા એ જ બતાવી શકાય
                 embedEl.value = embedUrl.replace('/embed/', '/watch?v=');
             } else {
                 embedEl.value = rawHtml;
