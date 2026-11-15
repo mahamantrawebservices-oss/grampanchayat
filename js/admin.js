@@ -2688,9 +2688,25 @@ window.editVideo = (id) => {
     const cancelBtn = document.getElementById("video-cancel-btn");
 
     if (titleEl) titleEl.value = item.videoTitle || '';
-    if (embedEl) embedEl.value = item.videoEmbedHtml || '';
-    if (idEl) idEl.value = id;
+    
+    // જો ડેટાબેઝમાં iframe કોડ સેવ હોય તો તેમાંથી src યુઆરએલ કાઢીને ઇનપુટમાં બતાવવી
+    if (embedEl) {
+        let rawHtml = item.videoEmbedHtml || '';
+        if (rawHtml.includes("src=")) {
+            let match = rawHtml.match(/src="([^"]+)"/);
+            if (match && match[1]) {
+                let embedUrl = match[1];
+                // જો embed યુઆરએલ હોય તો તેને નોર્મલ watch યુઆરએલમાં ફેરવી શકાય અથવા એ જ બતાવી શકાય
+                embedEl.value = embedUrl.replace('/embed/', '/watch?v=');
+            } else {
+                embedEl.value = rawHtml;
+            }
+        } else {
+            embedEl.value = rawHtml;
+        }
+    }
 
+    if (idEl) idEl.value = id;
     if (submitBtn) submitBtn.innerText = "વિડિયો અપડેટ કરો";
     if (cancelBtn) cancelBtn.classList.remove("hidden");
 
@@ -2738,13 +2754,13 @@ if (videoForm) {
         const editId = editIdInput ? editIdInput.value.trim() : "";
 
         const titleInput = document.getElementById("video-title");
-        const embedInput = document.getElementById("video-embed");
+        const urlInput = document.getElementById("video-embed");
 
         const videoTitle = titleInput ? titleInput.value.trim() : "";
-        const videoEmbedHtml = embedInput ? embedInput.value.trim() : "";
+        let inputUrl = urlInput ? urlInput.value.trim() : "";
 
-        if (!videoTitle || !videoEmbedHtml) {
-            alert("⚠️ કૃપા કરીને વિડિયોનું નામ અને એમ્બેડ કોડ બંને ભરો!");
+        if (!videoTitle || !inputUrl) {
+            alert("⚠️ કૃપા કરીને વિડિયોનું નામ અને લિંક બંને ભરો!");
             return;
         }
 
@@ -2752,6 +2768,25 @@ if (videoForm) {
             alert("⚠️ તમે મહત્તમ ૧૦ વિડિયો જ ઉમેરી શકો છો!");
             return;
         }
+
+        // --- YouTube લિંકને ઓટોમેટિક Embed Iframe માં કન્વર્ટ કરવાનું લોજિક ---
+        let videoEmbedHtml = inputUrl;
+        
+        if (inputUrl.includes("youtube.com") || inputUrl.includes("youtu.be")) {
+            let videoId = "";
+            if (inputUrl.includes("youtu.be/")) {
+                videoId = inputUrl.split("youtu.be/")[1]?.split("?")[0];
+            } else if (inputUrl.includes("watch?v=")) {
+                videoId = inputUrl.split("watch?v=")[1]?.split("&")[0];
+            } else if (inputUrl.includes("embed/")) {
+                videoId = inputUrl.split("embed/")[1]?.split("?")[0];
+            }
+
+            if (videoId) {
+                videoEmbedHtml = `<iframe src="https://www.youtube.com/embed/${videoId}" width="100%" height="100%" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+            }
+        }
+        // --------------------------------------------------------------------
 
         const payload = {
             videoTitle,
