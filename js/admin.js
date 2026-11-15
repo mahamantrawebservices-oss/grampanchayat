@@ -250,6 +250,7 @@ function initAdminPanel() {
     loadAdminGlanceList();
     loadContactAdminData();
     loadAdminFeedbacks();
+    loadAdminVideos()
     loadDownloadsAdminData();
     loadProactiveAdminData();
    
