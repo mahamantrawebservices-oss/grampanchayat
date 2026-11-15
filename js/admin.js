@@ -498,7 +498,7 @@ window.deleteGalleryImg = async (id) => {
 };
 // --- ૪. Blogger ફોટો ગેલેરી મેનેજર (૨૦ ફોટા લિમિટ & સ્ક્રોલ લિસ્ટ કોડ પૂર્ણ) ---
 
-// --- ૫. ગામ અને પંચાયત વિગત (Quill Editor) ---
+// --- ૫. ગ્રામ પરિચય મેનેજર(Quill Editor) ---
 let menuQuill = null;
 if (document.getElementById('menu-editor-container')) {
     menuQuill = new Quill('#menu-editor-container', {
