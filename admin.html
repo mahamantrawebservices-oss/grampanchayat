@@ -749,6 +749,41 @@
     </div>
 </div>
 
+<!-- વિડિયો મેનેજમેન્ટ સેક્શન -->
+<div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
+    <h3 class="text-base font-bold text-purple-900 flex items-center gap-2 border-b pb-3">
+        <i class="fa-solid fa-video text-amber-500"></i> દૃશ્ય-પરિચય (Video Gallery Management)
+    </h3>
+    <p class="text-xs text-gray-600">તમે મહત્તમ ૧૦ વિડિયો ઉમેરી શકો છો. YouTube, Instagram કે Facebook ની Embed / Iframe લિંક અહીં ઉમેરો.</p>
+
+    <form id="video-form" class="space-y-4 bg-purple-50/50 p-4 rounded-xl border border-purple-100">
+        <input type="hidden" id="edit-video-id">
+        <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">વિડિયોનું નામ / વિષય:</label>
+            <input type="text" id="video-title" placeholder="દા.ત. ગ્રામ પંચાયત વિકાસ કાર્યોની ઝાંખી" required class="w-full px-3 py-2 border rounded-xl text-xs focus:ring-2 focus:ring-purple-500 outline-none">
+        </div>
+        <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">વિડિયો Embed / Iframe HTML કોડ:</label>
+            <textarea id="video-embed" rows="3" placeholder='<iframe src="..." width="100%" height="100%" allowfullscreen></iframe>' required class="w-full px-3 py-2 border rounded-xl text-xs focus:ring-2 focus:ring-purple-500 outline-none font-mono"></textarea>
+            <span class="text-[10px] text-gray-500 mt-1 block">ટિપ: YouTube અથવા અન્ય પ્લેટફોર્મ પરથી 'Embed' કે 'Iframe' કોડ કોપી કરીને અહીં પેસ્ટ કરો.</span>
+        </div>
+        <div class="flex gap-2">
+            <button type="submit" id="video-submit-btn" class="bg-purple-800 hover:bg-purple-900 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow transition">વિડિયો ઉમેરો</button>
+            <button type="button" id="video-cancel-btn" class="hidden bg-gray-500 hover:bg-gray-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition">રદ કરો</button>
+        </div>
+    </form>
+
+    <!-- ઉમેરેલા વિડિયોનું લિસ્ટ (૫ વિડિયો સુધી દેખાય અને બાકીના સ્ક્રોલ થાય) -->
+    <div class="mt-4">
+        <h4 class="text-xs font-bold text-gray-700 mb-2">ઉમેરેલા વિડિયોની યાદી (કુલ ૧૦ સુધી મંજૂર):</h4>
+        <div id="admin-videos-list" class="max-h-[300px] overflow-y-auto space-y-2 pr-1 border rounded-xl p-2 bg-gray-50">
+            <p class="text-xs text-gray-400 p-2 text-center">માહિતી લોડ થઈ રહી છે...</p>
+        </div>
+    </div>
+</div>
+
+
+            
 <!--સેક્શન ૧૮: સ્વયં જાહેર કરેલ માહિતી -->
 <div class="bg-white p-5 rounded-2xl shadow-md border space-y-6 md:col-span-2 lg:col-span-3">
     <h3 class="font-bold text-sm text-emerald-800 flex items-center gap-2 border-b pb-2">
