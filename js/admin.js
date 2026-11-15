@@ -2637,14 +2637,59 @@ document.getElementById("copy-email-btn")?.addEventListener("click", () => {
 
 // --- દૃશ્ય-પરિચય (Video Gallery) મેનેજમેન્ટ લોજિક ---
 
-// એક્ઝામ્પલ કોડ ક્લિપબોર્ડમાં કોપી કરવા માટેનું ફંક્શન
+// --- એક્ઝામ્પલ કોડ ક્લિપબોર્ડમાં કોપી કરવા માટેનું સચોટ ફંક્શન ---
 function copyExampleCode() {
     const codeText = '<iframe src="https://www.youtube.com/embed/YOUR_VIDEO_ID" width="100%" height="100%" allowfullscreen></iframe>';
-    navigator.clipboard.writeText(codeText).then(() => {
-        alert("✅ એક્ઝામ્પલ કોડ કોપી થઈ ગયો! હવે તેને ટેક્સ્ટ બોક્સમાં પેસ્ટ કરીને લિંક બદલી લો.");
-    }).catch(err => {
-        console.error('Copy failed', err);
-    });
+
+    // ૧. જો મોર્ડન બ્રાઉઝર ક્લિપબોર્ડ API સપોર્ટ કરતું હોય
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(codeText).then(() => {
+            alert("✅ એક્ઝામ્પલ કોડ કોપી થઈ ગયો! હવે તેને ટેક્સ્ટ બોક્સમાં પેસ્ટ કરી લો.");
+        }).catch(err => {
+            console.warn("Clipboard API failed, trying fallback...", err);
+            fallbackCopyText(codeText);
+        });
+    } else {
+        // ૨. જો જૂનું બ્રાઉઝર કે લોકલ ફાઇલ સેટઅપ હોય તો ફોલબેક પદ્ધતિ વાપરવી
+        fallbackCopyText(codeText);
+    }
+}
+
+// ફોલબેક કોપી મેથડ (ટેમ્પરરી textarea બનાવીને કોપી કરવાની રીત)
+function fallbackCopyText(text) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    
+    // સ્ક્રીનની બહાર ટેક્સ્ટ એરિયા મૂકવો જેથી યુઝરને દેખાય નહીં
+    textArea.style.position = "fixed";
+    textArea.style.top = "0";
+    textArea.style.left = "0";
+    textArea.style.width = "2em";
+    textArea.style.height = "2em";
+    textArea.style.padding = "0";
+    textArea.style.border = "none";
+    textArea.style.outline = "none";
+    textArea.style.boxShadow = "none";
+    textArea.style.background = "transparent";
+    textArea.style.opacity = "0";
+    
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+
+    try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+            alert("✅ એક્ઝામ્પલ કોડ કોપી થઈ ગયો! હવે તેને ટેક્સ્ટ બોક્સમાં પેસ્ટ કરી લો.");
+        } else {
+            alert("❌ કોપી કરવાનું નિષ્ફળ ગયું.");
+        }
+    } catch (err) {
+        console.error('Fallback copy error:', err);
+        alert("❌ કોપી કરવામાં ટેકનિકલ ભૂલ આવી.");
+    }
+
+    document.body.removeChild(textArea);
 }
 
 // વિડિયો લિસ્ટ લોડ કરવા માટે
