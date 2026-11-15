@@ -749,31 +749,46 @@
     </div>
 </div>
 
-<!-- વિડિયો મેનેજમેન્ટ સેક્શન -->
+<!-- --- વિડિયો ગેલેરી મેનેજમેન્ટ સેક્શન --- -->
 <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
     <h3 class="text-base font-bold text-purple-900 flex items-center gap-2 border-b pb-3">
         <i class="fa-solid fa-video text-amber-500"></i> દૃશ્ય-પરિચય (Video Gallery Management)
     </h3>
     <p class="text-xs text-gray-600">તમે મહત્તમ ૧૦ વિડિયો ઉમેરી શકો છો. YouTube, Instagram કે Facebook ની Embed / Iframe લિંક અહીં ઉમેરો.</p>
 
+    <!-- વિડિયો એડ/અપડેટ ફોર્મ -->
     <form id="video-form" class="space-y-4 bg-purple-50/50 p-4 rounded-xl border border-purple-100">
         <input type="hidden" id="edit-video-id">
+        
         <div>
             <label class="block text-xs font-bold text-gray-700 mb-1">વિડિયોનું નામ / વિષય:</label>
             <input type="text" id="video-title" placeholder="દા.ત. ગ્રામ પંચાયત વિકાસ કાર્યોની ઝાંખી" required class="w-full px-3 py-2 border rounded-xl text-xs focus:ring-2 focus:ring-purple-500 outline-none">
         </div>
+
         <div>
             <label class="block text-xs font-bold text-gray-700 mb-1">વિડિયો Embed / Iframe HTML કોડ:</label>
-            <textarea id="video-embed" rows="3" placeholder='<iframe src="..." width="100%" height="100%" allowfullscreen></iframe>' required class="w-full px-3 py-2 border rounded-xl text-xs focus:ring-2 focus:ring-purple-500 outline-none font-mono"></textarea>
-            <span class="text-[10px] text-gray-500 mt-1 block">ટિપ: YouTube અથવા અન્ય પ્લેટફોર્મ પરથી 'Embed' કે 'Iframe' કોડ કોપી કરીને અહીં પેસ્ટ કરો.</span>
+            <textarea id="video-embed" rows="3" placeholder='<iframe src="https://www.youtube.com/embed/YOUR_VIDEO_ID" width="100%" height="100%" allowfullscreen></iframe>' required class="w-full px-3 py-2 border rounded-xl text-xs focus:ring-2 focus:ring-purple-500 outline-none font-mono"></textarea>
+            
+            <!-- એડમિન માટે ઉપયોગી એક્ઝામ્પલ અને કોપી કરવા માટેનું બટન -->
+            <div class="mt-1.5 p-2 bg-purple-50 rounded-lg border border-purple-100 text-[11px] text-gray-700 space-y-1">
+                <p class="font-bold text-purple-900"><i class="fa-solid fa-lightbulb text-amber-500"></i> સરળ રીત (ઉદાહરણ કોડ):</p>
+                <p class="text-gray-600">નીચેના કોડને કોપી કરો અને ફક્ત <code class="bg-white px-1 py-0.5 rounded text-purple-700 font-bold">YOUR_VIDEO_ID</code> ની જગ્યાએ તમારા YouTube વિડિયોનો આઈડી મૂકો:</p>
+                <div class="flex items-center justify-between bg-white p-1.5 rounded border font-mono text-[10px] text-gray-800">
+                    <span id="sample-code-text">&lt;iframe src="https://www.youtube.com/embed/YOUR_VIDEO_ID" width="100%" height="100%" allowfullscreen&gt;&lt;/iframe&gt;</span>
+                    <button type="button" onclick="copyExampleCode()" class="bg-purple-800 hover:bg-purple-900 text-white text-[10px] px-2 py-1 rounded transition shrink-0">
+                        <i class="fa-solid fa-copy"></i> કોપી કરો
+                    </button>
+                </div>
+            </div>
         </div>
+
         <div class="flex gap-2">
             <button type="submit" id="video-submit-btn" class="bg-purple-800 hover:bg-purple-900 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow transition">વિડિયો ઉમેરો</button>
             <button type="button" id="video-cancel-btn" class="hidden bg-gray-500 hover:bg-gray-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition">રદ કરો</button>
         </div>
     </form>
 
-    <!-- ઉમેરેલા વિડિયોનું લિસ્ટ (૫ વિડિયો સુધી દેખાય અને બાકીના સ્ક્રોલ થાય) -->
+    <!-- ઉમેરેલા વિડિયોનું લિસ્ટ (૫ વિડિયો સુધી દેખાય અને બાકીના માટે વર્ટિકલ સ્ક્રોલ થાય) -->
     <div class="mt-4">
         <h4 class="text-xs font-bold text-gray-700 mb-2">ઉમેરેલા વિડિયોની યાદી (કુલ ૧૦ સુધી મંજૂર):</h4>
         <div id="admin-videos-list" class="max-h-[300px] overflow-y-auto space-y-2 pr-1 border rounded-xl p-2 bg-gray-50">
