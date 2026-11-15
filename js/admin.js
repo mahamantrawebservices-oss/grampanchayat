@@ -2640,7 +2640,12 @@ document.getElementById("copy-email-btn")?.addEventListener("click", () => {
 // વિડિયો લિસ્ટ લોડ કરવા માટે
 async function loadAdminVideos() {
     const container = document.getElementById("admin-videos-list");
-    if (!container || typeof lgdCode === 'undefined' || !lgdCode) return;
+    if (!container) return;
+    
+    if (typeof lgdCode === 'undefined' || !lgdCode) {
+        container.innerHTML = `<p class="text-xs text-red-500 p-2 text-center">⚠️ LGD Code ઉપલબ્ધ નથી.</p>";
+        return;
+    }
 
     try {
         const snap = await getDocs(getPanchayatCol("videos"));
@@ -2652,7 +2657,7 @@ async function loadAdminVideos() {
             return;
         }
 
-        window.videosCache = window.videosCache || {};
+        window.videosCache = {};
         let count = 0;
 
         snap.forEach(d => {
@@ -2674,6 +2679,7 @@ async function loadAdminVideos() {
         window.totalVideosCount = count;
     } catch (err) {
         console.error("Load Videos Error:", err);
+        container.innerHTML = `<p class="text-xs text-red-500 p-2 text-center">વિડિયો લોડ કરવામાં ભૂલ આવી.</p>`;
     }
 }
 
