@@ -795,64 +795,172 @@
 
     <form id="proactive-admin-form" class="space-y-6 text-xs">
         
+        <!-- પંચાયતનું સ્થાન -->
         <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
             <h4 class="font-bold text-gray-800 border-b pb-1">૦. પંચાયતનું સ્થાન (હેડર માટે)</h4>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
-                    <label class="block font-medium text-gray-700 mb-1">તાલુકો</label>
+                    <label class="block font-bold text-gray-700 mb-1">તાલુકો</label>
                     <input type="text" id="adm-taluka" class="w-full border p-2 rounded bg-white" placeholder="દા.ત. દસ્ક્રોઈ" required>
                 </div>
                 <div>
-                    <label class="block font-medium text-gray-700 mb-1">જિલ્લો</label>
+                    <label class="block font-bold text-gray-700 mb-1">જિલ્લો</label>
                     <input type="text" id="adm-district" class="w-full border p-2 rounded bg-white" placeholder="દા.ત. અમદાવાદ" required>
                 </div>
             </div>
         </div>     
 
+        <!-- ૧. જાહેર માહિતી અધિકારીની વિગતો -->
         <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
             <h4 class="font-bold text-gray-800 border-b pb-1">૧. જાહેર માહિતી અધિકારીની વિગતો</h4>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div>
-                    <label class="block font-medium text-gray-700 mb-1">તલાટી કમ મંત્રીનું નામ</label>
+                    <label class="block font-bold text-gray-700 mb-1">તલાટી કમ મંત્રીનું નામ</label>
                     <input type="text" id="off-name" class="w-full border p-2 rounded bg-white" placeholder="નામ લખો" required>
                 </div>
                 <div>
-                    <label class="block font-medium text-gray-700 mb-1">મોબાઈલ નંબર</label>
+                    <label class="block font-bold text-gray-700 mb-1">મોબાઈલ નંબર</label>
                     <input type="text" id="off-phone" class="w-full border p-2 rounded bg-white" placeholder="નંબર લખો" required>
                 </div>
                 <div>
-                    <label class="block font-medium text-gray-700 mb-1">પ્રથમ અપીલ અધિકારીશ્રી</label>
+                    <label class="block font-bold text-gray-700 mb-1">પ્રથમ અપીલ અધિકારીશ્રી</label>
                     <input type="text" id="off-appeal" class="w-full border p-2 rounded bg-white" placeholder="અધિકારીનું નામ" required>
                 </div>
             </div>
         </div>
 
+        <!-- ૨. ગામની વસ્તી વિશેની માહિતી (બાળ, SC, ST, સ્ત્રી, પુરુષ, કુલ) -->
         <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
-            <h4 class="font-bold text-gray-800 border-b pb-1">૨. ગામની વસ્તી વિશેની માહિતી</h4>
-            <div id="population-rows" class="space-y-2"></div>
-            <button type="button" onclick="addPopulationRow()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-[11px] font-bold transition">+ નવી વસ્તી વિગત ઉમેરો</button>
+            <h4 class="font-bold text-gray-800 border-b pb-1">૨. ગામની વસ્તી વિશેની માહિતી (બાળ, SC, ST, સ્ત્રી, પુરુષ, કુલ)</h4>
+            <div id="population-rows" class="space-y-3"></div>
+            <button type="button" onclick="addPopulationRow()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-[11px] font-bold transition">+ વસ્તી વિગત ઉમેરો (બાળ / SC / ST / કુલ)</button>
         </div>
 
+        <!-- ૩. ગામના પાણીની વિગત -->
         <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
             <h4 class="font-bold text-gray-800 border-b pb-1">૩. ગામના પાણીની વિગત (જળાશય)</h4>
-            <div id="water-rows" class="space-y-2"></div>
+            <div id="water-rows" class="space-y-3"></div>
             <button type="button" onclick="addWaterRow()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-[11px] font-bold transition">+ જળાશય ઉમેરો</button>
         </div>
 
+        <!-- ૪. પંચાયતની મિલકત -->
         <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
             <h4 class="font-bold text-gray-800 border-b pb-1">૪. પંચાયતની મિલકત</h4>
-            <div id="prop-rows" class="space-y-2"></div>
+            <div id="prop-rows" class="space-y-3"></div>
             <button type="button" onclick="addPropRow()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-[11px] font-bold transition">+ મિલકત ઉમેરો</button>
         </div>
 
+        <!-- ૫. ગામના ઘરો અને આકારણી -->
         <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
-            <h4 class="font-bold text-gray-800 border-b pb-1">૫. પેજના સૌથી નીચે ઉમેરવાની અન્ય માહિતી (વૈકલ્પિક)</h4>
+            <h4 class="font-bold text-gray-800 border-b pb-1">૫. ગામના ઘરો અને આકારણી વિગતો</h4>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1">ઘરોની કુલ સંખ્યા</label>
+                    <input type="number" id="house-total" class="w-full border p-2 rounded bg-white" placeholder="દા.ત. 500">
+                </div>
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1">કુલ પંચાયત રજીસ્ટરે નોંધાયેલ આકારણી</label>
+                    <input type="number" id="house-assessment" class="w-full border p-2 rounded bg-white" placeholder="દા.ત. 480">
+                </div>
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1">કુલ કુટુંબ (રાશન કાર્ડ મુજબ)</label>
+                    <input type="number" id="family-total" class="w-full border p-2 rounded bg-white" placeholder="દા.ત. 450">
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3 pt-2">
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1">NFSA કુટુંબ</label>
+                    <input type="number" id="family-nfsa" class="w-full border p-2 rounded bg-white" placeholder="સંખ્યા">
+                </div>
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1">Non NFSA કુટુંબ</label>
+                    <input type="number" id="family-non-nfsa" class="w-full border p-2 rounded bg-white" placeholder="સંખ્યા">
+                </div>
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1">BPL કુટુંબ</label>
+                    <input type="number" id="family-bpl" class="w-full border p-2 rounded bg-white" placeholder="સંખ્યા">
+                </div>
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1">APL કુટુંબ</label>
+                    <input type="number" id="family-apl" class="w-full border p-2 rounded bg-white" placeholder="સંખ્યા">
+                </div>
+            </div>
+        </div>
+
+        <!-- ૬. આરોગ્ય સેવાઓ -->
+        <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
+            <h4 class="font-bold text-gray-800 border-b pb-1">૬. આરોગ્ય સેવાઓ (સંખ્યા)</h4>
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1">PHC (પ્રા.આ.કે.)</label>
+                    <input type="number" id="health-phc" class="w-full border p-2 rounded bg-white" placeholder="સંખ્યા">
+                </div>
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1">CHC (સા.આ.કે.)</label>
+                    <input type="number" id="health-chc" class="w-full border p-2 rounded bg-white" placeholder="સંખ્યા">
+                </div>
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1">હોમિયોપેથિક દવાખાનું</label>
+                    <input type="number" id="health-homeo" class="w-full border p-2 rounded bg-white" placeholder="સંખ્યા">
+                </div>
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1">આયુર્વેદિક દવાખાનું</label>
+                    <input type="number" id="health-ayur" class="w-full border p-2 rounded bg-white" placeholder="સંખ્યા">
+                </div>
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1">અન્ય ખાનગી દવાખાના</label>
+                    <input type="number" id="health-private" class="w-full border p-2 rounded bg-white" placeholder="સંખ્યા">
+                </div>
+            </div>
+        </div>
+
+        <!-- ૭. નાણાકીય સેવાઓ -->
+        <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
+            <h4 class="font-bold text-gray-800 border-b pb-1">૭. નાણાકીય સેવાઓ</h4>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1">બેન્ક (Bank)</label>
+                    <input type="number" id="fin-bank" class="w-full border p-2 rounded bg-white" placeholder="સંખ્યા">
+                </div>
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1">ATM સુવિધા</label>
+                    <input type="number" id="fin-atm" class="w-full border p-2 rounded bg-white" placeholder="સંખ્યા">
+                </div>
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1">પોસ્ટ ઓફિસ</label>
+                    <input type="number" id="fin-post" class="w-full border p-2 rounded bg-white" placeholder="સંખ્યા">
+                </div>
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1">અન્ય નાના ધીરનાર પેઢી</label>
+                    <input type="number" id="fin-lender" class="w-full border p-2 rounded bg-white" placeholder="સંખ્યા">
+                </div>
+            </div>
+        </div>
+
+        <!-- ૮. કૃષિ માહિતી -->
+        <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
+            <h4 class="font-bold text-gray-800 border-b pb-1">૮. કૃષિ માહિતી</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1">મુખ્ય પાક (કોમા કરીને લખો)</label>
+                    <input type="text" id="agri-crops" class="w-full border p-2 rounded bg-white" placeholder="દા.ત. ડાંગર, કપાસ, ઘઉં">
+                </div>
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1">પિયતના પ્રકાર</label>
+                    <input type="text" id="agri-irrigation" class="w-full border p-2 rounded bg-white" placeholder="દા.ત. બોરવેલ, નહેર, કૂવા">
+                </div>
+            </div>
+        </div>
+
+        <!-- ૯. અન્ય માહિતી (ઓપ્શન) -->
+        <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
+            <h4 class="font-bold text-gray-800 border-b pb-1">૯. પેજના સૌથી નીચે ઉમેરવાની અન્ય માહિતી (વૈકલ્પિક)</h4>
             <div>
-                <label class="block font-medium text-gray-700 mb-1">શિર્ષક (Title):</label>
+                <label class="block font-bold text-gray-700 mb-1">શિર્ષક (Title):</label>
                 <input type="text" id="extra-title-input" class="w-full border p-2 rounded bg-white" placeholder="દા.ત. વિશેષ નોંધ અથવા અન્ય વિગત">
             </div>
             <div>
-                <label class="block font-medium text-gray-700 mb-1">માહિતી / લખાણ (Content):</label>
+                <label class="block font-bold text-gray-700 mb-1">માહિતી / લખાણ (Content):</label>
                 <textarea id="extra-content-input" rows="3" class="w-full border p-2 rounded bg-white" placeholder="અહીં વિગતવાર લખાણ લખો..."></textarea>
             </div>
         </div>
@@ -862,7 +970,6 @@
         </button>
     </form>
 </div>
-
         </main>
     </div>
 
