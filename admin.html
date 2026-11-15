@@ -924,6 +924,17 @@
         <div class="space-y-3 text-gray-700">
             <p><b>સબ્સ્ક્રિપ્શન સમાપ્તિ તારીખ (Expiry Date):</b> <span id="sub-expiry-date" class="text-red-600 font-bold">-</span></p>
             
+            <!-- 💡 વાર્ષિક સબ્સ્ક્રિપ્શન ફી શા માટે? (ઇન્ફોર્મેશન ટૉગલ ફીચર) -->
+            <div class="border border-purple-200 rounded-xl overflow-hidden bg-purple-50/50">
+                <button type="button" onclick="const content = document.getElementById('sub-info-content'); const icon = document.getElementById('sub-info-icon'); content.classList.toggle('hidden'); icon.classList.toggle('rotate-180');" class="w-full px-3 py-2 text-left font-bold text-purple-900 text-xs flex justify-between items-center bg-purple-100/70 hover:bg-purple-100 transition">
+                    <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle-question text-purple-700"></i> વાર્ષિક સબ્સ્ક્રિપ્શન ફી શા માટે?</span>
+                    <i id="sub-info-icon" class="fa-solid fa-chevron-down text-purple-700 transition-transform duration-200"></i>
+                </button>
+                <div id="sub-info-content" class="hidden p-3 text-[11px] text-gray-700 leading-relaxed bg-white border-t border-purple-100">
+                    આપના એડિટ, ડિલીટ, અપડેટ, ડેટા સ્ટોરેજ, ડેટા સિક્યુરિટી, અને સતત સુધારાઓ માટે admin દ્વારા થતાં વાર્ષિક ખર્ચની આપના ભાગે પડતી નજીવી રકમ પેટે આપની પાસે આ ફી માંગવામાં આવે છે, આ ફી એવરેજ મોડલની રીતે લેવાય છે.
+                </div>
+            </div>
+
             <div class="bg-amber-50 border border-amber-200 p-3 rounded-xl text-xs space-y-1">
                 <p class="font-bold text-amber-900">ચુકવણી સૂચના:</p>
                 <p>નીચેના QR કોડને સ્કેન કરીને દર્શાવેલ રકમ ભરીને આપણું સબ્સ્ક્રિપ્શન renew કરો.</p>
@@ -937,7 +948,8 @@
                     <span id="sub-qr-placeholder" class="text-xs text-gray-400">QR કોડ ઉપલબ્ધ નથી</span>
                 </div>
             </div>
-<div class="bg-blue-50 border border-blue-200 p-3 rounded-xl text-[11px] text-blue-950 space-y-1">
+
+            <div class="bg-blue-50 border border-blue-200 p-3 rounded-xl text-[11px] text-blue-950 space-y-1">
                 <p><b>નોંધ:</b> પેમેન્ટ કર્યા બાદ નીચે આપેલ સંપર્ક ઈમેઈલ આઈડી પર પોતાનો ટ્રાન્ઝેક્શન આઈડી (Transaction ID) સહિતનો સ્ક્રીનશોટ મોકલી આપો. ૨૪ કલાકમાં આપને કન્ફર્મેશન આપવામાં આવશે.</p>
                 
                 <!-- 📋 ઈમેઈલ આઈડી અને કૉપી બટન -->
@@ -949,12 +961,12 @@
                 </div>
             </div>
 
-        <button type="button" id="close-sub-btn" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-bold py-2.5 rounded-xl text-xs transition">
-            બંધ કરો (OK)
-        </button>
+            <button type="button" id="close-sub-btn" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-bold py-2.5 rounded-xl text-xs transition">
+                બંધ કરો (OK)
+            </button>
+        </div>
     </div>
 </div>
-
     
 </body>
 </html>
