@@ -2637,25 +2637,6 @@ document.getElementById("copy-email-btn")?.addEventListener("click", () => {
 
 // --- દૃશ્ય-પરિચય (Video Gallery) મેનેજમેન્ટ લોજિક ---
 
-// --- એક્ઝામ્પલ કોડ ક્લિપબોર્ડમાં કોપી કરવા માટેનું સચોટ ફંક્શન ---
-function selectAndCopyCode() {
-    const inputField = document.getElementById("sample-code-input");
-    if (inputField) {
-        inputField.select();
-        inputField.setSelectionRange(0, 99999); // મોબાઈલ અને ડેસ્કટોપ બંને માટે સપોર્ટ
-        
-        try {
-            // મોર્ડન ક્લિપબોર્ડ ટ્રાય કરો
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(inputField.value);
-            }
-            alert("✅ કોડ સિલેક્ટ થઈ ગયો છે! હવે કીબોર્ડથી Ctrl+C દબાવીને કોપી કરી લો.");
-        } catch (err) {
-            alert("✅ કોડ સિલેક્ટ થઈ ગયો છે, કૃપા કરીને કોપી કરી લો.");
-        }
-    }
-}
-
 // વિડિયો લિસ્ટ લોડ કરવા માટે
 async function loadAdminVideos() {
     const container = document.getElementById("admin-videos-list");
