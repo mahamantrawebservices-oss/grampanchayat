@@ -388,6 +388,87 @@
             </div>
         </div>
 
+<!-- 5. Housing and Assessment Table -->
+        <div class="bg-white p-6 rounded-2xl shadow-md border space-y-3 break-inside-avoid">
+            <h3 class="font-bold text-emerald-900 text-base border-b pb-2 flex items-center gap-2">
+                <i class="fa-solid fa-house text-emerald-600"></i> ગામના ઘરો અને આકારણી વિગતો
+            </h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs border border-gray-300">
+                    <thead>
+                        <tr class="bg-emerald-100 text-black font-bold border-b">
+                            <th class="p-2.5 border">વિગત</th>
+                            <th class="p-2.5 border">સંખ્યા / માહિતી</th>
+                        </tr>
+                    </thead>
+                    <tbody id="public-housing-table" class="text-black font-medium">
+                        <tr><td colspan="2" class="p-3 text-center text-gray-500 border">લોડ થઈ રહ્યું છે...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 6. Health Services Table -->
+        <div class="bg-white p-6 rounded-2xl shadow-md border space-y-3 break-inside-avoid">
+            <h3 class="font-bold text-emerald-900 text-base border-b pb-2 flex items-center gap-2">
+                <i class="fa-solid fa-notes-medical text-emerald-600"></i> આરોગ્ય સેવાઓ
+            </h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs border border-gray-300">
+                    <thead>
+                        <tr class="bg-emerald-100 text-black font-bold border-b">
+                            <th class="p-2.5 border">આરોગ્ય સેવાનો પ્રકાર</th>
+                            <th class="p-2.5 border">સંખ્યા</th>
+                        </tr>
+                    </thead>
+                    <tbody id="public-health-table" class="text-black font-medium">
+                        <tr><td colspan="2" class="p-3 text-center text-gray-500 border">લોડ થઈ રહ્યું છે...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 7. Financial Services Table -->
+        <div class="bg-white p-6 rounded-2xl shadow-md border space-y-3 break-inside-avoid">
+            <h3 class="font-bold text-emerald-900 text-base border-b pb-2 flex items-center gap-2">
+                <i class="fa-solid fa-building-columns text-emerald-600"></i> નાણાકીય સેવાઓ
+            </h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs border border-gray-300">
+                    <thead>
+                        <tr class="bg-emerald-100 text-black font-bold border-b">
+                            <th class="p-2.5 border">સેવાનો પ્રકાર</th>
+                            <th class="p-2.5 border">સંખ્યા / વિગત</th>
+                        </tr>
+                    </thead>
+                    <tbody id="public-finance-table" class="text-black font-medium">
+                        <tr><td colspan="2" class="p-3 text-center text-gray-500 border">લોડ થઈ રહ્યું છે...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 8. Agriculture Info Table -->
+        <div class="bg-white p-6 rounded-2xl shadow-md border space-y-3 break-inside-avoid">
+            <h3 class="font-bold text-emerald-900 text-base border-b pb-2 flex items-center gap-2">
+                <i class="fa-solid fa-tractor text-emerald-600"></i> કૃષિ માહિતી
+            </h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs border border-gray-300">
+                    <thead>
+                        <tr class="bg-emerald-100 text-black font-bold border-b">
+                            <th class="p-2.5 border">કૃષિ વિગત</th>
+                            <th class="p-2.5 border">માહિતી</th>
+                        </tr>
+                    </thead>
+                    <tbody id="public-agri-table" class="text-black font-medium">
+                        <tr><td colspan="2" class="p-3 text-center text-gray-500 border">લોડ થઈ રહ્યું છે...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        
         <!-- 14. Dynamic Extra Info Section -->
         <div id="extra-info-section" class="bg-white p-6 rounded-2xl shadow-md border space-y-3 hidden break-inside-avoid">
             <h3 id="extra-info-title" class="font-bold text-emerald-900 text-base border-b pb-2 flex items-center gap-2">
@@ -409,7 +490,7 @@
         </div>
     </div>
 
-    <!-- Firebase & PDF Scripts -->
+   <!-- Firebase & PDF Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -453,12 +534,11 @@
         }
         loadHeaderLocation();
 
-// Firebase માંથી પ્રોએક્ટિવ ડેટા અને તાલુકો/જિલ્લો લાઈવ લોડ કરવા માટે
+        // Firebase માંથી પ્રોએક્ટિવ ડેટા લાઈવ લોડ કરવા માટે
         onSnapshot(doc(db, "panchayats", panchayatId, "proactive_disclosure", "main_data"), (docSnap) => {
             if (!docSnap.exists()) return;
             const data = docSnap.data();
 
-            // 🌟 એડમિન પેનલમાંથી ભરેલા તાલુકા અને જિલ્લાને હેડરમાં સેટ કરવું
             document.getElementById("header-gp-location").innerHTML = `
                 ગ્રામ પંચાયત: <b>${data.panchayatName || 'વાડોલા'}</b> | તાલુકો: <b>${data.taluka || '-'}</b> | જિલ્લો: <b>${data.district || '-'}</b>
             `;
@@ -473,6 +553,7 @@
                 <p><b>પ્રથમ અપીલ અધિકારી:</b> ${off.appealOfficer || 'શ્રી તાલુકા વિકાસ અધિકારી સાહેબ'}</p>
             `;
 
+            // અન્ય માહિતી (સૌથી નીચે)
             if (data.extraTitle && data.extraContent) {
                 document.getElementById("extra-info-section").classList.remove("hidden");
                 document.getElementById("extra-info-title").innerHTML = `<i class="fa-solid fa-circle-plus text-emerald-600"></i> ${data.extraTitle}`;
@@ -481,12 +562,12 @@
                 document.getElementById("extra-info-section").classList.add("hidden");
             }
 
-            // (ટેબલ રેન્ડરિંગ કોડ યથાવત રહેશે)
             const renderTable = (id, list, mapper) => {
                 const el = document.getElementById(id);
                 if (el) el.innerHTML = list && list.length ? list.map(mapper).join("") : `<tr><td colspan="10" class="p-3 text-center text-gray-500 border">માહિતી ઉપલબ્ધ નથી</td></tr>`;
             };
 
+            // વસ્તી ટેબલ
             renderTable("public-population-table", data.population, (item, idx) => `
                 <tr class="border-b hover:bg-gray-50">
                     <td class="p-2.5 border font-semibold">${idx + 1}</td>
@@ -497,6 +578,7 @@
                 </tr>
             `);
 
+            // પાણી ટેબલ
             renderTable("public-water-table", data.water, item => `
                 <tr class="border-b hover:bg-gray-50">
                     <td class="p-2.5 border font-semibold">${item.source || '-'}</td>
@@ -506,6 +588,7 @@
                 </tr>
             `);
 
+            // મિલકત ટેબલ
             renderTable("public-property-table", data.property, item => `
                 <tr class="border-b hover:bg-gray-50">
                     <td class="p-2.5 border font-semibold">${item.name || '-'}</td>
@@ -513,9 +596,71 @@
                     <td class="p-2.5 border">${item.detail || '-'}</td>
                 </tr>
             `);
+
+            // ૫. ઘરો અને આકારણી ટેબલ
+            const h = data.housing || {};
+            const housingList = [
+                { label: "ઘરોની કુલ સંખ્યા", val: h.totalHouses },
+                { label: "કુલ પંચાયત રજીસ્ટરે નોંધાયેલ આકારણી", val: h.assessedHouses },
+                { label: "કુલ કુટુંબ (રાશન કાર્ડ મુજબ)", val: h.totalFamilies },
+                { label: "NFSA કુટુંબ", val: h.nfsa },
+                { label: "Non NFSA કુટુંબ", val: h.nonNfsa },
+                { label: "BPL કુટુંબ", val: h.bpl },
+                { label: "APL કુટુંબ", val: h.apl }
+            ];
+            renderTable("public-housing-table", housingList, item => `
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="p-2.5 border font-semibold">${item.label}</td>
+                    <td class="p-2.5 border font-bold text-emerald-900">${item.val || '-'}</td>
+                </tr>
+            `);
+
+            // ૬. આરોગ્ય સેવાઓ ટેબલ
+            const hl = data.health || {};
+            const healthList = [
+                { label: "PHC (પ્રાથમિક આરોગ્ય કેન્દ્ર)", val: hl.phc },
+                { label: "CHC (સામુદાયિક આરોગ્ય કેન્દ્ર)", val: hl.chc },
+                { label: "હોમિયોપેથિક દવાખાનું", val: hl.homeo },
+                { label: "આયુર્વેદિક દવાખાનું", val: hl.ayur },
+                { label: "અન્ય ખાનગી દવાખાના", val: hl.privateDoc }
+            ];
+            renderTable("public-health-table", healthList, item => `
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="p-2.5 border font-semibold">${item.label}</td>
+                    <td class="p-2.5 border font-bold text-emerald-900">${item.val || '-'}</td>
+                </tr>
+            `);
+
+            // ૭. નાણાકીય સેવાઓ ટેબલ
+            const fn = data.finance || {};
+            const financeList = [
+                { label: "બેન્ક (Bank)", val: fn.bank },
+                { label: "ATM સુવિધા", val: fn.atm },
+                { label: "પોસ્ટ ઓફિસ", val: fn.post },
+                { label: "અન્ય નાના ધીરનાર પેઢી", val: fn.lender }
+            ];
+            renderTable("public-finance-table", financeList, item => `
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="p-2.5 border font-semibold">${item.label}</td>
+                    <td class="p-2.5 border font-bold text-emerald-900">${item.val || '-'}</td>
+                </tr>
+            `);
+
+            // ૮. કૃષિ માહિતી ટેબલ
+            const ag = data.agriculture || {};
+            const agriList = [
+                { label: "મુખ્ય પાક", val: ag.crops },
+                { label: "પિયતના પ્રકાર", val: ag.irrigation }
+            ];
+            renderTable("public-agri-table", agriList, item => `
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="p-2.5 border font-semibold">${item.label}</td>
+                    <td class="p-2.5 border font-bold text-emerald-900">${item.val || '-'}</td>
+                </tr>
+            `);
         });
 
-        // 🌟 તબા હેઠળના ગામો (Covered Villages) લાઈવ લોડ કરવા માટેનું અતિરિક્ત લિસનર
+        // તબા હેઠળના ગામો લાઈવ લોડ કરવા માટે
         onSnapshot(doc(db, "panchayats", panchayatId, "settings", "general"), (settingsSnap) => {
             if (settingsSnap.exists()) {
                 const sData = settingsSnap.data();
