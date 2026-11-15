@@ -181,7 +181,7 @@
                                 <th class="p-3">LGD કોડ / ID</th>
                                 <th class="p-3">ગ્રામ પંચાયતનું નામ</th>
                                 <th class="p-3 text-center">માહિતી જોવા માટેના બટનો</th>
-                                <th class="p-3 text-center">વેબસાઇਟ લિંક</th>
+                                <th class="p-3 text-center">વેબસાઇટ લિંક</th>
                             </tr>
                         </thead>
                         <tbody id="taluka-panchayats-table-body" class="divide-y divide-gray-200 text-xs">
@@ -647,48 +647,254 @@
                 let htmlOutput = "";
 
                 if (dataType === 'about') {
+                    // ૧. અગાઉની village_glance કલેક્શનની માહિતી ફેચ કરવી
                     const snap = await getDocs(collection(db, "panchayats", lgdCode, "village_glance"));
-                    if (snap.empty) {
-                        modalContent.innerHTML = `<div class="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-lg text-center text-xs">⚠️ આ પંચાયત માટે હજુ સુધી "મારૂ ગામ - એક નજરમાં" ની માહિતી ભરવામાં આવી નથી.</div>`;
-                        return;
+                    let legacyHtml = "";
+                    if (!snap.empty) {
+                        let sections = {};
+                        snap.forEach(docSnap => {
+                            const data = docSnap.data();
+                            const secName = data.sectionName || "અન્ય માહિતી";
+                            if (!sections[secName]) sections[secName] = [];
+                            sections[secName].push(data);
+                        });
+
+                        for (let sectionName in sections) {
+                            let rowsHtml = sections[sectionName].map(item => `
+                                <tr class="border-b hover:bg-gray-50 text-xs">
+                                    <td class="p-2.5 font-semibold text-gray-800 w-1/3">${item.title || '-'}</td>
+                                    <td class="p-2.5 text-emerald-700 font-bold w-1/3">${item.value || '-'}</td>
+                                    <td class="p-2.5 text-gray-600 text-[11px] w-1/3">${item.extraInfo || '-'}</td>
+                                </tr>
+                            `).join("");
+
+                            legacyHtml += `
+                                <div class="bg-white rounded-xl shadow-md border overflow-hidden mb-4">
+                                    <div class="bg-emerald-800 text-white px-4 py-2 font-bold text-xs flex items-center gap-2">
+                                        <i class="fa-solid fa-folder-open text-amber-300"></i> ${sectionName}
+                                    </div>
+                                    <div class="overflow-x-auto">
+                                        <table class="w-full text-left border-collapse">
+                                            <thead class="bg-emerald-50 text-emerald-900 text-xs border-b">
+                                                <tr>
+                                                    <th class="p-2.5">વિગત / સુવિધા</th>
+                                                    <th class="p-2.5">આંકડો / મુખ્ય માહિતી</th>
+                                                    <th class="p-2.5">વધારાની વિગત</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y">${rowsHtml}</tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            `;
+                        }
                     }
 
-                    let sections = {};
-                    snap.forEach(docSnap => {
-                        const data = docSnap.data();
-                        const secName = data.sectionName || "અન્ય માહિતી";
-                        if (!sections[secName]) sections[secName] = [];
-                        sections[secName].push(data);
-                    });
+                    // ૨. નવી ઉમેરેલી proactive_disclosure/main_data ની માહિતી ફેચ કરવી
+                    const proactiveDocSnap = await getDoc(doc(db, "panchayats", lgdCode, "proactive_disclosure", "main_data"));
+                    let proactiveHtml = "";
 
-                    for (let sectionName in sections) {
-                        let rowsHtml = sections[sectionName].map(item => `
-                            <tr class="border-b hover:bg-gray-50 text-xs">
-                                <td class="p-2.5 font-semibold text-gray-800 w-1/3">${item.title || '-'}</td>
-                                <td class="p-2.5 text-emerald-700 font-bold w-1/3">${item.value || '-'}</td>
-                                <td class="p-2.5 text-gray-600 text-[11px] w-1/3">${item.extraInfo || '-'}</td>
-                            </tr>
-                        `).join("");
+                    if (proactiveDocSnap.exists()) {
+                        const data = proactiveDocSnap.data();
 
-                        htmlOutput += `
-                            <div class="bg-white rounded-xl shadow-md border overflow-hidden mb-4">
-                                <div class="bg-emerald-800 text-white px-4 py-2 font-bold text-xs flex items-center gap-2">
-                                    <i class="fa-solid fa-folder-open text-amber-300"></i> ${sectionName}
+                        // વસ્તી ટેબલ
+                        if (data.population && data.population.length > 0) {
+                            let rows = data.population.map((item, idx) => `
+                                <tr class="border-b hover:bg-gray-50 text-xs">
+                                    <td class="p-2.5 font-semibold text-gray-800">${idx + 1}</td>
+                                    <td class="p-2.5 text-gray-800">${item.title || '-'}</td>
+                                    <td class="p-2.5 text-gray-700">${item.female || '-'}</td>
+                                    <td class="p-2.5 text-gray-700">${item.male || '-'}</td>
+                                    <td class="p-2.5 text-emerald-700 font-bold">${item.total || '-'}</td>
+                                </tr>
+                            `).join("");
+
+                            proactiveHtml += `
+                                <div class="bg-white rounded-xl shadow-md border overflow-hidden mb-4">
+                                    <div class="bg-emerald-800 text-white px-4 py-2 font-bold text-xs flex items-center gap-2">
+                                        <i class="fa-solid fa-users text-amber-300"></i> ગામની વસ્તી વિશેની માહિતી
+                                    </div>
+                                    <div class="overflow-x-auto">
+                                        <table class="w-full text-left border-collapse">
+                                            <thead class="bg-emerald-50 text-emerald-900 text-xs border-b">
+                                                <tr>
+                                                    <th class="p-2.5">ક્રમ</th>
+                                                    <th class="p-2.5">વિગત</th>
+                                                    <th class="p-2.5">સ્ત્રી</th>
+                                                    <th class="p-2.5">પુરુષ</th>
+                                                    <th class="p-2.5">કુલ</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y">${rows}</tbody>
+                                        </table>
+                                    </div>
                                 </div>
-                                <div class="overflow-x-auto">
-                                    <table class="w-full text-left border-collapse">
-                                        <thead class="bg-emerald-50 text-emerald-900 text-xs border-b">
-                                            <tr>
-                                                <th class="p-2.5">વિગત / સુવિધા</th>
-                                                <th class="p-2.5">આંકડો / મુખ્ય માહિતી</th>
-                                                <th class="p-2.5">વધારાની વિગત</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="divide-y">${rowsHtml}</tbody>
-                                    </table>
+                            `;
+                        }
+
+                        // પાણી ટેબલ
+                        if (data.water && data.water.length > 0) {
+                            let rows = data.water.map(item => `
+                                <tr class="border-b hover:bg-gray-50 text-xs">
+                                    <td class="p-2.5 font-semibold text-gray-800">${item.source || '-'}</td>
+                                    <td class="p-2.5 text-gray-700">${item.count || '-'}</td>
+                                    <td class="p-2.5 text-gray-700">${item.area || '-'}</td>
+                                    <td class="p-2.5 text-emerald-700 font-bold">${item.capacity || '-'}</td>
+                                </tr>
+                            `).join("");
+
+                            proactiveHtml += `
+                                <div class="bg-white rounded-xl shadow-md border overflow-hidden mb-4">
+                                    <div class="bg-emerald-800 text-white px-4 py-2 font-bold text-xs flex items-center gap-2">
+                                        <i class="fa-solid fa-water text-amber-300"></i> ગામના પાણીની વિગત (જળાશય)
+                                    </div>
+                                    <div class="overflow-x-auto">
+                                        <table class="w-full text-left border-collapse">
+                                            <thead class="bg-emerald-50 text-emerald-900 text-xs border-b">
+                                                <tr>
+                                                    <th class="p-2.5">જળાશય / સ્ત્રોત</th>
+                                                    <th class="p-2.5">સંખ્યા</th>
+                                                    <th class="p-2.5">વિસ્તાર (ચો.મી.)</th>
+                                                    <th class="p-2.5">ક્ષમતા (લીટર)</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y">${rows}</tbody>
+                                        </table>
+                                    </div>
                                 </div>
-                            </div>
-                        `;
+                            `;
+                        }
+
+                        // મિલકત ટેબલ
+                        if (data.property && data.property.length > 0) {
+                            let rows = data.property.map(item => `
+                                <tr class="border-b hover:bg-gray-50 text-xs">
+                                    <td class="p-2.5 font-semibold text-gray-800">${item.name || '-'}</td>
+                                    <td class="p-2.5 text-emerald-700 font-bold">${item.count || '-'}</td>
+                                    <td class="p-2.5 text-gray-600">${item.detail || '-'}</td>
+                                </tr>
+                            `).join("");
+
+                            proactiveHtml += `
+                                <div class="bg-white rounded-xl shadow-md border overflow-hidden mb-4">
+                                    <div class="bg-emerald-800 text-white px-4 py-2 font-bold text-xs flex items-center gap-2">
+                                        <i class="fa-solid fa-building text-amber-300"></i> પંચાયતની મિલકત
+                                    </div>
+                                    <div class="overflow-x-auto">
+                                        <table class="w-full text-left border-collapse">
+                                            <thead class="bg-emerald-50 text-emerald-900 text-xs border-b">
+                                                <tr>
+                                                    <th class="p-2.5">મિલકતનું નામ</th>
+                                                    <th class="p-2.5">સંખ્યા</th>
+                                                    <th class="p-2.5">અન્ય વિગત</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y">${rows}</tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            `;
+                        }
+
+                        // ઘરો અને આકારણી
+                        const h = data.housing || {};
+                        if (h.totalHouses || h.assessedHouses || h.totalFamilies) {
+                            proactiveHtml += `
+                                <div class="bg-white rounded-xl shadow-md border overflow-hidden mb-4">
+                                    <div class="bg-emerald-800 text-white px-4 py-2 font-bold text-xs flex items-center gap-2">
+                                        <i class="fa-solid fa-house text-amber-300"></i> ગામના ઘરો અને આકારણી વિગતો
+                                    </div>
+                                    <div class="overflow-x-auto">
+                                        <table class="w-full text-left border-collapse text-xs">
+                                            <tr class="border-b hover:bg-gray-50"><td class="p-2.5 font-semibold">ઘરોની કુલ સંખ્યા</td><td class="p-2.5 text-emerald-700 font-bold">${h.totalHouses || '-'}</td></tr>
+                                            <tr class="border-b hover:bg-gray-50"><td class="p-2.5 font-semibold">કુલ પંચાયત રજીસ્ટરે નોંધાયેલ આકારણી</td><td class="p-2.5 text-emerald-700 font-bold">${h.assessedHouses || '-'}</td></tr>
+                                            <tr class="border-b hover:bg-gray-50"><td class="p-2.5 font-semibold">કુલ કુટુંબ (રાશન કાર્ડ મુજબ)</td><td class="p-2.5 text-emerald-700 font-bold">${h.totalFamilies || '-'}</td></tr>
+                                            <tr class="border-b hover:bg-gray-50"><td class="p-2.5 font-semibold">NFSA કુટુંબ</td><td class="p-2.5 text-emerald-700 font-bold">${h.nfsa || '-'}</td></tr>
+                                            <tr class="border-b hover:bg-gray-50"><td class="p-2.5 font-semibold">Non NFSA કુટુંબ</td><td class="p-2.5 text-emerald-700 font-bold">${h.nonNfsa || '-'}</td></tr>
+                                            <tr class="border-b hover:bg-gray-50"><td class="p-2.5 font-semibold">BPL કુટુંબ</td><td class="p-2.5 text-emerald-700 font-bold">${h.bpl || '-'}</td></tr>
+                                            <tr class="border-b hover:bg-gray-50"><td class="p-2.5 font-semibold">APL કુટુંબ</td><td class="p-2.5 text-emerald-700 font-bold">${h.apl || '-'}</td></tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            `;
+                        }
+
+                        // આરોગ્ય સેવાઓ
+                        const hl = data.health || {};
+                        if (hl.phc || hl.chc || hl.homeo || hl.ayur || hl.privateDoc) {
+                            proactiveHtml += `
+                                <div class="bg-white rounded-xl shadow-md border overflow-hidden mb-4">
+                                    <div class="bg-emerald-800 text-white px-4 py-2 font-bold text-xs flex items-center gap-2">
+                                        <i class="fa-solid fa-notes-medical text-amber-300"></i> આરોગ્ય સેવાઓ
+                                    </div>
+                                    <div class="overflow-x-auto">
+                                        <table class="w-full text-left border-collapse text-xs">
+                                            <tr class="border-b hover:bg-gray-50"><td class="p-2.5 font-semibold">PHC (પ્રાથમિક આરોગ્ય કેન્દ્ર)</td><td class="p-2.5 text-emerald-700 font-bold">${hl.phc || '-'}</td></tr>
+                                            <tr class="border-b hover:bg-gray-50"><td class="p-2.5 font-semibold">CHC (સામુદાયિક આરોગ્ય કેન્દ્ર)</td><td class="p-2.5 text-emerald-700 font-bold">${hl.chc || '-'}</td></tr>
+                                            <tr class="border-b hover:bg-gray-50"><td class="p-2.5 font-semibold">હોમિયોપેથિક દવાખાનું</td><td class="p-2.5 text-emerald-700 font-bold">${hl.homeo || '-'}</td></tr>
+                                            <tr class="border-b hover:bg-gray-50"><td class="p-2.5 font-semibold">આયુર્વેદિક દવાખાનું</td><td class="p-2.5 text-emerald-700 font-bold">${hl.ayur || '-'}</td></tr>
+                                            <tr class="border-b hover:bg-gray-50"><td class="p-2.5 font-semibold">અન્ય ખાનગી દવાખાના</td><td class="p-2.5 text-emerald-700 font-bold">${hl.privateDoc || '-'}</td></tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            `;
+                        }
+
+                        // નાણાકીય સેવાઓ
+                        const fn = data.finance || {};
+                        if (fn.bank || fn.atm || fn.post || fn.lender) {
+                            proactiveHtml += `
+                                <div class="bg-white rounded-xl shadow-md border overflow-hidden mb-4">
+                                    <div class="bg-emerald-800 text-white px-4 py-2 font-bold text-xs flex items-center gap-2">
+                                        <i class="fa-solid fa-building-columns text-amber-300"></i> નાણાકીય સેવાઓ
+                                    </div>
+                                    <div class="overflow-x-auto">
+                                        <table class="w-full text-left border-collapse text-xs">
+                                            <tr class="border-b hover:bg-gray-50"><td class="p-2.5 font-semibold">બેન્ક (Bank)</td><td class="p-2.5 text-emerald-700 font-bold">${fn.bank || '-'}</td></tr>
+                                            <tr class="border-b hover:bg-gray-50"><td class="p-2.5 font-semibold">ATM સુવિધા</td><td class="p-2.5 text-emerald-700 font-bold">${fn.atm || '-'}</td></tr>
+                                            <tr class="border-b hover:bg-gray-50"><td class="p-2.5 font-semibold">પોસ્ટ ઓફિસ</td><td class="p-2.5 text-emerald-700 font-bold">${fn.post || '-'}</td></tr>
+                                            <tr class="border-b hover:bg-gray-50"><td class="p-2.5 font-semibold">અન્ય નાના ધીરનાર પેઢી</td><td class="p-2.5 text-emerald-700 font-bold">${fn.lender || '-'}</td></tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            `;
+                        }
+
+                        // કૃષિ માહિતી
+                        const ag = data.agriculture || {};
+                        if (ag.crops || ag.irrigation) {
+                            proactiveHtml += `
+                                <div class="bg-white rounded-xl shadow-md border overflow-hidden mb-4">
+                                    <div class="bg-emerald-800 text-white px-4 py-2 font-bold text-xs flex items-center gap-2">
+                                        <i class="fa-solid fa-tractor text-amber-300"></i> કૃષિ માહિતી
+                                    </div>
+                                    <div class="overflow-x-auto">
+                                        <table class="w-full text-left border-collapse text-xs">
+                                            <tr class="border-b hover:bg-gray-50"><td class="p-2.5 font-semibold">મુખ્ય પાક</td><td class="p-2.5 text-emerald-700 font-bold">${ag.crops || '-'}</td></tr>
+                                            <tr class="border-b hover:bg-gray-50"><td class="p-2.5 font-semibold">પિયતના પ્રકાર</td><td class="p-2.5 text-emerald-700 font-bold">${ag.irrigation || '-'}</td></tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            `;
+                        }
+
+                        // અન્ય માહિતી
+                        if (data.extraTitle && data.extraContent) {
+                            proactiveHtml += `
+                                <div class="bg-white rounded-xl shadow-md border overflow-hidden mb-4 p-4 space-y-1.5">
+                                    <h3 class="font-bold text-emerald-900 text-xs border-b pb-1.5 flex items-center gap-2">
+                                        <i class="fa-solid fa-circle-plus text-emerald-600"></i> ${data.extraTitle}
+                                    </h3>
+                                    <p class="text-xs leading-relaxed text-gray-800 whitespace-pre-line">${data.extraContent}</p>
+                                </div>
+                            `;
+                        }
+                    }
+
+                    htmlOutput = legacyHtml + proactiveHtml;
+                    if (!htmlOutput) {
+                        modalContent.innerHTML = `<div class="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-lg text-center text-xs">⚠️ આ પંચાયત માટે હજુ સુધી "મારૂ ગામ - એક નજરમાં" ની માહિતી ભરવામાં આવી નથી.</div>`;
+                        return;
                     }
                 } 
                 else if (dataType === 'staff') {
@@ -793,7 +999,6 @@
 
                         if (item.members && item.members.length > 0) {
                             item.members.forEach((m, idx) => {
-                                // 🌟 સુધારો: mainRole અથવા main_role અને commRole અથવા comm_role બંને ફિલ્ડ્સ માટે સપોર્ટ
                                 const originalRole = m.mainRole || m.main_role || '-';
                                 const committeeRole = m.commRole || m.comm_role || '-';
 
