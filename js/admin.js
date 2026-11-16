@@ -737,7 +737,7 @@ async function loadAdminComplaints() {
                     <p class="text-gray-700"><b>વિગત:</b> ${item.details || item.msg || ''}</p>
                     <div class="flex items-center gap-2 pt-1 border-t">
                         <label class="font-bold text-gray-700">સ્ટેટસ બદલો:</label>
-                        <select onchange="updateComplaintStatus('${d.id}', this.value)" class="border border-emerald-300 p-1 rounded bg-amber-50 text-[11px] font-bold flex-1 focus:outline-none">
+                        <select onchange="confirmAndUpdateStatus('${d.id}', this)" class="border border-emerald-300 p-1 rounded bg-amber-50 text-[11px] font-bold flex-1 focus:outline-none">
                             <option value="${status}" selected>હાલનું: ${status}</option>
                             <option value="ફરિયાદ પર કામ ચાલી રહ્યું છે">ફરિયાદ પર કામ ચાલી રહ્યું છે</option>
                             <option value="ફરિયાદ નિવારણ થઈ ગયું છે">ફરિયાદ નિવારણ થઈ ગયું છે</option>
@@ -758,15 +758,25 @@ async function loadAdminComplaints() {
     }
 }
 
-window.updateComplaintStatus = async (id, status) => {
+// --- 🌟 સ્ટેટસ બદલતા પહેલાં કન્ફર્મેશન માંગવાનું ફંક્શન ---
+window.confirmAndUpdateStatus = async (id, selectElement) => {
+    const newStatus = selectElement.value;
+    const confirmChange = confirm(`⚠️ શું તમે ખરેખર આ ફરિયાદનું સ્ટેટસ બદલીને "${newStatus}" કરવા માંગો છો?`);
+    
+    if (!confirmChange) {
+        loadAdminComplaints(); // જો કેન્સલ કરે તો જૂનું સ્ટેટસ પાછું સેટ કરી દેવું
+        return;
+    }
+
     if (!lgdCode) return;
     try {
-        await updateDoc(getPanchayatDoc("complaints", id), { status, updatedAt: new Date() });
+        await updateDoc(getPanchayatDoc("complaints", id), { status: newStatus, updatedAt: new Date() });
         alert("✅ ફરિયાદનું સ્ટેટસ સફળતાપૂર્વક અપડેટ થઈ ગયું!");
         loadAdminComplaints();
     } catch (err) {
         console.error("Status update error:", err);
         alert("સ્ટેટસ અપડેટ કરવામાં ભૂલ આવી.");
+        loadAdminComplaints();
     }
 };
 
@@ -869,7 +879,6 @@ document.getElementById("download-pdf-btn")?.addEventListener("click", async () 
         alert("PDF રિપોર્ટ બનાવવામાં ભૂલ આવી.");
     }
 });
-
 // --- ૭. પંચાયત કમિટી અને સ્ટાફ મેનેજર ---
 async function loadAdminMeta() {
     if (!lgdCode) return;
