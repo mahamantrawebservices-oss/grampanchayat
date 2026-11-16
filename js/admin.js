@@ -689,79 +689,6 @@ document.getElementById("save-complaint-config-btn")?.addEventListener("click", 
     }
 });
 
-// --- પંચાયતનું પર્સનલ Firebase Configuration લોડ કરવાનું ફંક્શન ---
-async function loadPanchayatFirebaseConfig() {
-    if (!lgdCode) return;
-    try {
-        const snap = await getDoc(getPanchayatDoc("settings", "firebase_config"));
-        if (snap.exists()) {
-            const cfg = snap.data();
-            if (document.getElementById("fb-apikey")) document.getElementById("fb-apikey").value = cfg.apiKey || "";
-            if (document.getElementById("fb-authdomain")) document.getElementById("fb-authdomain").value = cfg.authDomain || "";
-            if (document.getElementById("fb-projectid")) document.getElementById("fb-projectid").value = cfg.projectId || "";
-            if (document.getElementById("fb-storagebucket")) document.getElementById("fb-storagebucket").value = cfg.storageBucket || "";
-            if (document.getElementById("fb-msgid")) document.getElementById("fb-msgid").value = cfg.messagingSenderId || "";
-            if (document.getElementById("fb-appid")) document.getElementById("fb-appid").value = cfg.appId || "";
-        }
-    } catch (err) {
-        console.error("Error loading panchayat firebase config:", err);
-    }
-}
-
-// --- ૨ વાર કન્ફર્મેશન અને પાસવર્ડ ચકાસણી સાથે ફાયરબેઝ કન્ફિગ સેવ કરવાનું લૉજિક ---
-document.getElementById("panchayat-firebase-form")?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    if (!lgdCode) {
-        alert("⚠️ LGD Code મળ્યો નથી!");
-        return;
-    }
-
-    const enteredPassword = document.getElementById("admin-confirm-password").value.trim();
-    if (!enteredPassword) {
-        alert("⚠️ કૃપા કરીને એડમિન પાસવર્ડ દાખલ કરો!");
-        return;
-    }
-
-    try {
-        const genSnap = await getDoc(getPanchayatDoc("settings", "general"));
-        let correctPassword = "admin123";
-        if (genSnap.exists() && genSnap.data().password) {
-            correctPassword = genSnap.data().password;
-        }
-
-        if (enteredPassword !== correctPassword) {
-            alert("❌ ખોટો એડમિન પાસવર્ડ! ફાયરબેઝ કન્ફિગ બદલી શકાશે નહીં.");
-            return;
-        }
-
-        const confirmFirst = confirm("⚠️ ચેતવણી: શું તમે ખરેખર આ ગ્રામ પંચાયતની પર્સનલ Firebase Config બદલવા માંગો છો?\n\nઆનાથી ફરિયાદ અને OTP નું ડેટાબેઝ બદલાઈ જશે.");
-        if (!confirmFirst) return;
-
-        const confirmSecond = confirm("🚨 છેલ્લી ચેતવણી: આ ક્રિયા પંચાયતના ડેટાને સીધી અસર કરી શકે છે. શું તમે આ ફેરફાર કરવા માટે ૧૦૦% નિશ્ચિત છો?");
-        if (!confirmSecond) return;
-
-        const configData = {
-            apiKey: document.getElementById("fb-apikey").value.trim(),
-            authDomain: document.getElementById("fb-authdomain").value.trim(),
-            projectId: document.getElementById("fb-projectid").value.trim(),
-            storageBucket: document.getElementById("fb-storagebucket").value.trim(),
-            messagingSenderId: document.getElementById("fb-msgid").value.trim(),
-            appId: document.getElementById("fb-appid").value.trim(),
-            updatedAt: new Date()
-        };
-
-        await setDoc(getPanchayatDoc("settings", "firebase_config"), configData, { merge: true });
-        
-        alert("✅ પંચાયતનું પર્સનલ Firebase Configuration સફળતાપૂર્વક અપડેટ થઈ ગયું!");
-        document.getElementById("admin-confirm-password").value = "";
-        loadPanchayatFirebaseConfig();
-
-    } catch (err) {
-        console.error("Error saving config:", err);
-        alert("સેવ કરવામાં ટેકનિકલ ભૂલ આવી: " + err.message);
-    }
-});
-
 // --- ૨. એડમિન પેનલ માટે ફરિયાદો લોડ કરવી અને ફિલ્ટરિંગ કરવું (તારીખ સાથે) ---
 async function loadAdminComplaints() {
     if (!lgdCode) return;
@@ -783,6 +710,7 @@ async function loadAdminComplaints() {
             const item = d.data();
             const status = item.status || "Pending";
             
+            // ફરિયાદ બુક થયાની તારીખ અને સમય ફોર્મેટ કરવો
             let dateStr = "તારીખ ઉપલબ્ધ નથી";
             if (item.createdAt && item.createdAt.toDate) {
                 dateStr = item.createdAt.toDate().toLocaleString('gu-IN', { 
@@ -791,6 +719,7 @@ async function loadAdminComplaints() {
                 });
             }
             
+            // ફિલ્ટર લોજિક
             const isPending = status.includes("પેન્ડિંગ") || status.includes("કામ ચાલી");
             const isResolved = status.includes("નિવારણ થઈ ગયું") || status.includes("Resolved");
 
@@ -808,7 +737,7 @@ async function loadAdminComplaints() {
                     <p class="text-gray-700"><b>વિગત:</b> ${item.details || item.msg || ''}</p>
                     <div class="flex items-center gap-2 pt-1 border-t">
                         <label class="font-bold text-gray-700">સ્ટેટસ બદલો:</label>
-                        <select id="status-select-${d.id}" onchange="confirmAndUpdateStatus('${d.id}', this)" class="border border-emerald-300 p-1 rounded bg-amber-50 text-[11px] font-bold flex-1 focus:outline-none">
+                        <select onchange="updateComplaintStatus('${d.id}', this.value)" class="border border-emerald-300 p-1 rounded bg-amber-50 text-[11px] font-bold flex-1 focus:outline-none">
                             <option value="${status}" selected>હાલનું: ${status}</option>
                             <option value="ફરિયાદ પર કામ ચાલી રહ્યું છે">ફરિયાદ પર કામ ચાલી રહ્યું છે</option>
                             <option value="ફરિયાદ નિવારણ થઈ ગયું છે">ફરિયાદ નિવારણ થઈ ગયું છે</option>
@@ -829,29 +758,19 @@ async function loadAdminComplaints() {
     }
 }
 
-// --- 🌟 સ્ટેટસ બદલતા પહેલાં કન્ફર્મેશન માંગવાનું ફંક્શન ---
-window.confirmAndUpdateStatus = async (id, selectElement) => {
-    const newStatus = selectElement.value;
-    const confirmChange = confirm(`⚠️ શું તમે ખરેખર આ ફરિયાદનું સ્ટેટસ બદલીને "${newStatus}" કરવા માંગો છો?`);
-    
-    if (!confirmChange) {
-        // જો એડમિન કેન્સલ કરે તો સિલેક્ટ બોક્સ પાછું લોડ કરીને જૂનું સ્ટેટસ સેટ કરી દેવું
-        loadAdminComplaints();
-        return;
-    }
-
+window.updateComplaintStatus = async (id, status) => {
     if (!lgdCode) return;
     try {
-        await updateDoc(getPanchayatDoc("complaints", id), { status: newStatus, updatedAt: new Date() });
+        await updateDoc(getPanchayatDoc("complaints", id), { status, updatedAt: new Date() });
         alert("✅ ફરિયાદનું સ્ટેટસ સફળતાપૂર્વક અપડેટ થઈ ગયું!");
         loadAdminComplaints();
     } catch (err) {
         console.error("Status update error:", err);
         alert("સ્ટેટસ અપડેટ કરવામાં ભૂલ આવી.");
-        loadAdminComplaints();
     }
 };
 
+// ફિલ્ટર બદલાય ત્યારે લિસ્ટ ઓટોમેટિક અપડેટ થવું
 document.getElementById("admin-complaint-filter")?.addEventListener("change", loadAdminComplaints);
 
 // --- ૩. રિપોર્ટ જનરેટર (મહિનાવારી) ---
@@ -870,7 +789,7 @@ document.getElementById("download-pdf-btn")?.addEventListener("click", async () 
             const item = d.data();
             if (item.createdAt && item.createdAt.toDate) {
                 const cDate = item.createdAt.toDate();
-                const cMonthStr = cDate.toISOString().slice(0, 7);
+                const cMonthStr = cDate.toISOString().slice(0, 7); // YYYY-MM
                 if (cMonthStr === monthVal) {
                     filteredComplaints.push(item);
                 }
@@ -950,6 +869,7 @@ document.getElementById("download-pdf-btn")?.addEventListener("click", async () 
         alert("PDF રિપોર્ટ બનાવવામાં ભૂલ આવી.");
     }
 });
+
 // --- ૭. પંચાયત કમિટી અને સ્ટાફ મેનેજર ---
 async function loadAdminMeta() {
     if (!lgdCode) return;
