@@ -279,6 +279,56 @@
 <div class="bg-emerald-50/80 border border-emerald-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[700px] overflow-y-auto">
     <h3 class="font-bold border-b border-emerald-300 pb-2 text-emerald-950">૫. આવેલ ફરિયાદો અને સ્ટેટસ મેનેજર</h3>
     
+    <!-- 🌟 પંચાયતનું પર્સનલ Firebase Configuration (લાલ બેકગ્રાઉન્ડ અને પાસવર્ડ સુરક્ષા સાથે) -->
+    <div class="bg-red-50 border-2 border-red-300 p-5 rounded-2xl shadow-md space-y-4">
+        <div class="flex items-center gap-3 border-b border-red-200 pb-3">
+            <i class="fa-solid fa-triangle-exclamation text-2xl text-red-600 animate-pulse"></i>
+            <div>
+                <h3 class="font-bold text-sm text-red-900">⚠️ અત્યંત સંવેદનશીલ સેટિંગ: પંચાયતનું પર્સનલ Firebase Configuration</h3>
+                <p class="text-xs text-red-700">ફરિયાદો અને OTP ની ફ્રી લિમિટ જાળવવા માટે જ આ સેટિંગ બદલવું. ખોટી વિગતો નાખવાથી સિસ્ટમ બંધ થઈ શકે છે.</p>
+            </div>
+        </div>
+
+        <form id="panchayat-firebase-form" class="space-y-3 text-xs">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                    <label class="block font-bold text-red-950 mb-1">API Key *</label>
+                    <input type="text" id="fb-apikey" required class="w-full border border-red-300 p-2 rounded bg-white font-mono text-xs" placeholder="AIzaSy...">
+                </div>
+                <div>
+                    <label class="block font-bold text-red-950 mb-1">Auth Domain *</label>
+                    <input type="text" id="fb-authdomain" required class="w-full border border-red-300 p-2 rounded bg-white font-mono text-xs" placeholder="project.firebaseapp.com">
+                </div>
+                <div>
+                    <label class="block font-bold text-red-950 mb-1">Project ID *</label>
+                    <input type="text" id="fb-projectid" required class="w-full border border-red-300 p-2 rounded bg-white font-mono text-xs" placeholder="project-id">
+                </div>
+                <div>
+                    <label class="block font-bold text-red-950 mb-1">Storage Bucket *</label>
+                    <input type="text" id="fb-storagebucket" required class="w-full border border-red-300 p-2 rounded bg-white font-mono text-xs" placeholder="project.appspot.com">
+                </div>
+                <div>
+                    <label class="block font-bold text-red-950 mb-1">Messaging Sender ID *</label>
+                    <input type="text" id="fb-msgid" required class="w-full border border-red-300 p-2 rounded bg-white font-mono text-xs" placeholder="1025176...">
+                </div>
+                <div>
+                    <label class="block font-bold text-red-950 mb-1">App ID *</label>
+                    <input type="text" id="fb-appid" required class="w-full border border-red-300 p-2 rounded bg-white font-mono text-xs" placeholder="1:1025...">
+                </div>
+            </div>
+
+            <!-- એડમિન પાસવર્ડ ઇનપુટ -->
+            <div class="bg-red-100 p-3 rounded-xl border border-red-300 space-y-1">
+                <label class="block font-bold text-red-900">સંરક્ષણ ચકાસણી: ગ્રામ પંચાયત એડમિન પાસવર્ડ દાખલ કરો *</label>
+                <input type="password" id="admin-confirm-password" required class="w-full border border-red-300 p-2 rounded bg-white text-xs" placeholder="તમારો એડમિન પાસવર્ડ નાખો">
+            </div>
+
+            <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2.5 rounded-xl shadow transition text-xs flex items-center justify-center gap-2 w-full">
+                <i class="fa-solid fa-shield-halved"></i> Firebase Config સુરક્ષિત રીતે સેવ કરો
+            </button>
+        </form>
+    </div>
+
     <div class="bg-emerald-100/70 p-3 rounded-lg border border-emerald-300 space-y-3">
         <label class="block text-xs font-bold text-emerald-950">🌐 વેબસાઇટ પર ફરિયાદ વિભાગ સેટિંગ્સ:</label>
         <div class="flex flex-col sm:flex-row gap-2">
@@ -312,7 +362,6 @@
         <p class="text-xs text-gray-500">ફરિયાદો લોડ થઈ રહી છે...</p>
     </div>
 </div>
-
   <!-- સેક્શન ૬: પંચાયત કમિટી અને સ્ટાફ મેનેજર -->
 <div class="bg-blue-50/80 border border-blue-200 p-5 rounded-xl shadow-sm space-y-4 max-h-[700px] overflow-y-auto">
     <h3 class="font-bold border-b border-blue-300 pb-2 text-blue-950">૬. પંચાયત કમિટી અને સ્ટાફ મેનેજર</h3>
