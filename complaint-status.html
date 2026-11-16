@@ -62,10 +62,24 @@
                         <input type="text" id="c-name" required class="w-full border p-2 rounded-lg text-sm mt-1">
                     </div>
                     <div>
-                        <label class="text-xs font-semibold text-gray-700">૧૦ આંકડાનો મોબાઈલ નંબર *</label>
-                        <input type="tel" id="c-mobile" pattern="[0-9]{10}" maxlength="10" required class="w-full border p-2 rounded-lg text-sm mt-1">
+                        <label class="text-xs font-semibold text-gray-700">૧૦ આંકડાનો મોબાઈલ નંબર (OTP માટે) *</label>
+                        <div class="flex gap-2 mt-1">
+                            <input type="tel" id="c-mobile" pattern="[0-9]{10}" maxlength="10" required class="w-full border p-2 rounded-lg text-sm">
+                            <button type="button" id="send-otp-btn" onclick="sendOTP()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-lg text-xs whitespace-nowrap shadow">OTP મોકલો</button>
+                        </div>
                     </div>
                 </div>
+
+                <!-- OTP સેક્શન -->
+                <div id="otp-section" class="hidden space-y-2 bg-emerald-50 p-4 rounded-xl border border-emerald-200 text-xs">
+                    <label class="block font-bold text-emerald-900">મોબાઈલ પર આવેલ ૬ અંકનો OTP દાખલ કરો:</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="otp-code" class="w-full border p-2 rounded-lg font-mono tracking-widest text-center text-sm font-bold bg-white" placeholder="------" maxlength="6">
+                        <button type="button" onclick="verifyOTP()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-2 rounded-lg whitespace-nowrap shadow">વેરિફાઈ કરો</button>
+                    </div>
+                    <p id="otp-status" class="text-emerald-700 font-bold pt-1"></p>
+                </div>
+
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="text-xs font-semibold text-gray-700">ફળિયું / વિસ્તાર *</label>
@@ -87,12 +101,12 @@
                     <label class="text-xs font-semibold text-gray-700">સમસ્યાની વિગતવાર માહિતી *</label>
                     <textarea id="c-details" rows="4" required class="w-full border p-2 rounded-lg text-sm mt-1"></textarea>
                 </div>
-                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow text-sm">ફરિયાદ સબમિટ કરો</button>
+                <button type="submit" id="submit-comp-btn" disabled class="w-full bg-gray-400 text-white font-bold py-3 rounded-xl shadow text-sm cursor-not-allowed transition">ફરિયાદ સબમિટ કરો (પહેલાં OTP વેરિફાઈ કરો)</button>
             </form>
         </div>
     </main>
 
-    <!-- 📋 ટોકન કૉપી કરવા માટેનું કસ્ટમ મોડલ પૉપઅપ -->
+    <!-- ટોકન મોડલ -->
     <div id="token-modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-sm w-full p-6 text-center space-y-4 shadow-2xl border border-emerald-100">
             <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-xl">
@@ -114,11 +128,14 @@
         </div>
     </div>
 
+    <div id="recaptcha-container"></div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, query, where, getDocs, Timestamp, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-        const firebaseConfig = {
+        const masterConfig = {
             apiKey: "AIzaSyCMhWWI_6oxPIVEQEVlq2SIBf72EI2o8NI",
             authDomain: "gram-panchayat-33c86.firebaseapp.com",
             projectId: "gram-panchayat-33c86",
@@ -128,30 +145,108 @@
             measurementId: "G-TQBSXCWNBV"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        const masterApp = initializeApp(masterConfig, "MasterApp");
+        const masterDb = getFirestore(masterApp);
 
         const urlParams = new URLSearchParams(window.location.search);
         const panchayatId = urlParams.get('id') || "517045";
-
         document.getElementById("back-home-btn").href = `index.html?id=${panchayatId}`;
 
-        // DOM Elements
+        let panchayatAuth, panchayatDb;
+        let confirmationResultGlobal = null;
+        let isVerified = false;
+
+        async function initPanchayatFirebase() {
+            try {
+                const configSnap = await getDoc(doc(masterDb, "panchayats", panchayatId, "settings", "firebase_config"));
+                let activeConfig = masterConfig;
+                if (configSnap.exists() && configSnap.data().apiKey) {
+                    activeConfig = configSnap.data();
+                }
+
+                const pApp = initializeApp(activeConfig, "PanchayatApp");
+                panchayatAuth = getAuth(pApp);
+                panchayatDb = getFirestore(pApp);
+            } catch (err) {
+                console.error("Error initializing panchayat firebase:", err);
+                panchayatDb = masterDb;
+            }
+        }
+
+        await initPanchayatFirebase();
+
         const tokenModal = document.getElementById("token-modal");
         const modalTokenText = document.getElementById("modal-token-text");
         const copyTokenBtn = document.getElementById("copy-token-btn");
         const closeModalBtn = document.getElementById("close-modal-btn");
 
-        // ફરિયાદ સબમિટ અને દૈનિક મર્યાદા (Daily Limit Check)
+        window.sendOTP = async function() {
+            const phoneInput = document.getElementById("c-mobile").value.trim();
+            if (!phoneInput || phoneInput.length !== 10) {
+                alert("⚠️ કૃપા કરીને ૧૦ અંકનો સાચો મોબાઈલ નંબર દાખલ કરો!");
+                return;
+            }
+
+            const phoneNumber = "+91" + phoneInput;
+            const sendBtn = document.getElementById("send-otp-btn");
+            sendBtn.textContent = "મોકલી રહ્યું છે...";
+
+            try {
+                if (!window.recaptchaVerifier) {
+                    window.recaptchaVerifier = new RecaptchaVerifier(panchayatAuth, 'recaptcha-container', {
+                        'size': 'invisible'
+                    });
+                }
+
+                confirmationResultGlobal = await signInWithPhoneNumber(panchayatAuth, phoneNumber, window.recaptchaVerifier);
+                document.getElementById("otp-section").classList.remove("hidden");
+                sendBtn.textContent = "OTP મોકલાઈ ગયો";
+                document.getElementById("otp-status").textContent = "✅ તમારા મોબાઈલ પર SMS મોકલવામાં આવ્યો છે.";
+            } catch (err) {
+                console.error("SMS Error:", err);
+                alert("OTP મોકલવામાં ભૂલ આવી: " + err.message);
+                sendBtn.textContent = "OTP મોકલો";
+            }
+        };
+
+        window.verifyOTP = async function() {
+            const code = document.getElementById("otp-code").value.trim();
+            if (!code || code.length !== 6) {
+                alert("⚠️ કૃપા કરીને ૬ અંકનો સાચો OTP દાખલ કરો!");
+                return;
+            }
+
+            try {
+                await confirmationResultGlobal.confirm(code);
+                isVerified = true;
+                document.getElementById("otp-status").textContent = "🎉 મોબાઈલ નંબર સફળતાપૂર્વક વેરિફાઈ થઈ ગયો છે!";
+                document.getElementById("otp-section").classList.add("bg-emerald-100");
+                
+                const subBtn = document.getElementById("submit-comp-btn");
+                subBtn.disabled = false;
+                subBtn.classList.remove("bg-gray-400", "cursor-not-allowed");
+                subBtn.classList.add("bg-emerald-600", "hover:bg-emerald-700");
+                subBtn.textContent = "ફરિયાદ સબમિટ કરો";
+            } catch (err) {
+                console.error("OTP Verification Error:", err);
+                alert("❌ ખોટો OTP! કૃપા કરીને ફરી પ્રયત્ન કરો.");
+            }
+        };
+
         document.getElementById("add-complaint-form").addEventListener("submit", async (e) => {
             e.preventDefault();
+            if (!isVerified) {
+                alert("⚠️ કૃપા કરીને પહેલાં મોબાઈલ નંબર OTP થી વેરિફાઈ કરો!");
+                return;
+            }
+
             try {
-                const configRef = doc(db, "panchayats", panchayatId, "settings", "complaint_config");
+                const configRef = doc(masterDb, "panchayats", panchayatId, "settings", "complaint_config");
                 const configSnap = await getDoc(configRef);
                 const dailyLimit = configSnap.exists() && configSnap.data().dailyLimit ? parseInt(configSnap.data().dailyLimit) : 50;
 
                 const todayStr = new Date().toISOString().split('T')[0];
-                const complaintsSnap = await getDocs(collection(db, "panchayats", panchayatId, "complaints"));
+                const complaintsSnap = await getDocs(collection(panchayatDb, "complaints"));
                 
                 let todayCount = 0;
                 complaintsSnap.forEach(d => {
@@ -169,7 +264,7 @@
 
                 const token = "GP-" + Math.floor(100000 + Math.random() * 900000);
                 
-                await addDoc(collection(db, "panchayats", panchayatId, "complaints"), {
+                await addDoc(collection(panchayatDb, "complaints"), {
                     token,
                     name: document.getElementById("c-name").value,
                     mobile: document.getElementById("c-mobile").value,
@@ -180,18 +275,18 @@
                     createdAt: Timestamp.now()
                 });
 
-                // મોડલમાં ટોકન નંબર બતાવીને પૉપઅપ ઓપન કરવું
                 modalTokenText.innerText = token;
                 tokenModal.classList.remove("hidden");
                 
                 e.target.reset();
+                document.getElementById("otp-section").classList.add("hidden");
+                isVerified = false;
             } catch (err) {
                 console.error(err);
                 alert("ફરિયાદ સબમિટ કરવામાં ભૂલ આવી.");
             }
         });
 
-        // 📋 "કૉપી કરો" બટનનું લોજિક
         copyTokenBtn.addEventListener("click", () => {
             const tokenText = modalTokenText.innerText;
             navigator.clipboard.writeText(tokenText).then(() => {
@@ -204,36 +299,27 @@
                     copyTokenBtn.classList.remove("bg-teal-700");
                     copyTokenBtn.classList.add("bg-emerald-600", "hover:bg-emerald-700");
                 }, 2000);
-            }).catch(err => {
-                console.error("Copy failed", err);
-                alert("કૉપી કરવામાં નિષ્ફળતા.");
             });
         });
 
-        // મોડલ બંધ કરવાનું બટન
         closeModalBtn.addEventListener("click", () => {
             tokenModal.classList.add("hidden");
+            location.reload();
         });
 
-        // સ્ટેટસ ચેક (તારીખ અને સમય સાથે)
         document.getElementById("check-status-form").addEventListener("submit", async (e) => {
             e.preventDefault();
             const tokenInput = document.getElementById("search-token").value.trim();
             const resultDiv = document.getElementById("status-result");
             try {
-                const q = query(collection(db, "panchayats", panchayatId, "complaints"), where("token", "==", tokenInput));
+                const q = query(collection(panchayatDb, "complaints"), where("token", "==", tokenInput));
                 const querySnap = await getDocs(q);
                 resultDiv.classList.remove("hidden");
                 if (!querySnap.empty) {
                     const data = querySnap.docs[0].data();
-                    
-                    // ફરિયાદ બુક થયાની તારીખ અને સમય ફોર્મેટ કરવો
                     let dateStr = "તારીખ ઉપલબ્ધ નથી";
                     if (data.createdAt && data.createdAt.toDate) {
-                        dateStr = data.createdAt.toDate().toLocaleString('gu-IN', { 
-                            dateStyle: 'short', 
-                            timeStyle: 'short' 
-                        });
+                        dateStr = data.createdAt.toDate().toLocaleString('gu-IN', { dateStyle: 'short', timeStyle: 'short' });
                     }
 
                     resultDiv.innerHTML = `
@@ -246,25 +332,18 @@
                 } else {
                     resultDiv.innerHTML = `<p class="text-red-600 font-medium">આપેલ ફરિયાદ નંબર મુજબ કોઈ રેકોર્ડ મળ્યો નથી.</p>`;
                 }
-            } catch (err) { 
-                console.error(err); 
-            }
+            } catch (err) { console.error(err); }
         });
 
-        // 🛑 એડમિન પેનલના સેટિંગ મુજબ ફરિયાદ બંધ છે કે નહીં તે ચકાસવું
         async function checkComplaintPageStatus() {
             try {
-                const configSnap = await getDoc(doc(db, "panchayats", panchayatId, "settings", "complaint_config"));
-                
-                let isEnabled = true; // ડિફોલ્ટ ચાલુ
+                const configSnap = await getDoc(doc(masterDb, "panchayats", panchayatId, "settings", "complaint_config"));
+                let isEnabled = true;
                 if (configSnap.exists()) {
                     const data = configSnap.data();
-                    if (data.isEnabled === false || data.isEnabled === "false") {
-                        isEnabled = false;
-                    }
+                    if (data.isEnabled === false || data.isEnabled === "false") isEnabled = false;
                 }
 
-                // જો એડમિન પેનલથી બંધ કર્યું હોય તો લાલ બેકગ્રાઉન્ડમાં નોટિસ બતાવવી
                 if (!isEnabled) {
                     const mainContainer = document.querySelector("main");
                     if (mainContainer) {
@@ -284,14 +363,10 @@
                         `;
                     }
                 }
-            } catch (err) {
-                console.error("Status Check Error:", err);
-            }
+            } catch (err) { console.error("Status Check Error:", err); }
         }
 
-        // પેજ લોડ થતાં જ સ્ટેટસ ચેક કરવું
         checkComplaintPageStatus();
-        
     </script>
 </body>
 </html>
