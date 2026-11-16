@@ -897,22 +897,29 @@
                         return;
                     }
                 } 
-                else if (dataType === 'staff') {
+else if (dataType === 'staff') {
                     let termText = "-";
                     try {
                         const metaDoc = await getDoc(doc(db, "panchayats", lgdCode, "panchayat_meta", "staff_page"));
                         if (metaDoc.exists()) termText = metaDoc.data().term || "-";
                     } catch (e) {}
 
+                    // 🌟 કમિટી ડેટા ફેચ અને ક્રમ મુજબ સૉર્ટ કરવા માટે (orderBy અથવા kram ప్రాపర్టీ મુજબ)
                     const commSnap = await getDocs(collection(db, "panchayats", lgdCode, "panchayat_committee"));
+                    let commList = [];
+                    commSnap.forEach(d => {
+                        commList.push({ id: d.id, ...d.data() });
+                    });
+                    
+                    // જો કમિટીમાં કષ્ટમ ક્રમ (kram / index) હોય તો તેના આધારે સૉર્ટ કરવું, નહીંતર મૂળ નામ મુજબ
+                    commList.sort((a, b) => (parseInt(a.kram || a.index || 999) - parseInt(b.kram || b.index || 999)));
+
                     let commRows = "";
-                    if (!commSnap.empty) {
-                        let idx = 1;
-                        commSnap.forEach(d => {
-                            const item = d.data();
+                    if (commList.length > 0) {
+                        commList.forEach((item, index) => {
                             commRows += `
                                 <tr class="border-b hover:bg-gray-50 text-xs">
-                                    <td class="p-2.5 font-bold">${idx++}</td>
+                                    <td class="p-2.5 font-bold">${index + 1}</td>
                                     <td class="p-2.5 font-semibold text-gray-900">${item.name || '-'}</td>
                                     <td class="p-2.5"><span class="bg-blue-100 text-blue-900 px-2 py-0.5 rounded font-bold">${item.designation || '-'}</span></td>
                                     <td class="p-2.5">${item.ward || '-'}</td>
@@ -924,15 +931,21 @@
                         commRows = `<tr><td colspan="5" class="p-3 text-center text-gray-400 text-xs">કોઈ કમિટી સભ્ય ઉપલબ્ધ નથી.</td></tr>`;
                     }
 
+                    // 🌟 સ્ટાફ ડેટા ફેચ અને ક્રમ મુજબ સૉર્ટ કરવા માટે
                     const staffSnap = await getDocs(collection(db, "panchayats", lgdCode, "panchayat_staff"));
+                    let staffList = [];
+                    staffSnap.forEach(d => {
+                        staffList.push({ id: d.id, ...d.data() });
+                    });
+
+                    staffList.sort((a, b) => (parseInt(a.kram || a.index || 999) - parseInt(b.kram || b.index || 999)));
+
                     let staffRows = "";
-                    if (!staffSnap.empty) {
-                        let idx = 1;
-                        staffSnap.forEach(d => {
-                            const item = d.data();
+                    if (staffList.length > 0) {
+                        staffList.forEach((item, index) => {
                             staffRows += `
                                 <tr class="border-b hover:bg-gray-50 text-xs">
-                                    <td class="p-2.5 font-bold">${idx++}</td>
+                                    <td class="p-2.5 font-bold">${index + 1}</td>
                                     <td class="p-2.5 font-semibold text-gray-900">${item.name || '-'}</td>
                                     <td class="p-2.5"><span class="bg-indigo-100 text-indigo-900 px-2 py-0.5 rounded font-bold">${item.designation || '-'}</span></td>
                                     <td class="p-2.5 font-mono">${item.mobile || '-'}</td>
