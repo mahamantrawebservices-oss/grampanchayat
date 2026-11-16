@@ -904,15 +904,19 @@ else if (dataType === 'staff') {
                         if (metaDoc.exists()) termText = metaDoc.data().term || "-";
                     } catch (e) {}
 
-                    // 🌟 કમિટી ડેટા ફેચ અને ક્રમ મુજબ સૉર્ટ કરવા માટે (orderBy અથવા kram ప్రాపర్టీ મુજબ)
+                    // 🌟 ૧. કમિટી ડેટા ફેચ કરીને kram મુજબ યોગ્ય ક્રમમાં ગોઠવવો (Sorting)
                     const commSnap = await getDocs(collection(db, "panchayats", lgdCode, "panchayat_committee"));
                     let commList = [];
                     commSnap.forEach(d => {
                         commList.push({ id: d.id, ...d.data() });
                     });
                     
-                    // જો કમિટીમાં કષ્ટમ ક્રમ (kram / index) હોય તો તેના આધારે સૉર્ટ કરવું, નહીંતર મૂળ નામ મુજબ
-                    commList.sort((a, b) => (parseInt(a.kram || a.index || 999) - parseInt(b.kram || b.index || 999)));
+                    // kram અથવા index ના આધારે ચડતા ક્રમમાં (Ascending) સૉર્ટ કરવું
+                    commList.sort((a, b) => {
+                        let k1 = parseInt(a.kram !== undefined ? a.kram : (a.index !== undefined ? a.index : 999));
+                        let k2 = parseInt(b.kram !== undefined ? b.kram : (b.index !== undefined ? b.index : 999));
+                        return k1 - k2;
+                    });
 
                     let commRows = "";
                     if (commList.length > 0) {
@@ -931,14 +935,18 @@ else if (dataType === 'staff') {
                         commRows = `<tr><td colspan="5" class="p-3 text-center text-gray-400 text-xs">કોઈ કમિટી સભ્ય ઉપલબ્ધ નથી.</td></tr>`;
                     }
 
-                    // 🌟 સ્ટાફ ડેટા ફેચ અને ક્રમ મુજબ સૉર્ટ કરવા માટે
+                    // 🌟 ૨. સ્ટાફ ડેટા ફેચ કરીને kram મુજબ યોગ્ય ક્રમમાં ગોઠવવો (Sorting)
                     const staffSnap = await getDocs(collection(db, "panchayats", lgdCode, "panchayat_staff"));
                     let staffList = [];
                     staffSnap.forEach(d => {
                         staffList.push({ id: d.id, ...d.data() });
                     });
 
-                    staffList.sort((a, b) => (parseInt(a.kram || a.index || 999) - parseInt(b.kram || b.index || 999)));
+                    staffList.sort((a, b) => {
+                        let k1 = parseInt(a.kram !== undefined ? a.kram : (a.index !== undefined ? a.index : 999));
+                        let k2 = parseInt(b.kram !== undefined ? b.kram : (b.index !== undefined ? b.index : 999));
+                        return k1 - k2;
+                    });
 
                     let staffRows = "";
                     if (staffList.length > 0) {
