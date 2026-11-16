@@ -879,6 +879,41 @@ document.getElementById("download-pdf-btn")?.addEventListener("click", async () 
         alert("PDF રિપોર્ટ બનાવવામાં ભૂલ આવી.");
     }
 });
+
+// --- 🌟 ફરિયાદ સેક્શનને ફુલ સ્ક્રીન કરવા અથવા નોર્મલ કરવા માટેનું ફંક્શન ---
+window.toggleComplaintFullscreen = function() {
+    const box = document.getElementById("complaint-section-box");
+    const listContainer = document.getElementById("admin-complaint-list");
+    const icon = document.getElementById("fullscreen-icon");
+    const text = document.getElementById("fullscreen-text");
+
+    if (!box) return;
+
+    // જો પહેલેથી ફુલ સ્ક્રીન ન હોય તો ફુલ સ્ક્રીન કરવી
+    if (!box.classList.contains("fixed")) {
+        box.classList.remove("max-h-[700px]");
+        box.classList.add("fixed", "inset-4", "z-50", "shadow-2xl", "max-h-full", "bg-white");
+        if (listContainer) {
+            listContainer.classList.remove("max-h-72");
+            listContainer.classList.add("max-h-[calc(100vh-280px)]"); // સ્ક્રીન પ્રમાણે લિસ્ટ મોટું દેખાય
+        }
+        icon.className = "fa-solid fa-compress";
+        text.textContent = "નાની સ્ક્રીન કરો";
+    } else {
+        // નોર્મલ મોડ પર પાછા લાવવું
+        box.classList.remove("fixed", "inset-4", "z-50", "shadow-2xl", "max-h-full", "bg-white");
+        box.classList.add("max-h-[700px]", "bg-emerald-50/80");
+        if (listContainer) {
+            listContainer.classList.remove("max-h-[calc(100vh-280px)]");
+            listContainer.classList.add("max-h-72");
+        }
+        icon.className = "fa-solid fa-expand";
+        text.textContent = "ફુલ સ્ક્રીન કરો";
+    }
+};
+
+
+
 // --- ૭. પંચાયત કમિટી અને સ્ટાફ મેનેજર ---
 async function loadAdminMeta() {
     if (!lgdCode) return;
