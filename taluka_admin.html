@@ -904,18 +904,18 @@ else if (dataType === 'staff') {
                         if (metaDoc.exists()) termText = metaDoc.data().term || "-";
                     } catch (e) {}
 
-                    // 🌟 ૧. કમિટી ડેટા ફેચ કરીને kram મુજબ યોગ્ય ક્રમમાં ગોઠવવો (Sorting)
+                    // 🌟 ૧. કમિટી ડેટા ફેચ (order ફિલ્ડ અથવા ડિફોલ્ટ ક્રમ મુજબ સૉર્ટિંગ)
                     const commSnap = await getDocs(collection(db, "panchayats", lgdCode, "panchayat_committee"));
                     let commList = [];
                     commSnap.forEach(d => {
                         commList.push({ id: d.id, ...d.data() });
                     });
-                    
-                    // kram અથવા index ના આધારે ચડતા ક્રમમાં (Ascending) સૉર્ટ કરવું
+
+                    // order કે kram મુજબ સૉર્ટ કરવું (સરપંચ/ઉપસરપંચ કે સેટ કરેલ ઓર્ડર મુજબ)
                     commList.sort((a, b) => {
-                        let k1 = parseInt(a.kram !== undefined ? a.kram : (a.index !== undefined ? a.index : 999));
-                        let k2 = parseInt(b.kram !== undefined ? b.kram : (b.index !== undefined ? b.index : 999));
-                        return k1 - k2;
+                        let o1 = parseInt(a.order !== undefined ? a.order : (a.kram !== undefined ? a.kram : 999));
+                        let o2 = parseInt(b.order !== undefined ? b.order : (b.kram !== undefined ? b.kram : 999));
+                        return o1 - o2;
                     });
 
                     let commRows = "";
@@ -935,7 +935,7 @@ else if (dataType === 'staff') {
                         commRows = `<tr><td colspan="5" class="p-3 text-center text-gray-400 text-xs">કોઈ કમિટી સભ્ય ઉપલબ્ધ નથી.</td></tr>`;
                     }
 
-                    // 🌟 ૨. સ્ટાફ ડેટા ફેચ કરીને kram મુજબ યોગ્ય ક્રમમાં ગોઠવવો (Sorting)
+                    // 🌟 ૨. સ્ટાફ ડેટા ફેચ (order ફિલ્ડ અથવા ડિફોલ્ટ ક્રમ મુજબ સૉર્ટિંગ)
                     const staffSnap = await getDocs(collection(db, "panchayats", lgdCode, "panchayat_staff"));
                     let staffList = [];
                     staffSnap.forEach(d => {
@@ -943,9 +943,9 @@ else if (dataType === 'staff') {
                     });
 
                     staffList.sort((a, b) => {
-                        let k1 = parseInt(a.kram !== undefined ? a.kram : (a.index !== undefined ? a.index : 999));
-                        let k2 = parseInt(b.kram !== undefined ? b.kram : (b.index !== undefined ? b.index : 999));
-                        return k1 - k2;
+                        let o1 = parseInt(a.order !== undefined ? a.order : (a.kram !== undefined ? a.kram : 999));
+                        let o2 = parseInt(b.order !== undefined ? b.order : (b.kram !== undefined ? b.kram : 999));
+                        return o1 - o2;
                     });
 
                     let staffRows = "";
